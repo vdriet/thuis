@@ -10,9 +10,29 @@
         h1 {
             text-align: center;
         }
+
+        .zoekform {
+            border: 1px solid black;
+            padding: 10px;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 <h1>Thuis</h1>
+<div class="zoekform">
+    <form action="/thuis/login" method="POST">
+        <label for="userid">E-mailadres
+            <input name="userid" type="text" value="">
+        </label>
+        <label for="password">Wachtwoord
+            <input name="password" type="password" value="">
+        </label>
+        <input type="submit" value="Login">
+    </form>
+    <p>Inloggen bij Somfy.</p>
+</div>
 </body>
 </html>

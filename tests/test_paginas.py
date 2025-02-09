@@ -15,6 +15,10 @@ def app():
   def thuishoofdpagina():
     return thuis.thuispagina()
 
+  @app.route('/thuis/login', methods=['POST'])
+  def thuisloginpagina():
+    return thuis.loginpagina()
+
   yield app
 
 
@@ -30,4 +34,10 @@ def test_404(client):
 
 def test_hoofdpaginaget(client):
   response = client.get('/thuis')
+  assert b"<h1>Thuis</h1>" in response.data
+
+
+def test_loginpaginapost(client):
+  data = {'userid': 'dummy', 'password': '<PASSWORD>'}
+  response = client.post('/thuis/login', data=data)
   assert b"<h1>Thuis</h1>" in response.data

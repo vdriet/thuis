@@ -30,7 +30,8 @@ class MyTestCase(unittest.TestCase):
   @mock.patch('requests.post')
   def test_somfylogin(self, mock_post):
     import thuis
-    mock_resp = self._mock_response(status=204, cookies={'JSESSIONID': 'dummy'})
+    mock_resp = self._mock_response(status=204,
+                                    cookies={'JSESSIONID': 'dummy'})
     mock_post.return_value.__enter__.return_value = mock_resp
 
     response = thuis.somfylogin("user", "pass")
@@ -41,11 +42,24 @@ class MyTestCase(unittest.TestCase):
   def test_getapitoken(self, mock_get):
     import thuis
     os.environ['pod'] = '1234-5678-1234'
-    mock_resp = self._mock_response(status=200, json_data={'token': 'abcd1234'})
+    mock_resp = self._mock_response(status=200,
+                                    json_data={'token': 'abcd1234'})
     mock_get.return_value.__enter__.return_value = mock_resp
-    response = thuis.getapitoken("jsessionid")
+    response = thuis.getapitoken('jsessionid')
     self.assertEqual(response, 'abcd1234')
     mock_get.assert_called_once()
+
+  @mock.patch('requests.post')
+  def test_activeertoken(self, mock_post):
+    import thuis
+    os.environ['pod'] = '1234-5678-1234'
+    mock_resp = self._mock_response(status=200,
+                                    cookies={'JSESSIONID': 'dummy'},
+                                    json_data={'requestId': 'eb77acc1-0a19-0482-25aa-49b027f4797e'})
+    mock_post.return_value.__enter__.return_value = mock_resp
+    response = thuis.activatetoken('jsessionid', 'token')
+    self.assertEqual(response, None)
+    mock_post.assert_called_once()
 
 
 if __name__ == '__main__':

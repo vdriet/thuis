@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 
 import requests
 import waitress
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
@@ -34,15 +34,32 @@ def getapitoken(userjsessionid):
   return rettoken
 
 
+def activatetoken(localjsessionid, localtoken):
+  """ Activeer een token """
+  pod = os.environ['pod']
+  url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens'
+  headers = {'Content-Type': 'application/json'
+    , 'Cookie': f'JSESSIONID={localjsessionid}'}
+  data = f'{{"label": "Python token", "token": "{localtoken}", "scope": "devmode"}}'.encode('utf-8')
+  with requests.post(url=url, headers=headers, data=data, timeout=10) as response:
+    response.json()
+
+
 @app.route('/thuis', methods=['GET'])
 def thuispagina():
   """ toon de hoofdpagina """
   return render_template('hoofdpagina.html')
 
 
+@app.route('/thuis/login', methods=['POST'])
+def loginpagina():
+  """ verwerk de login """
+  userid = request.form['userid']
+  password = request.form['password']
+  jsessionid = somfylogin(userid, password)
+  print(jsessionid)
+  return render_template('hoofdpagina.html')
+
+
 if __name__ == '__main__':
-  # userid = os.environ.get('userid')
-  # password = os.environ.get('password')
-  # jsessionid = somfylogin(userid, password)
-  # token = getapitoken(jsessionid)
   waitress.serve(app, host="0.0.0.0", port=8088)
