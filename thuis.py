@@ -4,10 +4,11 @@ from urllib.parse import quote_plus
 
 import requests
 import waitress
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
+from pysondb import db
 
 app = Flask(__name__)
-
+envdb = db.getDb('envdb.json')
 BASEURL = 'ha101-1.overkiz.com'
 
 
@@ -47,18 +48,34 @@ def activatetoken(localjsessionid, localtoken):
 
 @app.route('/thuis', methods=['GET'])
 def thuispagina():
-  """ toon de hoofdpagina """
-  return render_template('hoofdpagina.html')
+  """ Toon de hoofdpagina """
+  pod, jsessionid = None, None
+  rows = envdb.getAll()
+  for row in rows:
+    if row['env'] == 'pod':
+      pod = row['value']
+    if row['env'] == 'jsessionid':
+      jsessionid = row['value']
+  return render_template('hoofdpagina.html',
+                         pod=pod, jsessionid=jsessionid)
 
 
 @app.route('/thuis/login', methods=['POST'])
 def loginpagina():
-  """ verwerk de login """
+  """ Verwerk de login """
   userid = request.form['userid']
   password = request.form['password']
   jsessionid = somfylogin(userid, password)
-  print(jsessionid)
-  return render_template('hoofdpagina.html')
+  envdb.add({'env': 'jsessionid', 'value': jsessionid})
+  return redirect('/thuis')
+
+
+@app.route('/thuis/pod', methods=['POST'])
+def podpagina():
+  """ Verwerk het opvoeren van de pod """
+  pod = request.form['pod']
+  envdb.add({'env': 'pod', 'value': pod})
+  return redirect('/thuis')
 
 
 if __name__ == '__main__':

@@ -3,3 +3,4 @@ __pycache__/
 thuis_venv/
 .venv/
 .idea/
+envdb.json*

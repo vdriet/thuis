@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from flask import Flask
 
@@ -19,6 +21,10 @@ def app():
   def thuisloginpagina():
     return thuis.loginpagina()
 
+  @app.route('/thuis/pod', methods=['POST'])
+  def thuispodpagina():
+    return thuis.podpagina()
+
   yield app
 
 
@@ -37,7 +43,19 @@ def test_hoofdpaginaget(client):
   assert b"<h1>Thuis</h1>" in response.data
 
 
-def test_loginpaginapost(client):
+@patch('pysondb.db.JsonDatabase.add')
+def test_loginpaginapost(mock_dbadd, client):
   data = {'userid': 'dummy', 'password': '<PASSWORD>'}
   response = client.post('/thuis/login', data=data)
-  assert b"<h1>Thuis</h1>" in response.data
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis" in response.data
+  assert mock_dbadd.called
+
+
+@patch('pysondb.db.JsonDatabase.add')
+def test_podpaginapost(mock_dbadd, client):
+  data = {'pod': 'dummy'}
+  response = client.post('/thuis/pod', data=data)
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis" in response.data
+  assert mock_dbadd.called

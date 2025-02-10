@@ -11,7 +11,7 @@
             text-align: center;
         }
 
-        .zoekform {
+        .inputform {
             border: 1px solid black;
             padding: 10px;
             justify-content: center;
@@ -22,7 +22,18 @@
 </head>
 <body>
 <h1>Thuis</h1>
-<div class="zoekform">
+{% if not pod %}
+<div class="inputform">
+    <form action="/thuis/pod" method="POST">
+        <label for="pod">POD
+            <input name="pod" type="text" value="">
+        </label>
+        <input type="submit" value="Verstuur">
+    </form>
+    <p>Voor de werking is het nummer van de POD nodig. Die is nog niet bekend.</p>
+</div>
+{% elif not jsessionid %}
+<div class="inputform">
     <form action="/thuis/login" method="POST">
         <label for="userid">E-mailadres
             <input name="userid" type="text" value="">
@@ -34,5 +45,9 @@
     </form>
     <p>Inloggen bij Somfy.</p>
 </div>
+{% else %}
+<p>Pod: {{pod}}</p>
+<p>JSessionid: {{jsessionid}}</p>
+{% endif %}
 </body>
 </html>
