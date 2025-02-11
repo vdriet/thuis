@@ -111,12 +111,18 @@ def test_tokenspaginaget(mock_getavailabletokens, mock_dbgetall, client):
                      {'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001},
                      {'env': 'token', 'value': '4321c0de', 'id': 236910029}]
        )
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       return_value=[{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}])
+@patch('pysondb.db.JsonDatabase.deleteById',
+       return_value=None)
 @patch('thuis.getavailabletokens', return_value={'error': 'unauthorized'})
-def test_tokenspaginaget_geensessie(mock_getavailabletokens, mock_dbgetall, client):
+def test_tokenspaginaget_geensessie(mock_getavailabletokens, mock_dbdelete, mock_dbquery, mock_dbgetall, client):
   response = client.get('/thuis/tokens')
   assert b"Redirecting..." in response.data
   assert b"/thuis" in response.data
   assert mock_dbgetall.call_count == 1
+  assert mock_dbquery.call_count == 1
+  assert mock_dbdelete.call_count == 1
   assert mock_getavailabletokens.call_count == 1
 
 
