@@ -1,5 +1,4 @@
 """ Besturing van appartuur thuis """
-import os
 from urllib.parse import quote_plus
 
 import requests
@@ -10,6 +9,21 @@ from pysondb import db
 app = Flask(__name__)
 envdb = db.getDb('envdb.json')
 BASEURL = 'ha101-1.overkiz.com'
+
+
+def leesenv():
+  """ Lees de gegevens uit de envdb """
+  pod, jsessionid, token = None, None, None
+  rows = envdb.getAll()
+  for row in rows:
+    env = row.get('env', '')
+    if env == 'pod':
+      pod = row['value']
+    if env == 'jsessionid':
+      jsessionid = row['value']
+    if env == 'token':
+      token = row['value']
+  return pod, jsessionid, token
 
 
 def somfylogin(userid, password):
@@ -23,39 +37,41 @@ def somfylogin(userid, password):
   return jsessionid
 
 
-def getapitoken(userjsessionid):
+def getapitoken(jsessionid, pod):
   """ Ophalen van een nieuw token """
-  pod = os.environ['pod']
   url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/generate'
-  headers = {'Content-Type': 'application/json'
-    , 'Cookie': f'JSESSIONID={userjsessionid}'}
+  headers = {'Accept': 'application/json',
+             'Cookie': f'JSESSIONID={jsessionid}'}
   with requests.get(url=url, headers=headers, timeout=10) as response:
     contentjson = response.json()
     rettoken = contentjson['token']
   return rettoken
 
 
-def activatetoken(localjsessionid, localtoken):
+def activatetoken(jsessionid, pod, token):
   """ Activeer een token """
-  pod = os.environ['pod']
   url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens'
-  headers = {'Content-Type': 'application/json'
-    , 'Cookie': f'JSESSIONID={localjsessionid}'}
-  data = f'{{"label": "Python token", "token": "{localtoken}", "scope": "devmode"}}'.encode('utf-8')
+  headers = {'Content-Type': 'application/json',
+             'Cookie': f'JSESSIONID={jsessionid}'}
+  data = f'{{"label": "Python token", "token": "{token}", "scope": "devmode"}}'.encode('utf-8')
   with requests.post(url=url, headers=headers, data=data, timeout=10) as response:
     response.json()
+
+
+def getavailabletokens(jsessionid, pod):
+  """ Haal beschikbare tokens """
+  url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/devmode'
+  headers = {'Accept': 'application/json',
+             'Cookie': f'JSESSIONID={jsessionid}'}
+  with requests.get(url=url, headers=headers, timeout=10) as response:
+    contentjson = response.json()
+  return contentjson
 
 
 @app.route('/thuis', methods=['GET'])
 def thuispagina():
   """ Toon de hoofdpagina """
-  pod, jsessionid = None, None
-  rows = envdb.getAll()
-  for row in rows:
-    if row['env'] == 'pod':
-      pod = row['value']
-    if row['env'] == 'jsessionid':
-      jsessionid = row['value']
+  pod, jsessionid, _ = leesenv()
   return render_template('hoofdpagina.html',
                          pod=pod, jsessionid=jsessionid)
 
@@ -76,6 +92,20 @@ def podpagina():
   pod = request.form['pod']
   envdb.add({'env': 'pod', 'value': pod})
   return redirect('/thuis')
+
+
+@app.route('/thuis/tokens', methods=['GET'])
+def tokenspagina():
+  """ Toon de pagina met alle tokens """
+  pod, jsessionid, _ = leesenv()
+  if not pod or not jsessionid:
+    return redirect('/thuis')
+  tokens = getavailabletokens(jsessionid, pod)
+  if isinstance(tokens, dict) and not tokens.get('error', None) is None:
+    row = envdb.getByQuery({'env': 'jsessionid'})
+    envdb.deleteById(row[0].get('id'))
+    return redirect('/thuis')
+  return render_template('tokens.html', tokens=tokens)
 
 
 if __name__ == '__main__':
