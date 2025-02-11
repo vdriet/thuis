@@ -10,10 +10,46 @@
         h1 {
             text-align: center;
         }
+
+        table, th, td {
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 3px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2
+        }
     </style>
 </head>
 <body>
 <h1>Tokens</h1>
-<p>{{tokens}}</p>
+<table>
+    <tr>
+        <th>Label</th>
+        <th>Pod</th>
+        <th>Start</th>
+        <th>UUID</th>
+        <th>Delete</th>
+    </tr>
+    {% for token in tokens %}
+    <tr>
+        <td>{{token['label']}}</td>
+        <td>{{token['pod']}}</td>
+        <td>{{token['start']}}</td>
+        <td>{{token['uuid']}}</td>
+        <td>
+            <form action="/thuis/tokens" method="POST">
+                <input name="actie" type="hidden" value="delete">
+                <input name="uuid" type="hidden" value="{{token['uuid']}}">
+                <input type="submit" value="Delete">
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
 </body>
 </html>

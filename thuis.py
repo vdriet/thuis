@@ -1,4 +1,6 @@
 """ Besturing van appartuur thuis """
+from datetime import datetime
+from time import sleep
 from urllib.parse import quote_plus
 
 import requests
@@ -63,13 +65,51 @@ def activatetoken(jsessionid, pod, token):
 
 
 def getavailabletokens(jsessionid, pod):
-  """ Haal beschikbare tokens """
+  """ Haal beschikbare tokens van de server """
   url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/devmode'
   headers = {'Accept': 'application/json',
              'Cookie': f'JSESSIONID={jsessionid}'}
   with requests.get(url=url, headers=headers, timeout=10) as response:
     contentjson = response.json()
   return contentjson
+
+
+def deletetoken(uuid):
+  """ Verwijder een token van de server """
+  pod, jsessionid, _, _, _ = leesenv()
+  url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/{uuid}'
+  headers = {'Content-Type': 'application/json'
+    , 'Cookie': f'JSESSIONID={jsessionid}'}
+  with requests.delete(url=url, headers=headers, timeout=10) as response:
+    return response.status_code
+
+
+def haaltokensentoon():
+  """ Haal de tokens van de server en toon deze
+      Wanneer er gegevens missen, redirect naar hoofdpagina
+  """
+  pod, jsessionid, _, userid, password = leesenv()
+  if not pod or not jsessionid:
+    return redirect('/thuis')
+  servertokens = getavailabletokens(jsessionid, pod)
+  if isinstance(servertokens, dict) and not servertokens.get('error', None) is None:
+    row = envdb.getByQuery({'env': 'jsessionid'})
+    envdb.deleteById(row[0].get('id'))
+    if userid is None or password is None:
+      return redirect('/thuis')
+    jsessionid = somfylogin(userid, password)
+    envdb.add({'env': 'jsessionid', 'value': jsessionid})
+    servertokens = getavailabletokens(jsessionid, pod)
+  tokens = []
+  for token in servertokens:
+    aanmaaktijdstip = int(token['gatewayCreationTime'] / 1000)
+    start = datetime.fromtimestamp(aanmaaktijdstip).strftime('%Y-%m-%d %H:%M:%S')
+    tokens.append({'label': token['label'],
+                   'pod': token['gatewayId'],
+                   'start': start,
+                   'uuid': token['uuid'],
+                   })
+  return render_template('tokens.html', tokens=tokens)
 
 
 @app.route('/thuis', methods=['GET'])
@@ -105,19 +145,20 @@ def podpagina():
 @app.route('/thuis/tokens', methods=['GET'])
 def tokenspagina():
   """ Toon de pagina met alle tokens """
-  pod, jsessionid, _, userid, password = leesenv()
-  if not pod or not jsessionid:
-    return redirect('/thuis')
-  tokens = getavailabletokens(jsessionid, pod)
-  if isinstance(tokens, dict) and not tokens.get('error', None) is None:
-    row = envdb.getByQuery({'env': 'jsessionid'})
-    envdb.deleteById(row[0].get('id'))
-    if userid is None or password is None:
-      return redirect('/thuis')
-    jsessionid = somfylogin(userid, password)
-    envdb.add({'env': 'jsessionid', 'value': jsessionid})
-    tokens = getavailabletokens(jsessionid, pod)
-  return render_template('tokens.html', tokens=tokens)
+  return haaltokensentoon()
+
+
+@app.route('/thuis/tokens', methods=['POST'])
+def tokensactiepagina():
+  """ Verwerk een actie voor een token """
+  actie = request.form.get('actie', '')
+  if actie == 'delete':
+    uuid = request.form['uuid']
+    responsecode = deletetoken(uuid)
+    sleep(1)
+    if responsecode == 200:
+      return haaltokensentoon()
+  return redirect('/thuis/tokens')
 
 
 if __name__ == '__main__':
