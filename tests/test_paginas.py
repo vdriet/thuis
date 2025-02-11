@@ -75,8 +75,17 @@ def test_hoofdpaginaget_geenjsessionid(mock_dbgetall, client):
 
 
 @patch('pysondb.db.JsonDatabase.add')
-def test_loginpaginapost(mock_dbadd, client):
-  data = {'userid': 'dummy', 'password': '<PASSWORD>'}
+def test_loginpaginapost_save(mock_dbadd, client):
+  data = {'userid': 'dummy', 'password': '<PASSWORD>', 'savelogin': 'on'}
+  response = client.post('/thuis/login', data=data)
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis" in response.data
+  assert mock_dbadd.call_count == 3
+
+
+@patch('pysondb.db.JsonDatabase.add')
+def test_loginpaginapost_nosave(mock_dbadd, client):
+  data = {'userid': 'dummy', 'password': '<PASSWORD>', 'savelogin': 'off'}
   response = client.post('/thuis/login', data=data)
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis" in response.data
@@ -124,6 +133,32 @@ def test_tokenspaginaget_geensessie(mock_getavailabletokens, mock_dbdelete, mock
   assert mock_dbquery.call_count == 1
   assert mock_dbdelete.call_count == 1
   assert mock_getavailabletokens.call_count == 1
+
+
+@patch('pysondb.db.JsonDatabase.getAll',
+       return_value=[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834},
+                     {'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001},
+                     {'env': 'token', 'value': '4321c0de', 'id': 236910029},
+                     {'env': 'userid', 'value': 'dummyuser', 'id': 9236492384},
+                     {'env': 'password', 'value': 'dummypass', 'id': 982369283}]
+       )
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       return_value=[{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}])
+@patch('pysondb.db.JsonDatabase.deleteById',
+       return_value=None)
+@patch('pysondb.db.JsonDatabase.add',
+       return_value=None)
+@patch('thuis.getavailabletokens', side_effect=[{'error': 'unauthorized'}, {'token': 'result'}])
+def test_tokenspaginaget_geensessie_autologin(mock_getavailabletokens, mock_dbadd, mock_dbdelete, mock_dbquery, mock_dbgetall,
+                                              client):
+  response = client.get('/thuis/tokens')
+  assert b"<h1>Tokens</h1>" in response.data
+  assert b"<p>{&#39;token&#39;: &#39;result&#39;}</p>" in response.data
+  assert mock_dbgetall.call_count == 1
+  assert mock_dbquery.call_count == 1
+  assert mock_dbdelete.call_count == 1
+  assert mock_dbadd.call_count == 1
+  assert mock_getavailabletokens.call_count == 2
 
 
 @patch('pysondb.db.JsonDatabase.getAll',

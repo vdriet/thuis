@@ -13,7 +13,7 @@ BASEURL = 'ha101-1.overkiz.com'
 
 def leesenv():
   """ Lees de gegevens uit de envdb """
-  pod, jsessionid, token = None, None, None
+  pod, jsessionid, token, userid, password = None, None, None, None, None
   rows = envdb.getAll()
   for row in rows:
     env = row.get('env', '')
@@ -23,7 +23,11 @@ def leesenv():
       jsessionid = row['value']
     if env == 'token':
       token = row['value']
-  return pod, jsessionid, token
+    if env == 'userid':
+      userid = row['value']
+    if env == 'password':
+      password = row['value']
+  return pod, jsessionid, token, userid, password
 
 
 def somfylogin(userid, password):
@@ -71,7 +75,7 @@ def getavailabletokens(jsessionid, pod):
 @app.route('/thuis', methods=['GET'])
 def thuispagina():
   """ Toon de hoofdpagina """
-  pod, jsessionid, _ = leesenv()
+  pod, jsessionid, _, _, _ = leesenv()
   return render_template('hoofdpagina.html',
                          pod=pod, jsessionid=jsessionid)
 
@@ -81,6 +85,10 @@ def loginpagina():
   """ Verwerk de login """
   userid = request.form['userid']
   password = request.form['password']
+  bewaargegevens = request.form['savelogin']
+  if bewaargegevens == 'on':
+    envdb.add({'env': 'userid', 'value': userid})
+    envdb.add({'env': 'password', 'value': password})
   jsessionid = somfylogin(userid, password)
   envdb.add({'env': 'jsessionid', 'value': jsessionid})
   return redirect('/thuis')
@@ -97,14 +105,18 @@ def podpagina():
 @app.route('/thuis/tokens', methods=['GET'])
 def tokenspagina():
   """ Toon de pagina met alle tokens """
-  pod, jsessionid, _ = leesenv()
+  pod, jsessionid, _, userid, password = leesenv()
   if not pod or not jsessionid:
     return redirect('/thuis')
   tokens = getavailabletokens(jsessionid, pod)
   if isinstance(tokens, dict) and not tokens.get('error', None) is None:
     row = envdb.getByQuery({'env': 'jsessionid'})
     envdb.deleteById(row[0].get('id'))
-    return redirect('/thuis')
+    if userid is None or password is None:
+      return redirect('/thuis')
+    jsessionid = somfylogin(userid, password)
+    envdb.add({'env': 'jsessionid', 'value': jsessionid})
+    tokens = getavailabletokens(jsessionid, pod)
   return render_template('tokens.html', tokens=tokens)
 
 
