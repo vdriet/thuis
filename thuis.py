@@ -120,9 +120,9 @@ def haaltokensentoon():
 @app.route('/thuis', methods=['GET'])
 def thuispagina():
   """ Toon de hoofdpagina """
-  pod, jsessionid, _, _, _ = leesenv()
+  pod, jsessionid, token, _, _ = leesenv()
   return render_template('hoofdpagina.html',
-                         pod=pod, jsessionid=jsessionid)
+                         pod=pod, jsessionid=jsessionid, token=token)
 
 
 @app.route('/thuis/login', methods=['POST'])
