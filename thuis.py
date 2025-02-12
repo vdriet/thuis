@@ -76,7 +76,7 @@ def activatetoken(jsessionid, pod, label, token):
              'Cookie': f'JSESSIONID={jsessionid}'}
   data = f'{{"label": "{label}", "token": "{token}", "scope": "devmode"}}'.encode('utf-8')
   with requests.post(url=url, headers=headers, data=data, timeout=10) as response:
-    print(response.json())
+    pass
 
 
 def deletetoken(uuid):
