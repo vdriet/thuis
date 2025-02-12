@@ -287,3 +287,30 @@ def test_tokenspaginapost_delete_geensessie(mock_deletetoken, mock_gettokens, mo
   assert mock_gettokens.call_count == 0
   assert mock_getenvdb.call_count == 0
   assert mock_deletetoken.call_count == 1
+
+
+@patch('pysondb.db.JsonDatabase.getAll',
+       return_value=[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834},
+                     {'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001},
+                     {'env': 'token', 'value': '4321c0de', 'id': 236910029}]
+       )
+@patch('thuis.getavailabletokens',
+       return_value=[{'label': 'Python token',
+                      'gatewayId': '1234-4321-5678',
+                      'gatewayCreationTime': 1738422650000,
+                      'uuid': '20547c11-73ce-475b-88be-6e30824b2b54',
+                      'scope': 'devmode'},
+                     {'label': 'Thuis token',
+                      'gatewayId': '1234-4321-5678',
+                      'gatewayCreationTime': 1739117276000,
+                      'uuid': 'b3d4be51-1c5f-4f3c-acce-9f8a8f345328',
+                      'scope': 'devmode'}])
+@patch('thuis.createtoken')
+def test_tokenspaginapost_createtoken(mock_createtoken, mock_gettokens, mock_getenvdb, client):
+  data = {'actie': 'create', 'label': 'dummy label'}
+  response = client.post('/thuis/tokens', data=data)
+
+  assert b"<h1>Tokens</h1>" in response.data
+  assert mock_gettokens.call_count == 1
+  assert mock_getenvdb.call_count == 1
+  assert mock_createtoken.call_count == 1

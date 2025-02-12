@@ -58,6 +58,27 @@ class MyTestCaseTokens(unittest.TestCase):
     mock_envdb.assert_called_once()
     mock_delete.assert_called_once()
 
+  @mock.patch('requests.get')
+  @mock.patch('pysondb.db.JsonDatabase.getAll',
+              return_value=[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834},
+                            {'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001},
+                            {'env': 'token', 'value': '4321c0de', 'id': 236910029}]
+              )
+  @mock.patch('pysondb.db.JsonDatabase.add')
+  @mock.patch('pysondb.db.JsonDatabase.getByQuery')
+  @mock.patch('pysondb.db.JsonDatabase.deleteById')
+  def test_createtoken(self, mock_envdbdelete, mock_envdbget, mock_envdbadd, mock_envdball, mock_get):
+    import thuis
+    mock_resp = self._mock_response(status=200, json_data={'token': 'dummy'})
+    mock_get.return_value.__enter__.return_value = mock_resp
+    thuis.createtoken('label')
+
+    mock_envdball.assert_called_once()
+    mock_envdbadd.assert_called_once()
+    mock_envdbget.assert_called_once()
+    mock_envdbdelete.assert_called_once()
+    mock_get.assert_called_once()
+
 
 if __name__ == '__main__':
   unittest.main()

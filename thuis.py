@@ -43,27 +43,6 @@ def somfylogin(userid, password):
   return jsessionid
 
 
-def getapitoken(jsessionid, pod):
-  """ Ophalen van een nieuw token """
-  url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/generate'
-  headers = {'Accept': 'application/json',
-             'Cookie': f'JSESSIONID={jsessionid}'}
-  with requests.get(url=url, headers=headers, timeout=10) as response:
-    contentjson = response.json()
-    rettoken = contentjson['token']
-  return rettoken
-
-
-def activatetoken(jsessionid, pod, token):
-  """ Activeer een token """
-  url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens'
-  headers = {'Content-Type': 'application/json',
-             'Cookie': f'JSESSIONID={jsessionid}'}
-  data = f'{{"label": "Python token", "token": "{token}", "scope": "devmode"}}'.encode('utf-8')
-  with requests.post(url=url, headers=headers, data=data, timeout=10) as response:
-    response.json()
-
-
 def getavailabletokens(jsessionid, pod):
   """ Haal beschikbare tokens van de server """
   url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/devmode'
@@ -72,6 +51,32 @@ def getavailabletokens(jsessionid, pod):
   with requests.get(url=url, headers=headers, timeout=10) as response:
     contentjson = response.json()
   return contentjson
+
+
+def createtoken(label):
+  """ Voeg een token toe op de server """
+  pod, jsessionid, _, _, _ = leesenv()
+  url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/generate'
+  headers = {'Content-Type': 'application/json'
+    , 'Cookie': f'JSESSIONID={jsessionid}'}
+  with requests.get(url=url, headers=headers, timeout=10) as response:
+    contentjson = response.json()
+    rettoken = contentjson['token']
+    row = envdb.getByQuery({'env': 'token'})
+    envdb.deleteById(row[0].get('id'))
+    envdb.add({'env': 'token', 'value': rettoken})
+    activatetoken(jsessionid, pod, label, rettoken)
+    return 200
+
+
+def activatetoken(jsessionid, pod, label, token):
+  """ Activeer een token """
+  url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens'
+  headers = {'Content-Type': 'application/json',
+             'Cookie': f'JSESSIONID={jsessionid}'}
+  data = f'{{"label": "{label}", "token": "{token}", "scope": "devmode"}}'.encode('utf-8')
+  with requests.post(url=url, headers=headers, data=data, timeout=10) as response:
+    print(response.json())
 
 
 def deletetoken(uuid):
@@ -158,6 +163,11 @@ def tokensactiepagina():
     sleep(1)
     if responsecode == 200:
       return haaltokensentoon()
+  elif actie == 'create':
+    label = request.form['label']
+    createtoken(label)
+    sleep(1)
+    return haaltokensentoon()
   return redirect('/thuis/tokens')
 
 
