@@ -75,7 +75,7 @@ def activatetoken(jsessionid, pod, label, token):
   headers = {'Content-Type': 'application/json',
              'Cookie': f'JSESSIONID={jsessionid}'}
   data = f'{{"label": "{label}", "token": "{token}", "scope": "devmode"}}'.encode('utf-8')
-  with requests.post(url=url, headers=headers, data=data, timeout=10) as response:
+  with requests.post(url=url, headers=headers, data=data, timeout=10):
     pass
 
 
