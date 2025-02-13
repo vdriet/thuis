@@ -62,8 +62,9 @@ def createtoken(label):
   with requests.get(url=url, headers=headers, timeout=10) as response:
     contentjson = response.json()
     rettoken = contentjson['token']
-    row = envdb.getByQuery({'env': 'token'})
-    envdb.deleteById(row[0].get('id'))
+    rows = envdb.getByQuery({'env': 'token'})
+    for row in rows:
+      envdb.deleteById(row.get('id'))
     envdb.add({'env': 'token', 'value': rettoken})
     activatetoken(jsessionid, pod, label, rettoken)
     return 200
@@ -115,6 +116,68 @@ def haaltokensentoon():
                    'uuid': token['uuid'],
                    })
   return render_template('tokens.html', tokens=tokens)
+
+
+def haalgegevensvansomfy(token, pod, path):
+  """ Ophalen van gegevens van het somfy kastje """
+  url = f'https://{pod}.local:8443/enduser-mobile-web/1/enduserAPI/{path}'
+  headers = {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
+  with requests.get(url=url,
+                    headers=headers,
+                    timeout=5,
+                    verify='./cert/overkiz-root-ca-2048.crt') as response:
+    return response.json()
+
+
+def stuurgegevensnaarsomfy(token, pod, path, data):
+  """ Sturen van gegevens naar het somfy kastje """
+  url = f'https://{pod}.local:8443/enduser-mobile-web/1/enduserAPI/{path}'
+  headers = {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
+  with requests.post(url=url,
+                     headers=headers,
+                     timeout=5,
+                     verify='./cert/overkiz-root-ca-2048.crt',
+                     data=data) as response:
+    return response.json()
+
+
+def haalstatusentoon():
+  """ Haal de status van de schermen toon deze
+      Wanneer er gegevens missen, redirect naar hoofdpagina
+  """
+  pod, _, token, userid, password = leesenv()
+  if not pod or not token:
+    return redirect('/thuis')
+  path = f'setup/devices/controllables/{quote_plus("io:VerticalExteriorAwningIOComponent")}'
+  schermurls = haalgegevensvansomfy(token, pod, path)
+  print(schermurls)
+  if isinstance(schermurls, dict) and not schermurls.get('error', None) is None:
+    return redirect('/thuis')
+  schermen = []
+  for schermurl in schermurls:
+    device = haalgegevensvansomfy(token, pod, f'setup/devices/{quote_plus(schermurl)}')
+    print(device)
+    label = device['label']
+    deviceurl = device['deviceURL']
+    controllablename = device['controllableName']
+    print(f'{label}: {deviceurl} {controllablename}')
+    schermstate = haalgegevensvansomfy(token,
+                                       pod,
+                                       f'setup/devices/{quote_plus(schermurl)}/states/{quote_plus("core:DeploymentState")}')
+    schermen.append({'label': label,
+                     'percentage': schermstate['value']
+                     })
+  return render_template('status.html', schermen=schermen)
+  # devices = getsomfyapi(token, f'setup/devices/controllables/{quote_plus("io:VerticalExteriorAwningIOComponent")}')
+  # for deviceURL in devices:
+  #   device = getsomfyapi(token, f'setup/devices/{quote_plus(deviceURL)}')
+  #   label = device['label']
+  #   deviceURL = device['deviceURL']
+  #   controllableName = device['controllableName']
+  #   print(f'{label}: {deviceURL} {controllableName}')
+  #   deviceURLencoded = quote_plus(deviceURL)
+  #   stateencode = quote_plus('core:DeploymentState')
+  #   getsomfyapi(token, f'setup/devices/{deviceURLencoded}/states/{stateencode}')
 
 
 @app.route('/thuis', methods=['GET'])
@@ -169,6 +232,12 @@ def tokensactiepagina():
     sleep(1)
     return haaltokensentoon()
   return redirect('/thuis/tokens')
+
+
+@app.route('/thuis/status', methods=['GET'])
+def statuspagina():
+  """ Toon de pagina met de status van de schermen """
+  return haalstatusentoon()
 
 
 if __name__ == '__main__':

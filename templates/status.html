@@ -1,0 +1,45 @@
+<html lang="nl">
+<head>
+    <title>Status</title>
+    <style>
+        body {
+            background: lightgray;
+            font-size: 16px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        table, th, td {
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 3px;
+            margin-bottom: 20px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2
+        }
+    </style>
+</head>
+<body>
+<h1>Status</h1>
+<table>
+    <tr>
+        <th>Label</th>
+        <th>Percentage</th>
+    </tr>
+    {% for scherm in schermen %}
+    <tr>
+        <td>{{scherm['label']}}</td>
+        <td>{{scherm['percentage']}}</td>
+    </tr>
+    {% endfor %}
+</table>
+<p><a href="/thuis">Terug</a></p>
+</body>
+</html>
