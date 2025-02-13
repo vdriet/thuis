@@ -13,23 +13,12 @@ envdb = db.getDb('envdb.json')
 BASEURL = 'ha101-1.overkiz.com'
 
 
-def leesenv():
-  """ Lees de gegevens uit de envdb """
-  pod, jsessionid, token, userid, password = None, None, None, None, None
-  rows = envdb.getAll()
-  for row in rows:
-    env = row.get('env', '')
-    if env == 'pod':
-      pod = row['value']
-    if env == 'jsessionid':
-      jsessionid = row['value']
-    if env == 'token':
-      token = row['value']
-    if env == 'userid':
-      userid = row['value']
-    if env == 'password':
-      password = row['value']
-  return pod, jsessionid, token, userid, password
+def leesenv(env: str):
+  """ Lees een gegeven uit de envdb """
+  rows = envdb.getByQuery({'env': env})
+  if len(rows) != 1:
+    return ''
+  return rows[0].get('value', '')
 
 
 def somfylogin(userid, password):
@@ -55,7 +44,8 @@ def getavailabletokens(jsessionid, pod):
 
 def createtoken(label):
   """ Voeg een token toe op de server """
-  pod, jsessionid, _, _, _ = leesenv()
+  pod = leesenv('pod')
+  jsessionid = leesenv('jsessionid')
   url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/generate'
   headers = {'Content-Type': 'application/json'
     , 'Cookie': f'JSESSIONID={jsessionid}'}
@@ -82,7 +72,8 @@ def activatetoken(jsessionid, pod, label, token):
 
 def deletetoken(uuid):
   """ Verwijder een token van de server """
-  pod, jsessionid, _, _, _ = leesenv()
+  pod = leesenv('pod')
+  jsessionid = leesenv('jsessionid')
   url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/{uuid}'
   headers = {'Content-Type': 'application/json'
     , 'Cookie': f'JSESSIONID={jsessionid}'}
@@ -94,14 +85,17 @@ def haaltokensentoon():
   """ Haal de tokens van de server en toon deze
       Wanneer er gegevens missen, redirect naar hoofdpagina
   """
-  pod, jsessionid, _, userid, password = leesenv()
+  pod = leesenv('pod')
+  jsessionid = leesenv('jsessionid')
   if not pod or not jsessionid:
     return redirect('/thuis')
   servertokens = getavailabletokens(jsessionid, pod)
   if isinstance(servertokens, dict) and not servertokens.get('error', None) is None:
     row = envdb.getByQuery({'env': 'jsessionid'})
     envdb.deleteById(row[0].get('id'))
-    if userid is None or password is None:
+    userid = leesenv('userid')
+    password = leesenv('password')
+    if not userid or not password:
       return redirect('/thuis')
     jsessionid = somfylogin(userid, password)
     envdb.add({'env': 'jsessionid', 'value': jsessionid})
@@ -144,8 +138,9 @@ def stuurgegevensnaarsomfy(token, pod, path, data):
 def haalstatusentoon():
   """ Haal de status van de schermen toon deze
       Wanneer er gegevens missen, redirect naar hoofdpagina
-  """ 
-  pod, _, token, _, _ = leesenv()
+  """
+  pod = leesenv('pod')
+  token = leesenv('token')
   if not pod or not token:
     return redirect('/thuis')
   path = f'setup/devices/controllables/{quote_plus("io:VerticalExteriorAwningIOComponent")}'
@@ -170,7 +165,9 @@ def haalstatusentoon():
 @app.route('/thuis', methods=['GET'])
 def thuispagina():
   """ Toon de hoofdpagina """
-  pod, jsessionid, token, _, _ = leesenv()
+  pod = leesenv('pod')
+  jsessionid = leesenv('jsessionid')
+  token = leesenv('token')
   return render_template('hoofdpagina.html',
                          pod=pod, jsessionid=jsessionid, token=token)
 

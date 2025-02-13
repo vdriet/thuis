@@ -44,10 +44,10 @@ class MyTestCaseTokens(unittest.TestCase):
     mock_get.assert_called_once()
 
   @mock.patch('requests.delete')
-  @mock.patch('pysondb.db.JsonDatabase.getAll',
-              return_value=[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834},
-                            {'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001},
-                            {'env': 'token', 'value': '4321c0de', 'id': 236910029}]
+  @mock.patch('pysondb.db.JsonDatabase.getByQuery',
+              side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
+                           [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}]
+                           ]
               )
   def test_deletetoken(self, mock_envdb, mock_delete):
     import thuis
@@ -55,28 +55,25 @@ class MyTestCaseTokens(unittest.TestCase):
     mock_delete.return_value.__enter__.return_value = mock_resp
     returncode = thuis.deletetoken('b3d4be51-1c5f-4f3c-acce-6e30824b2b54')
     self.assertEqual(returncode, 200)
-    mock_envdb.assert_called_once()
+    mock_envdb.assert_called()
     mock_delete.assert_called_once()
 
   @mock.patch('requests.get')
-  @mock.patch('pysondb.db.JsonDatabase.getAll',
-              return_value=[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834},
-                            {'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001},
-                            {'env': 'token', 'value': '4321c0de', 'id': 236910029}]
-              )
   @mock.patch('pysondb.db.JsonDatabase.add')
   @mock.patch('pysondb.db.JsonDatabase.getByQuery',
-              return_value=[{'env': 'token', 'value': '4321c0de', 'id': 236910029}])
+              side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
+                           [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
+                           [{'env': 'token', 'value': '4321c0de', 'id': 236910029}]
+                           ])
   @mock.patch('pysondb.db.JsonDatabase.deleteById')
-  def test_createtoken(self, mock_envdbdelete, mock_envdbget, mock_envdbadd, mock_envdball, mock_get):
+  def test_createtoken(self, mock_envdbdelete, mock_envdbget, mock_envdbadd, mock_get):
     import thuis
     mock_resp = self._mock_response(status=200, json_data={'token': 'dummy'})
     mock_get.return_value.__enter__.return_value = mock_resp
     thuis.createtoken('label')
 
-    mock_envdball.assert_called_once()
     mock_envdbadd.assert_called_once()
-    mock_envdbget.assert_called_once()
+    mock_envdbget.assert_called()
     mock_envdbdelete.assert_called_once()
     mock_get.assert_called_once()
 
