@@ -144,40 +144,27 @@ def stuurgegevensnaarsomfy(token, pod, path, data):
 def haalstatusentoon():
   """ Haal de status van de schermen toon deze
       Wanneer er gegevens missen, redirect naar hoofdpagina
-  """
-  pod, _, token, userid, password = leesenv()
+  """ 
+  pod, _, token, _, _ = leesenv()
   if not pod or not token:
     return redirect('/thuis')
   path = f'setup/devices/controllables/{quote_plus("io:VerticalExteriorAwningIOComponent")}'
   schermurls = haalgegevensvansomfy(token, pod, path)
-  print(schermurls)
   if isinstance(schermurls, dict) and not schermurls.get('error', None) is None:
     return redirect('/thuis')
   schermen = []
   for schermurl in schermurls:
-    device = haalgegevensvansomfy(token, pod, f'setup/devices/{quote_plus(schermurl)}')
-    print(device)
+    scherurlencoded = quote_plus(schermurl)
+    device = haalgegevensvansomfy(token, pod, f'setup/devices/{scherurlencoded}')
     label = device['label']
-    deviceurl = device['deviceURL']
-    controllablename = device['controllableName']
-    print(f'{label}: {deviceurl} {controllablename}')
+    percopenstate = quote_plus("core:DeploymentState")
     schermstate = haalgegevensvansomfy(token,
                                        pod,
-                                       f'setup/devices/{quote_plus(schermurl)}/states/{quote_plus("core:DeploymentState")}')
+                                       f'setup/devices/{scherurlencoded}/states/{percopenstate}')
     schermen.append({'label': label,
                      'percentage': schermstate['value']
                      })
   return render_template('status.html', schermen=schermen)
-  # devices = getsomfyapi(token, f'setup/devices/controllables/{quote_plus("io:VerticalExteriorAwningIOComponent")}')
-  # for deviceURL in devices:
-  #   device = getsomfyapi(token, f'setup/devices/{quote_plus(deviceURL)}')
-  #   label = device['label']
-  #   deviceURL = device['deviceURL']
-  #   controllableName = device['controllableName']
-  #   print(f'{label}: {deviceURL} {controllableName}')
-  #   deviceURLencoded = quote_plus(deviceURL)
-  #   stateencode = quote_plus('core:DeploymentState')
-  #   getsomfyapi(token, f'setup/devices/{deviceURLencoded}/states/{stateencode}')
 
 
 @app.route('/thuis', methods=['GET'])

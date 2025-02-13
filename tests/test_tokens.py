@@ -65,7 +65,8 @@ class MyTestCaseTokens(unittest.TestCase):
                             {'env': 'token', 'value': '4321c0de', 'id': 236910029}]
               )
   @mock.patch('pysondb.db.JsonDatabase.add')
-  @mock.patch('pysondb.db.JsonDatabase.getByQuery')
+  @mock.patch('pysondb.db.JsonDatabase.getByQuery',
+              return_value=[{'env': 'token', 'value': '4321c0de', 'id': 236910029}])
   @mock.patch('pysondb.db.JsonDatabase.deleteById')
   def test_createtoken(self, mock_envdbdelete, mock_envdbget, mock_envdbadd, mock_envdball, mock_get):
     import thuis
