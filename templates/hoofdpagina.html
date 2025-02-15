@@ -25,9 +25,8 @@
 {% if not pod %}
 <div class="inputform">
     <form action="/thuis/pod" method="POST">
-        <label for="pod">POD
-            <input name="pod" type="text" value="">
-        </label>
+        <label for="pod">POD</label>
+        <input id="pod" name="pod" type="text" value="">
         <input type="submit" value="Verstuur">
     </form>
     <p>Voor de werking is het nummer van de POD nodig. Die is nog niet bekend.</p>
@@ -35,15 +34,15 @@
 {% elif not jsessionid %}
 <div class="inputform">
     <form action="/thuis/login" method="POST">
-        <label for="userid">E-mailadres
-            <input name="userid" type="text" value="">
-        </label><br/>
-        <label for="password">Wachtwoord
-            <input name="password" type="password" value="">
-        </label><br/>
-        <label for="savelogin">Bewaar de gebruiker
-            <input name="savelogin" type="checkbox" checked>
-        </label><br/>
+        <label for="userid">E-mailadres</label>
+        <input id="userid" name="userid" type="text" value="">
+        <br/>
+        <label for="password">Wachtwoord</label>
+        <input id="password" name="password" type="password" value="">
+        <br/>
+        <label for="savelogin">Bewaar de gebruiker</label>
+        <input id="savelogin" name="savelogin" type="checkbox" checked>
+        <br/>
         <input type="submit" value="Login">
     </form>
     <p>Inloggen bij Somfy.</p>

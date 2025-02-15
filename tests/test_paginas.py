@@ -37,6 +37,10 @@ def app():
   def thuisstatuspagina():
     return thuis.statuspagina()
 
+  @app.route('/thuis/status', methods=['POST'])
+  def thuisstatusactiepagina():
+    return thuis.statusactiepagina()
+
   yield app
 
 
@@ -69,7 +73,7 @@ def test_hoofdpaginaget(mock_dbgetbyquery, client):
 def test_hoofdpaginaget_geenpod(mock_dbgetbyquery, client):
   response = client.get('/thuis')
   assert b"<h1>Thuis</h1>" in response.data
-  assert b"input name=\"pod\"" in response.data
+  assert b"input id=\"pod\" name=\"pod\"" in response.data
   assert mock_dbgetbyquery.call_count == 3
 
 
@@ -81,8 +85,8 @@ def test_hoofdpaginaget_geenpod(mock_dbgetbyquery, client):
 def test_hoofdpaginaget_geenjsessionid(mock_dbgetbyquery, client):
   response = client.get('/thuis')
   assert b"<h1>Thuis</h1>" in response.data
-  assert b"input name=\"userid\"" in response.data
-  assert b"input name=\"password\"" in response.data
+  assert b"input id=\"userid\" name=\"userid\"" in response.data
+  assert b"input id=\"password\" name=\"password\"" in response.data
   assert mock_dbgetbyquery.call_count == 3
 
 
@@ -396,3 +400,25 @@ def test_statuspagina_error(mock_somfy, mock_env, client):
   assert b"/thuis" in response.data
   assert mock_env.call_count == 3
   assert mock_somfy.call_count == 1
+
+
+@patch('thuis.verplaatsscherm')
+def test_statuspaginapost(mock_verplaats, client):
+  data = {'device': 'dummyid', 'percentage': '20'}
+  response = client.post('/thuis/status', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis/status" in response.data
+  assert mock_verplaats.call_count == 1
+
+
+@patch('thuis.verplaatsscherm')
+def test_statuspaginapost_geengetal(mock_verplaats, client):
+  data = {'device': 'dummyid', 'percentage': 'abc'}
+  response = client.post('/thuis/status', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis/status" in response.data
+  assert mock_verplaats.call_count == 0

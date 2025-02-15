@@ -32,11 +32,20 @@
     <tr>
         <th>Label</th>
         <th>Percentage</th>
+        <th>Verplaats naar</th>
     </tr>
     {% for scherm in schermen %}
     <tr>
         <td>{{scherm['label']}}</td>
         <td>{{scherm['percentage']}}</td>
+        <td>
+            <form action="/thuis/status" method="POST">
+                <input name="device" type="hidden" value="{{scherm['device']}}">
+                <label for="percentage"></label>
+                <input id="percentage" name="percentage" type="text" size="3" maxlength="3">
+                <input type="submit" value="Verplaats">
+            </form>
+        </td>
     </tr>
     {% endfor %}
 </table>

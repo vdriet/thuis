@@ -161,19 +161,24 @@ def haalstatusentoon():
   if not envschermen:
     envschermen = getschermen(pod, token)
   schermen = []
+  percopenstate = quote_plus("core:DeploymentState")
   for scherm in envschermen:
-    percopenstate = quote_plus("core:DeploymentState")
     scherurlencoded = quote_plus(scherm['device'])
-    label = scherm['label']
     schermstate = haalgegevensvansomfy(token,
                                        pod,
                                        f'setup/devices/{scherurlencoded}/states/{percopenstate}')
     if isinstance(schermstate, dict) and not schermstate.get('error', None) is None:
       return redirect('/thuis')
-    schermen.append({'label': label,
+    schermen.append({'label': scherm['label'],
+                     'device': scherm['device'],
                      'percentage': schermstate['value']
                      })
   return render_template('status.html', schermen=schermen)
+
+
+def verplaatsscherm(device, percentage):
+  """ Verplaats een scherm """
+  print(f'Verplaats scherm {device} naar {percentage}%')
 
 
 @app.route('/thuis', methods=['GET'])
@@ -236,6 +241,16 @@ def tokensactiepagina():
 def statuspagina():
   """ Toon de pagina met de status van de schermen """
   return haalstatusentoon()
+
+
+@app.route('/thuis/status', methods=['POST'])
+def statusactiepagina():
+  """ Verwerk het verplaatsen van een scherm """
+  device = request.form['device']
+  percentage = request.form['percentage']
+  if percentage.isnumeric():
+    verplaatsscherm(device, percentage)
+  return redirect('/thuis/status')
 
 
 if __name__ == '__main__':
