@@ -31,7 +31,7 @@
     </form>
     <p>Voor de werking is het nummer van de POD nodig. Die is nog niet bekend.</p>
 </div>
-{% elif not jsessionid %}
+{% elif not jsessionid and (not userid or not password) %}
 <div class="inputform">
     <form action="/thuis/login" method="POST">
         <label for="userid">E-mailadres</label>

@@ -57,37 +57,59 @@ def test_404(client):
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
+                    [{'env': 'userid', 'value': 'email@adres.com', 'id': 23649273}],
+                    [{'env': 'password', 'value': 'password', 'id': 9852364}],
                     [{'env': 'token', 'value': '4321c0de', 'id': 236910029}]
                     ])
 def test_hoofdpaginaget(mock_dbgetbyquery, client):
   response = client.get('/thuis')
   assert b"<h1>Thuis</h1>" in response.data
-  assert mock_dbgetbyquery.call_count == 3
+  assert b"<p>Pod: 1234-4321-5678</p>" in response.data
+  assert mock_dbgetbyquery.call_count == 5
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[],
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
+                    [{'env': 'userid', 'value': 'email@adres.com', 'id': 23649273}],
+                    [{'env': 'password', 'value': 'password', 'id': 9852364}],
                     [{'env': 'token', 'value': '4321c0de', 'id': 236910029}]
                     ])
 def test_hoofdpaginaget_geenpod(mock_dbgetbyquery, client):
   response = client.get('/thuis')
+
   assert b"<h1>Thuis</h1>" in response.data
   assert b"input id=\"pod\" name=\"pod\"" in response.data
-  assert mock_dbgetbyquery.call_count == 3
+  assert mock_dbgetbyquery.call_count == 5
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
                     [],
+                    [{'env': 'userid', 'value': 'email@adres.com', 'id': 23649273}],
+                    [{'env': 'password', 'value': 'password', 'id': 9852364}],
                     [{'env': 'token', 'value': '4321c0de', 'id': 236910029}]
                     ])
 def test_hoofdpaginaget_geenjsessionid(mock_dbgetbyquery, client):
   response = client.get('/thuis')
   assert b"<h1>Thuis</h1>" in response.data
+  assert b"<p>Pod: 1234-4321-5678</p>" in response.data
+  assert mock_dbgetbyquery.call_count == 5
+
+
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
+                    [],
+                    [],
+                    [],
+                    [{'env': 'token', 'value': '4321c0de', 'id': 236910029}]
+                    ])
+def test_hoofdpaginaget_geenjsessionidengeenuserpass(mock_dbgetbyquery, client):
+  response = client.get('/thuis')
+  assert b"<h1>Thuis</h1>" in response.data
   assert b"input id=\"userid\" name=\"userid\"" in response.data
   assert b"input id=\"password\" name=\"password\"" in response.data
-  assert mock_dbgetbyquery.call_count == 3
+  assert mock_dbgetbyquery.call_count == 5
 
 
 @patch('pysondb.db.JsonDatabase.add')
@@ -126,8 +148,8 @@ def test_podpaginapost(mock_dbadd, client):
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
-                    [{'env': 'userid', 'value': 'email@adres.com', 'id': 236910029}],
-                    [{'env': 'password', 'value': 'password', 'id': 236910029}]
+                    [{'env': 'userid', 'value': 'email@adres.com', 'id': 23649273}],
+                    [{'env': 'password', 'value': 'password', 'id': 9852364}]
                     ])
 @patch('thuis.getavailabletokens',
        return_value=[{'label': 'Python token',
@@ -227,6 +249,7 @@ def test_tokenspaginaget_geenpod(mock_getavailabletokens, mock_dbquery, client):
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
+                    [],
                     []
                     ])
 @patch('thuis.getavailabletokens', return_value=[{'data': 'dummytoken'}])
@@ -324,8 +347,8 @@ def test_tokenspaginapost_createtoken(mock_createtoken, mock_gettokens, mock_dbq
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
-                    [{'env': 'schermen', 'value': [{'label': 'label 1', 'device': 'io://1234-4321-5678/13579'},
-                                                   {'label': 'label 2', 'device': 'io://1234-4321-5678/24680'}]}]
+                    [{'env': 'schermen', 'value': [{'label': 'label 1.1', 'device': 'io://1234-4321-5678/13579'},
+                                                   {'label': 'label 2.2', 'device': 'io://1234-4321-5678/24680'}]}]
                     ]
        )
 @patch('thuis.haalgegevensvansomfy',
@@ -336,7 +359,7 @@ def test_statuspagina(mock_somfy, mock_env, client):
   response = client.get('/thuis/status')
 
   assert b"<h1>Status</h1>" in response.data
-  assert b"<td>label 1</td>" in response.data
+  assert b"<td>label 1.1</td>" in response.data
   assert b"<td>0</td>" in response.data
   assert mock_env.call_count == 3
   assert mock_somfy.call_count == 2
@@ -365,30 +388,30 @@ def test_statuspagina_geenpod(mock_somfy, mock_env, client):
                     ]
        )
 @patch('thuis.getschermen',
-       return_value=[{'label': 'label 1', 'device': 'io://1234-4321-5678/13579'},
-                     {'label': 'label 2', 'device': 'io://1234-4321-5678/24680'}]
+       return_value=[{'label': 'label 1.2', 'device': 'io://1234-4321-5678/13579'},
+                     {'label': 'label 2.2', 'device': 'io://1234-4321-5678/24680'}]
        )
 @patch('thuis.haalgegevensvansomfy',
        side_effect=[{'value': '0'},
                     {'value': '50'}
                     ]
        )
-def test_statuspagina_geenschermchache(mock_somfy, mock_schermen, mock_env, client):
+def test_statuspagina_geenschermcache(mock_somfy, mock_schermen, mock_envquery, client):
   response = client.get('/thuis/status')
 
   assert b"<h1>Status</h1>" in response.data
-  assert b"<td>label 1</td>" in response.data
+  assert b"<td>label 1.2</td>" in response.data
   assert b"<td>0</td>" in response.data
-  assert mock_env.call_count == 3
-  assert mock_somfy.call_count == 2
+  assert mock_envquery.call_count == 3
   assert mock_schermen.call_count == 1
+  assert mock_somfy.call_count == 2
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
-                    [{'env': 'schermen', 'value': [{'label': 'label 1', 'device': 'io://1234-4321-5678/13579'},
-                                                   {'label': 'label 2', 'device': 'io://1234-4321-5678/24680'}]}]
+                    [{'env': 'schermen', 'value': [{'label': 'label 1.3', 'device': 'io://1234-4321-5678/13579'},
+                                                   {'label': 'label 2.3', 'device': 'io://1234-4321-5678/24680'}]}]
                     ])
 @patch('thuis.haalgegevensvansomfy',
        return_value={'error': 'dummy'})

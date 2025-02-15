@@ -186,9 +186,15 @@ def thuispagina():
   """ Toon de hoofdpagina """
   pod = leesenv('pod')
   jsessionid = leesenv('jsessionid')
+  userid = leesenv('userid')
+  password = leesenv('password')
   token = leesenv('token')
   return render_template('hoofdpagina.html',
-                         pod=pod, jsessionid=jsessionid, token=token)
+                         pod=pod,
+                         jsessionid=jsessionid,
+                         userid=userid,
+                         password=password,
+                         token=token)
 
 
 @app.route('/thuis/login', methods=['POST'])
