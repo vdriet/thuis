@@ -319,14 +319,13 @@ def test_tokenspaginapost_createtoken(mock_createtoken, mock_gettokens, mock_dbq
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
-                    [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}]
-                    ])
+                    [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
+                    [{'env': 'schermen', 'value': [{'label': 'label 1', 'device': 'io://1234-4321-5678/13579'},
+                                                   {'label': 'label 2', 'device': 'io://1234-4321-5678/24680'}]}]
+                    ]
+       )
 @patch('thuis.haalgegevensvansomfy',
-       side_effect=[['io://1234-4321-5678/13579',
-                     'io://1234-4321-5678/24680'],
-                    {'url': 'io://1234-4321-5678/13579', 'label': 'label 1'},
-                    {'value': '0'},
-                    {'url': 'io://1234-4321-5678/24680', 'label': 'label 2'},
+       side_effect=[{'value': '0'},
                     {'value': '50'}
                     ])
 def test_statuspagina(mock_somfy, mock_env, client):
@@ -335,8 +334,8 @@ def test_statuspagina(mock_somfy, mock_env, client):
   assert b"<h1>Status</h1>" in response.data
   assert b"<td>label 1</td>" in response.data
   assert b"<td>0</td>" in response.data
-  assert mock_env.call_count == 2
-  assert mock_somfy.call_count == 5
+  assert mock_env.call_count == 3
+  assert mock_somfy.call_count == 2
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
@@ -357,7 +356,35 @@ def test_statuspagina_geenpod(mock_somfy, mock_env, client):
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
-                    [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}]
+                    [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
+                    []
+                    ]
+       )
+@patch('thuis.getschermen',
+       return_value=[{'label': 'label 1', 'device': 'io://1234-4321-5678/13579'},
+                     {'label': 'label 2', 'device': 'io://1234-4321-5678/24680'}]
+       )
+@patch('thuis.haalgegevensvansomfy',
+       side_effect=[{'value': '0'},
+                    {'value': '50'}
+                    ]
+       )
+def test_statuspagina_geenschermchache(mock_somfy, mock_schermen, mock_env, client):
+  response = client.get('/thuis/status')
+
+  assert b"<h1>Status</h1>" in response.data
+  assert b"<td>label 1</td>" in response.data
+  assert b"<td>0</td>" in response.data
+  assert mock_env.call_count == 3
+  assert mock_somfy.call_count == 2
+  assert mock_schermen.call_count == 1
+
+
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
+                    [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
+                    [{'env': 'schermen', 'value': [{'label': 'label 1', 'device': 'io://1234-4321-5678/13579'},
+                                                   {'label': 'label 2', 'device': 'io://1234-4321-5678/24680'}]}]
                     ])
 @patch('thuis.haalgegevensvansomfy',
        return_value={'error': 'dummy'})
@@ -367,5 +394,5 @@ def test_statuspagina_error(mock_somfy, mock_env, client):
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis" in response.data
-  assert mock_env.call_count == 2
+  assert mock_env.call_count == 3
   assert mock_somfy.call_count == 1

@@ -38,6 +38,20 @@ class MyTestCaseSomfy(unittest.TestCase):
     self.assertEqual(response, ANY)
     mock_get.assert_called_once()
 
+  @mock.patch('thuis.haalgegevensvansomfy',
+              side_effect=[['io://1234-4321-5678/13579', 'io://1234-4321-5678/24680'],
+                           {'label': 'label 1'},
+                           {'label': 'label 2'}
+                           ]
+              )
+  def test_getschermen(self, mock_somfy):
+    import thuis
+    reponse = thuis.getschermen('pod', 'token')
+    expected = [{'label': 'label 1', 'device': 'io://1234-4321-5678/13579'},
+                {'label': 'label 2', 'device': 'io://1234-4321-5678/24680'}]
+    self.assertEqual(reponse, expected)
+    self.assertEqual(mock_somfy.call_count, 3)
+
 
 if __name__ == '__main__':
   unittest.main()

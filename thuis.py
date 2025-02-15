@@ -135,6 +135,20 @@ def stuurgegevensnaarsomfy(token, pod, path, data):
     return response.json()
 
 
+def getschermen(pod, token):
+  """ Ophalen van de schermen en in de db zetten """
+  schermlijst = []
+  path = f'setup/devices/controllables/{quote_plus("io:VerticalExteriorAwningIOComponent")}'
+  schermurls = haalgegevensvansomfy(token, pod, path)
+  if not (isinstance(schermurls, dict) and not schermurls.get('error', None) is None):
+    for schermurl in schermurls:
+      scherurlencoded = quote_plus(schermurl)
+      device = haalgegevensvansomfy(token, pod, f'setup/devices/{scherurlencoded}')
+      schermlijst.append({'label': device['label'], 'device': schermurl})
+  envdb.add({'env': 'schermen', 'value': schermlijst})
+  return schermlijst
+
+
 def haalstatusentoon():
   """ Haal de status van de schermen toon deze
       Wanneer er gegevens missen, redirect naar hoofdpagina
@@ -143,20 +157,19 @@ def haalstatusentoon():
   token = leesenv('token')
   if not pod or not token:
     return redirect('/thuis')
-  path = f'setup/devices/controllables/{quote_plus("io:VerticalExteriorAwningIOComponent")}'
-  schermurls = haalgegevensvansomfy(token, pod, path)
-  if isinstance(schermurls, dict) and not schermurls.get('error', None) is None:
-    return redirect('/thuis')
+  envschermen = leesenv('schermen')
+  if not envschermen:
+    envschermen = getschermen(pod, token)
   schermen = []
-  for schermurl in schermurls:
-    scherurlencoded = quote_plus(schermurl)
-    device = haalgegevensvansomfy(token, pod, f'setup/devices/{scherurlencoded}')
-    print(device)
-    label = device['label']
+  for scherm in envschermen:
     percopenstate = quote_plus("core:DeploymentState")
+    scherurlencoded = quote_plus(scherm['device'])
+    label = scherm['label']
     schermstate = haalgegevensvansomfy(token,
                                        pod,
                                        f'setup/devices/{scherurlencoded}/states/{percopenstate}')
+    if isinstance(schermstate, dict) and not schermstate.get('error', None) is None:
+      return redirect('/thuis')
     schermen.append({'label': label,
                      'percentage': schermstate['value']
                      })
