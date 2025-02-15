@@ -33,6 +33,10 @@ def app():
   def thuistokensactiepagina():
     return thuis.tokensactiepagina()
 
+  @app.route('/thuis/status', methods=['GET'])
+  def thuisstatuspagina():
+    return thuis.statuspagina()
+
   yield app
 
 
@@ -311,3 +315,57 @@ def test_tokenspaginapost_createtoken(mock_createtoken, mock_gettokens, mock_dbq
   assert mock_gettokens.call_count == 1
   assert mock_dbquery.call_count == 2
   assert mock_createtoken.call_count == 1
+
+
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
+                    [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}]
+                    ])
+@patch('thuis.haalgegevensvansomfy',
+       side_effect=[['io://1234-4321-5678/13579',
+                     'io://1234-4321-5678/24680'],
+                    {'url': 'io://1234-4321-5678/13579', 'label': 'label 1'},
+                    {'value': '0'},
+                    {'url': 'io://1234-4321-5678/24680', 'label': 'label 2'},
+                    {'value': '50'}
+                    ])
+def test_statuspagina(mock_somfy, mock_env, client):
+  response = client.get('/thuis/status')
+
+  assert b"<h1>Status</h1>" in response.data
+  assert b"<td>label 1</td>" in response.data
+  assert b"<td>0</td>" in response.data
+  assert mock_env.call_count == 2
+  assert mock_somfy.call_count == 5
+
+
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[],
+                    [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}]
+                    ])
+@patch('thuis.haalgegevensvansomfy',
+       return_value={'error': 'dummy'})
+def test_statuspagina_geenpod(mock_somfy, mock_env, client):
+  response = client.get('/thuis/status')
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis" in response.data
+  assert mock_env.call_count == 2
+  assert mock_somfy.call_count == 0
+
+
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
+                    [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}]
+                    ])
+@patch('thuis.haalgegevensvansomfy',
+       return_value={'error': 'dummy'})
+def test_statuspagina_error(mock_somfy, mock_env, client):
+  response = client.get('/thuis/status')
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis" in response.data
+  assert mock_env.call_count == 2
+  assert mock_somfy.call_count == 1

@@ -151,6 +151,7 @@ def haalstatusentoon():
   for schermurl in schermurls:
     scherurlencoded = quote_plus(schermurl)
     device = haalgegevensvansomfy(token, pod, f'setup/devices/{scherurlencoded}')
+    print(device)
     label = device['label']
     percopenstate = quote_plus("core:DeploymentState")
     schermstate = haalgegevensvansomfy(token,
