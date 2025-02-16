@@ -11,6 +11,10 @@
             text-align: center;
         }
 
+        form {
+            text-align: center;
+        }
+
         table, th, td {
             margin-left: auto;
             margin-right: auto;
@@ -40,6 +44,7 @@
         <td>{{scherm['percentage']}}</td>
         <td>
             <form action="/thuis/status" method="POST">
+                <input name="actie" type="hidden" value="zetscherm">
                 <input name="device" type="hidden" value="{{scherm['device']}}">
                 <label for="percentage"></label>
                 <input id="percentage" name="percentage" type="text" size="3" maxlength="3">
@@ -49,6 +54,14 @@
     </tr>
     {% endfor %}
 </table>
+<form action="/thuis/status" method="POST">
+    <input name="actie" type="hidden" value="sluitalles">
+    <input type="submit" value="Sluit alles">
+</form>
+<form action="/thuis/status" method="POST">
+    <input name="actie" type="hidden" value="openalles">
+    <input type="submit" value="Open alles">
+</form>
 <p><a href="/thuis">Terug</a></p>
 </body>
 </html>

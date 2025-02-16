@@ -65,6 +65,40 @@ class MyTestCaseSomfy(unittest.TestCase):
     self.assertEqual(mock_getenv.call_count, 2)
     self.assertEqual(mock_requestspost.call_count, 1)
 
+  @mock.patch('pysondb.db.JsonDatabase.getByQuery',
+              side_effect=[[{'env': 'schermen', 'value': [{'label': 'label 1.1', 'device': 'io://1234-4321-5678/13579'},
+                                                          {'label': 'label 2.2',
+                                                           'device': 'io://1234-4321-5678/24680'}]}],
+                           [{'env': 'token', 'value': 'token', 'id': 286349129001}],
+                           [{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
+                           [{'env': 'token', 'value': 'token', 'id': 286349129001}],
+                           [{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}]
+                           ]
+              )
+  @mock.patch('thuis.stuurgegevensnaarsomfy')
+  def test_sluitalles(self, mock_somfy, mock_query):
+    import thuis
+    thuis.sluitalles()
+    self.assertEqual(mock_somfy.call_count, 2)
+    self.assertEqual(mock_query.call_count, 5)
+
+  @mock.patch('pysondb.db.JsonDatabase.getByQuery',
+              side_effect=[[{'env': 'schermen', 'value': [{'label': 'label 1.1', 'device': 'io://1234-4321-5678/13579'},
+                                                          {'label': 'label 2.2',
+                                                           'device': 'io://1234-4321-5678/24680'}]}],
+                           [{'env': 'token', 'value': 'token', 'id': 286349129001}],
+                           [{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
+                           [{'env': 'token', 'value': 'token', 'id': 286349129001}],
+                           [{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}]
+                           ]
+              )
+  @mock.patch('thuis.stuurgegevensnaarsomfy')
+  def test_openalles(self, mock_somfy, mock_query):
+    import thuis
+    thuis.openalles()
+    self.assertEqual(mock_somfy.call_count, 2)
+    self.assertEqual(mock_query.call_count, 5)
+
 
 if __name__ == '__main__':
   unittest.main()

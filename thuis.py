@@ -188,7 +188,7 @@ def verplaatsscherm(device, percentage):
         "commands": [
           {
             "name": "setClosure",
-            "parameters": [ percentage ]
+            "parameters": [percentage]
           }
         ],
         "deviceURL": device
@@ -196,6 +196,23 @@ def verplaatsscherm(device, percentage):
     ]
   })
   stuurgegevensnaarsomfy(token=token, pod=pod, path='exec/apply', data=data)
+
+
+def verplaatsalleschermen(percentage):
+  """ Verplaats alle schermen naar zelfde percentage """
+  devices = leesenv('devices')
+  for device in devices:
+    verplaatsscherm(device, percentage)
+
+
+def sluitalles():
+  """ Sluiten van alle schermen """
+  verplaatsalleschermen(100)
+
+
+def openalles():
+  """ Openen van alle schermen """
+  verplaatsalleschermen(0)
 
 
 @app.route('/thuis', methods=['GET'])
@@ -268,11 +285,17 @@ def statuspagina():
 
 @app.route('/thuis/status', methods=['POST'])
 def statusactiepagina():
-  """ Verwerk het verplaatsen van een scherm """
-  device = request.form['device']
-  percentage = request.form['percentage']
-  if percentage.isnumeric():
-    verplaatsscherm(device, percentage)
+  """ Verwerk het verplaatsen van een of meer schermen """
+  actie = request.form['actie']
+  if actie == 'zetscherm':
+    device = request.form['device']
+    percentage = request.form['percentage']
+    if percentage.isnumeric():
+      verplaatsscherm(device, percentage)
+  elif actie == 'sluitalles':
+    sluitalles()
+  elif actie == 'openalles':
+    openalles()
   return redirect('/thuis/status')
 
 

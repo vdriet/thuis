@@ -427,7 +427,7 @@ def test_statuspagina_error(mock_somfy, mock_env, client):
 
 @patch('thuis.verplaatsscherm')
 def test_statuspaginapost(mock_verplaats, client):
-  data = {'device': 'dummyid', 'percentage': '20'}
+  data = {'actie': 'zetscherm', 'device': 'dummyid', 'percentage': '20'}
   response = client.post('/thuis/status', data=data)
 
   assert response.status_code == 302
@@ -438,10 +438,36 @@ def test_statuspaginapost(mock_verplaats, client):
 
 @patch('thuis.verplaatsscherm')
 def test_statuspaginapost_geengetal(mock_verplaats, client):
-  data = {'device': 'dummyid', 'percentage': 'abc'}
+  data = {'actie': 'zetscherm', 'device': 'dummyid', 'percentage': 'abc'}
   response = client.post('/thuis/status', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis/status" in response.data
   assert mock_verplaats.call_count == 0
+
+
+@patch('thuis.sluitalles')
+@patch('thuis.openalles')
+def test_statuspaginapost_sluitalles(mock_openalles, mock_sluitalles, client):
+  data = {'actie': 'sluitalles', 'device': 'dummyid', 'percentage': 'abc'}
+  response = client.post('/thuis/status', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis/status" in response.data
+  assert mock_openalles.call_count == 0
+  assert mock_sluitalles.call_count == 1
+
+
+@patch('thuis.sluitalles')
+@patch('thuis.openalles')
+def test_statuspaginapost_openalles(mock_openalles, mock_sluitalles, client):
+  data = {'actie': 'openalles', 'device': 'dummyid', 'percentage': 'abc'}
+  response = client.post('/thuis/status', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis/status" in response.data
+  assert mock_openalles.call_count == 1
+  assert mock_sluitalles.call_count == 0
