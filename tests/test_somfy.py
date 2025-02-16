@@ -54,6 +54,17 @@ class MyTestCaseSomfy(unittest.TestCase):
     self.assertEqual(mock_somfy.call_count, 3)
     self.assertEqual(mock_dbadd.call_count, 1)
 
+  @mock.patch('pysondb.db.JsonDatabase.getByQuery',
+              side_effect=[[{'env': 'token', 'value': '4321c0de', 'id': 236910029}],
+                           [{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}]
+                           ])
+  @mock.patch('requests.post')
+  def test_verplaatsscherm(self, mock_requestspost, mock_getenv):
+    import thuis
+    thuis.verplaatsscherm('device', '20')
+    self.assertEqual(mock_getenv.call_count, 2)
+    self.assertEqual(mock_requestspost.call_count, 1)
+
 
 if __name__ == '__main__':
   unittest.main()

@@ -1,4 +1,5 @@
-""" Besturing van appartuur thuis """
+""" Besturing van apparatuur thuis """
+import json
 from datetime import datetime
 from time import sleep
 from urllib.parse import quote_plus
@@ -178,7 +179,23 @@ def haalstatusentoon():
 
 def verplaatsscherm(device, percentage):
   """ Verplaats een scherm """
-  print(f'Verplaats scherm {device} naar {percentage}%')
+  token = leesenv('token')
+  pod = leesenv('pod')
+  data = json.dumps({
+    "label": "verplaats scherm",
+    "actions": [
+      {
+        "commands": [
+          {
+            "name": "setClosure",
+            "parameters": [ percentage ]
+          }
+        ],
+        "deviceURL": device
+      }
+    ]
+  })
+  stuurgegevensnaarsomfy(token=token, pod=pod, path='exec/apply', data=data)
 
 
 @app.route('/thuis', methods=['GET'])
