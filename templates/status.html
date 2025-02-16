@@ -50,6 +50,18 @@
                 <input id="percentage" name="percentage" type="text" size="3" maxlength="3">
                 <input type="submit" value="Verplaats">
             </form>
+            <form action="/thuis/status" method="POST">
+                <input name="actie" type="hidden" value="zetscherm">
+                <input name="device" type="hidden" value="{{scherm['device']}}">
+                <input id="percentageopen" name="percentage" type="hidden" value="0">
+                <input type="submit" value="Open">
+            </form>
+            <form action="/thuis/status" method="POST">
+                <input name="actie" type="hidden" value="zetscherm">
+                <input name="device" type="hidden" value="{{scherm['device']}}">
+                <input id="percentagesluit" name="percentage" type="hidden" value="100">
+                <input type="submit" value="Sluit">
+            </form>
         </td>
     </tr>
     {% endfor %}
