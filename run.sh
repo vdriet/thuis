@@ -1,1 +1,1 @@
-docker run -p 8088:8088 thuis
+docker run --publish 8088:8088 --label thuis thuis
