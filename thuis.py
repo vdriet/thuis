@@ -22,6 +22,13 @@ def leesenv(env: str):
   return rows[0].get('value', '')
 
 
+def deleteenv(env: str):
+  """ Verwijder een gegeven uit de envdb """
+  rows = envdb.getByQuery({'env': env})
+  for row in rows:
+    envdb.deleteById(row.get('id'))
+
+
 def somfylogin(userid, password):
   """ Inloggen bij somfy voor ophalen key """
   url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/login'
@@ -53,9 +60,7 @@ def createtoken(label):
   with requests.get(url=url, headers=headers, timeout=10) as response:
     contentjson = response.json()
     rettoken = contentjson['token']
-    rows = envdb.getByQuery({'env': 'token'})
-    for row in rows:
-      envdb.deleteById(row.get('id'))
+    deleteenv('token')
     envdb.add({'env': 'token', 'value': rettoken})
     activatetoken(jsessionid, pod, label, rettoken)
     return 200
@@ -92,8 +97,7 @@ def haaltokensentoon():
     return redirect('/thuis')
   servertokens = getavailabletokens(jsessionid, pod)
   if isinstance(servertokens, dict) and not servertokens.get('error', None) is None:
-    row = envdb.getByQuery({'env': 'jsessionid'})
-    envdb.deleteById(row[0].get('id'))
+    deleteenv('jsessionid')
     userid = leesenv('userid')
     password = leesenv('password')
     if not userid or not password:
@@ -215,6 +219,11 @@ def openalles():
   verplaatsalleschermen(0)
 
 
+def verversschermen():
+  """ Verplaats alle schermen """
+  deleteenv('schermen')
+
+
 @app.route('/thuis', methods=['GET'])
 def thuispagina():
   """ Toon de hoofdpagina """
@@ -296,6 +305,8 @@ def statusactiepagina():
     sluitalles()
   elif actie == 'openalles':
     openalles()
+  elif actie == 'ververs':
+    verversschermen()
   return redirect('/thuis/status')
 
 

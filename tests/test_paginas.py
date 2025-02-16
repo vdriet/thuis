@@ -471,3 +471,14 @@ def test_statuspaginapost_openalles(mock_openalles, mock_sluitalles, client):
   assert b"/thuis/status" in response.data
   assert mock_openalles.call_count == 1
   assert mock_sluitalles.call_count == 0
+
+
+@patch('thuis.verversschermen')
+def test_statuspaginapost_ververs(mock_ververs, client):
+  data = {'actie': 'ververs', 'device': 'dummyid', 'percentage': 'abc'}
+  response = client.post('/thuis/status', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis/status" in response.data
+  assert mock_ververs.call_count == 1

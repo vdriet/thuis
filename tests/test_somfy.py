@@ -99,6 +99,16 @@ class MyTestCaseSomfy(unittest.TestCase):
     self.assertEqual(mock_somfy.call_count, 2)
     self.assertEqual(mock_query.call_count, 5)
 
+  @mock.patch('pysondb.db.JsonDatabase.getByQuery',
+              return_value=[{'env': 'schermen', 'value': [], 'id': 2349126349}])
+  @mock.patch('pysondb.db.JsonDatabase.deleteById')
+  def test_verversschermen(self, mock_delete, mock_query):
+    import thuis
+    thuis.verversschermen()
+
+    self.assertEqual(mock_delete.call_count, 1)
+    self.assertEqual(mock_query.call_count, 1)
+
 
 if __name__ == '__main__':
   unittest.main()
