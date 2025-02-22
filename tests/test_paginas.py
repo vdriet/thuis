@@ -5,6 +5,10 @@ from flask import Flask
 
 import thuis
 
+@pytest.fixture
+def mock_env_weerapikey(monkeypatch):
+  monkeypatch.setenv("WEER_API_KEY", "dummykey")
+
 
 @pytest.fixture()
 def app():
@@ -355,14 +359,17 @@ def test_tokenspaginapost_createtoken(mock_createtoken, mock_gettokens, mock_dbq
        side_effect=[{'value': '0'},
                     {'value': '50'}
                     ])
-def test_statuspagina(mock_somfy, mock_env, client):
+@patch('thuis.haalwindsnelheid', return_value=2)
+def test_statuspagina(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, client):
   response = client.get('/thuis/status')
 
   assert b"<h1>Status</h1>" in response.data
   assert b"<td>label 1.1</td>" in response.data
   assert b"<td>0</td>" in response.data
+  assert b"<p>Windsnelheid 2 bft</p>" in response.data
   assert mock_env.call_count == 3
   assert mock_somfy.call_count == 2
+  assert mock_wind.call_count == 2
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
@@ -371,7 +378,8 @@ def test_statuspagina(mock_somfy, mock_env, client):
                     ])
 @patch('thuis.haalgegevensvansomfy',
        return_value={'error': 'dummy'})
-def test_statuspagina_geenpod(mock_somfy, mock_env, client):
+@patch('thuis.haalwindsnelheid', return_value=2)
+def test_statuspagina_geenpod(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, client):
   response = client.get('/thuis/status')
 
   assert response.status_code == 302
@@ -379,6 +387,7 @@ def test_statuspagina_geenpod(mock_somfy, mock_env, client):
   assert b"/thuis" in response.data
   assert mock_env.call_count == 2
   assert mock_somfy.call_count == 0
+  assert mock_wind.call_count == 0
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
@@ -396,7 +405,8 @@ def test_statuspagina_geenpod(mock_somfy, mock_env, client):
                     {'value': '50'}
                     ]
        )
-def test_statuspagina_geenschermcache(mock_somfy, mock_schermen, mock_envquery, client):
+@patch('thuis.haalwindsnelheid', return_value=2)
+def test_statuspagina_geenschermcache(mock_wind, mock_somfy, mock_schermen, mock_envquery, mock_env_weerapikey, client):
   response = client.get('/thuis/status')
 
   assert b"<h1>Status</h1>" in response.data
@@ -405,6 +415,7 @@ def test_statuspagina_geenschermcache(mock_somfy, mock_schermen, mock_envquery, 
   assert mock_envquery.call_count == 3
   assert mock_schermen.call_count == 1
   assert mock_somfy.call_count == 2
+  assert mock_wind.call_count == 2
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
@@ -415,7 +426,8 @@ def test_statuspagina_geenschermcache(mock_somfy, mock_schermen, mock_envquery, 
                     ])
 @patch('thuis.haalgegevensvansomfy',
        return_value={'error': 'dummy'})
-def test_statuspagina_error(mock_somfy, mock_env, client):
+@patch('thuis.haalwindsnelheid', return_value=2)
+def test_statuspagina_error(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, client):
   response = client.get('/thuis/status')
 
   assert response.status_code == 302
@@ -423,6 +435,7 @@ def test_statuspagina_error(mock_somfy, mock_env, client):
   assert b"/thuis" in response.data
   assert mock_env.call_count == 3
   assert mock_somfy.call_count == 1
+  assert mock_wind.call_count == 0
 
 
 @patch('thuis.verplaatsscherm')

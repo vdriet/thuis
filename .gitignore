@@ -4,3 +4,4 @@ thuis_venv/
 .venv/
 .idea/
 envdb.json*
+env.list

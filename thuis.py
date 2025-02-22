@@ -1,17 +1,20 @@
 """ Besturing van apparatuur thuis """
 import json
+import os
 from datetime import datetime
 from time import sleep
 from urllib.parse import quote_plus
 
 import requests
 import waitress
+from cachetools import cached, TTLCache
 from flask import Flask, render_template, request, redirect
 from pysondb import db
 
 app = Flask(__name__)
 envdb = db.getDb('envdb.json')
 BASEURL = 'ha101-1.overkiz.com'
+weercache = TTLCache(maxsize=1, ttl=900)
 
 
 def leesenv(env: str):
@@ -178,7 +181,8 @@ def haalstatusentoon():
                      'device': scherm['device'],
                      'percentage': schermstate['value']
                      })
-  return render_template('status.html', schermen=schermen)
+    windbft = haalwindsnelheid()
+  return render_template('status.html', schermen=schermen, windbft=windbft)
 
 
 def verplaatsscherm(device, percentage):
@@ -222,6 +226,21 @@ def openalles():
 def verversschermen():
   """ Verplaats alle schermen """
   deleteenv('schermen')
+
+
+@cached(weercache)
+def haalwindsnelheid():  # pragma: no cover
+  """ Haal de informatie van het weer van Hattem op """
+  weerapikey = os.environ['WEER_API_KEY']
+  url = f'https://weerlive.nl/api/weerlive_api_v2.php?key={weerapikey}&locatie=Hattem'
+  with requests.get(url=url,
+                    timeout=5) as response:
+    weerinfo = response.json()
+  if weerinfo is None or \
+      weerinfo.get('liveweer', None) is None or \
+      weerinfo.get('liveweer')[0].get('fout') is not None:
+    return 0
+  return int(weerinfo['liveweer'][0]['windbft'])
 
 
 @app.route('/thuis', methods=['GET'])
