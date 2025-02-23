@@ -228,7 +228,7 @@ def verversschermen():
   deleteenv('schermen')
 
 
-@cached(weercache)
+@cached(cache=weercache)
 def haalwindsnelheid():  # pragma: no cover
   """ Haal de informatie van het weer van Hattem op """
   weerapikey = os.environ['WEER_API_KEY']
@@ -238,7 +238,7 @@ def haalwindsnelheid():  # pragma: no cover
     weerinfo = response.json()
   if weerinfo is None or \
       weerinfo.get('liveweer', None) is None or \
-      weerinfo.get('liveweer')[0].get('fout') is not None:
+      weerinfo.get('liveweer')[0].get('fout', None) is not None:
     return 0
   return int(weerinfo['liveweer'][0]['windbft'])
 
