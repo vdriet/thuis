@@ -5,6 +5,7 @@ from flask import Flask
 
 import thuis
 
+
 @pytest.fixture
 def mock_env_weerapikey(monkeypatch):
   monkeypatch.setenv("WEER_API_KEY", "dummykey")
@@ -51,6 +52,13 @@ def app():
 @pytest.fixture()
 def client(app):
   return app.test_client()
+
+
+@patch('waitress.serve')
+def test_start(mock_server, client):
+  thuis.startwebserver()
+
+  assert mock_server.call_count == 1
 
 
 def test_404(client):

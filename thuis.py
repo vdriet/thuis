@@ -249,7 +249,11 @@ def haalwindsnelheid():  # pragma: no cover
 def checkwindsnelheid():
   """ Check de windsnelheid """
   windbft = haalwindsnelheid()
-  print(f'Windsnelheid: {windbft}')
+  if windbft > 3:
+    bericht = f'Windsnelheid: {windbft}'
+    requests.post(url="https://ntfy.sh/vanderiethattemmonitoring",
+                  timeout=5,
+                  data=bericht)
 
 
 @app.route('/thuis', methods=['GET'])
