@@ -17,6 +17,7 @@ app = Flask(__name__)
 envdb = db.getDb('envdb.json')
 BASEURL = 'ha101-1.overkiz.com'
 weercache = TTLCache(maxsize=1, ttl=900)
+monitoringcache = TTLCache(maxsize=1, ttl=86400)
 
 
 def leesenv(env: str):
@@ -246,14 +247,22 @@ def haalwindsnelheid():  # pragma: no cover
   return int(weerinfo['liveweer'][0]['windbft'])
 
 
+@cached(cache=monitoringcache)
+def verstuurberichtmonitoring(bericht):
+  """
+    Verstuur bericht naar de monitoring,
+    maar niet vaker dan 1x per dag
+  """
+  requests.post(url="https://ntfy.sh/vanderiethattemmonitoring",
+                timeout=5,
+                data=bericht)
+
+
 def checkwindsnelheid():
   """ Check de windsnelheid """
   windbft = haalwindsnelheid()
   if windbft > 3:
-    bericht = f'Windsnelheid: {windbft}'
-    requests.post(url="https://ntfy.sh/vanderiethattemmonitoring",
-                  timeout=5,
-                  data=bericht)
+    verstuurberichtmonitoring(f'Windsnelheid: {windbft}')
 
 
 @app.route('/thuis', methods=['GET'])
