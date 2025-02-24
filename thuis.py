@@ -1,4 +1,5 @@
 """ Besturing van apparatuur thuis """
+import _thread
 import json
 import os
 from datetime import datetime
@@ -6,6 +7,7 @@ from time import sleep
 from urllib.parse import quote_plus
 
 import requests
+import schedule
 import waitress
 from cachetools import cached, TTLCache
 from flask import Flask, render_template, request, redirect
@@ -21,8 +23,8 @@ def leesenv(env: str):
   """ Lees een gegeven uit de envdb """
   rows = envdb.getByQuery({'env': env})
   if len(rows) != 1:
-    return ''
-  return rows[0].get('value', '')
+    return None
+  return rows[0].get('value')
 
 
 def deleteenv(env: str):
@@ -171,17 +173,17 @@ def haalstatusentoon():
   schermen = []
   percopenstate = quote_plus("core:DeploymentState")
   for scherm in envschermen:
-    scherurlencoded = quote_plus(scherm['device'])
+    schermurlencoded = quote_plus(scherm['device'])
     schermstate = haalgegevensvansomfy(token,
                                        pod,
-                                       f'setup/devices/{scherurlencoded}/states/{percopenstate}')
+                                       f'setup/devices/{schermurlencoded}/states/{percopenstate}')
     if isinstance(schermstate, dict) and not schermstate.get('error', None) is None:
       return redirect('/thuis')
     schermen.append({'label': scherm['label'],
                      'device': scherm['device'],
                      'percentage': schermstate['value']
                      })
-    windbft = haalwindsnelheid()
+  windbft = haalwindsnelheid()
   return render_template('status.html', schermen=schermen, windbft=windbft)
 
 
@@ -208,9 +210,10 @@ def verplaatsscherm(device, percentage):
 
 def verplaatsalleschermen(percentage):
   """ Verplaats alle schermen naar zelfde percentage """
-  devices = leesenv('devices')
-  for device in devices:
-    verplaatsscherm(device, percentage)
+  schermen = leesenv('schermen')
+  for scherm in schermen:
+    deviceid = scherm.get('device')
+    verplaatsscherm(deviceid, percentage)
 
 
 def sluitalles():
@@ -241,6 +244,12 @@ def haalwindsnelheid():  # pragma: no cover
       weerinfo.get('liveweer')[0].get('fout', None) is not None:
     return 0
   return int(weerinfo['liveweer'][0]['windbft'])
+
+
+def checkwindsnelheid():
+  """ Check de windsnelheid """
+  windbft = haalwindsnelheid()
+  print(f'Windsnelheid: {windbft}')
 
 
 @app.route('/thuis', methods=['GET'])
@@ -329,5 +338,20 @@ def statusactiepagina():
   return redirect('/thuis/status')
 
 
-if __name__ == '__main__':
+def startwebserver():
+  """ Start webserver """
   waitress.serve(app, host="0.0.0.0", port=8088)
+
+
+if __name__ == '__main__':
+  # Start webserver
+  _thread.start_new_thread(startwebserver, ())
+
+  checkwindsnelheid()
+  # Elke kwartier check windsnelheid
+  schedule.every(15).minutes.do(checkwindsnelheid)
+  while True:
+    waittime = schedule.idle_seconds()
+    print(f'wacht {waittime} seconden')
+    sleep(waittime)
+    schedule.run_pending()

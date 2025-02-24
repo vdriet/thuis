@@ -24,8 +24,11 @@ pluggy==1.5.0
 pylint==3.3.4
 pysondb==1.6.7
 pytest==8.3.4
+python-dateutil==2.9.0.post0
 requests==2.32.3
+schedule==1.2.2
 setuptools==75.8.0
+six==1.17.0
 tomlkit==0.13.2
 urllib3==2.3.0
 waitress==3.0.2

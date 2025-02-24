@@ -369,7 +369,7 @@ def test_statuspagina(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, clie
   assert b"<p>Windsnelheid 2 bft</p>" in response.data
   assert mock_env.call_count == 3
   assert mock_somfy.call_count == 2
-  assert mock_wind.call_count == 2
+  assert mock_wind.call_count == 1
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
@@ -415,7 +415,7 @@ def test_statuspagina_geenschermcache(mock_wind, mock_somfy, mock_schermen, mock
   assert mock_envquery.call_count == 3
   assert mock_schermen.call_count == 1
   assert mock_somfy.call_count == 2
-  assert mock_wind.call_count == 2
+  assert mock_wind.call_count == 1
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
