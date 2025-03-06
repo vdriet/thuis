@@ -261,7 +261,7 @@ def verstuurberichtmonitoring(bericht):
 def checkwindsnelheid():
   """ Check de windsnelheid """
   windbft = haalwindsnelheid()
-  if windbft > 3:
+  if windbft > 1:
     verstuurberichtmonitoring(f'Windsnelheid: {windbft}')
 
 
