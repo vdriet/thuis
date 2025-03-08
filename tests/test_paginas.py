@@ -372,8 +372,8 @@ def test_statuspagina(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, clie
   response = client.get('/thuis/status')
 
   assert b"<h1>Status</h1>" in response.data
-  assert b"<td>label 1.1</td>" in response.data
-  assert b"<td>0</td>" in response.data
+  assert b">label 1.1<" in response.data
+  assert b">0<" in response.data
   assert b">Windsnelheid 2 bft<" in response.data
   assert mock_env.call_count == 3
   assert mock_somfy.call_count == 2
@@ -418,8 +418,8 @@ def test_statuspagina_geenschermcache(mock_wind, mock_somfy, mock_schermen, mock
   response = client.get('/thuis/status')
 
   assert b"<h1>Status</h1>" in response.data
-  assert b"<td>label 1.2</td>" in response.data
-  assert b"<td>0</td>" in response.data
+  assert b">label 1.2<" in response.data
+  assert b">0<" in response.data
   assert mock_envquery.call_count == 3
   assert mock_schermen.call_count == 1
   assert mock_somfy.call_count == 2
