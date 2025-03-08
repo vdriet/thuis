@@ -13,7 +13,9 @@ from cachetools import cached, TTLCache
 from flask import Flask, render_template, request, redirect
 from pysondb import db
 
-app = Flask(__name__)
+app = Flask(__name__,
+            static_url_path='/static',
+            template_folder='templates')
 envdb = db.getDb('envdb.json')
 BASEURL = 'ha101-1.overkiz.com'
 weercache = TTLCache(maxsize=1, ttl=900)
