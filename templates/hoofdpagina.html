@@ -1,58 +1,65 @@
-<html lang="nl">
+<!DOCTYPE html>
+<html lang="nl"
+      xmlns="http://www.w3.org/1999/xhtml">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/static/w3.css">
 <head>
+    <meta charset="UTF-8">
+    <meta content="Pagina voor bediening van apparaten thuis." lang="nl-NL" name="description">
+    <meta property="og:image" content="https://vanderiethattem.nl/img/hattemlogo.png"/>
+    <meta property="og:title" content="Thuis"/>
     <title>Thuis</title>
-    <style>
-        body {
-            background: lightgray;
-            font-size: 16px;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        .inputform {
-            border: 1px solid black;
-            padding: 10px;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-    </style>
 </head>
 <body>
-<h1>Thuis</h1>
+<div class="w3-container w3-blue">
+    <h1>Thuis</h1>
+</div>
 {% if not pod %}
-<div class="inputform">
-    <form action="/thuis/pod" method="POST">
-        <label for="pod">POD</label>
-        <input id="pod" name="pod" type="text" value="">
-        <input type="submit" value="Verstuur">
+<div class="w3-card-4" style="width:50%;">
+    <div class="w3-container w3-blue">
+        <h2>POD</h2>
+    </div>
+    <form class="w3-container" action="/thuis/pod" method="POST">
+        <label for="pod">1234-5678-9012</label>
+        <input class="w3-input" id="pod" name="pod" type="text" value="">
+        <input class="w3-btn w3-blue" type="submit" value="Verstuur">
     </form>
-    <p>Voor de werking is het nummer van de POD nodig. Die is nog niet bekend.</p>
+    <div class="w3-container w3-blue">
+        <p>Voor de werking is het nummer van de POD nodig. Die is nog niet bekend.</p>
+    </div>
 </div>
 {% elif not jsessionid and (not userid or not password) %}
-<div class="inputform">
-    <form action="/thuis/login" method="POST">
+<div class="w3-card-4" style="width:50%;">
+    <div class="w3-container w3-blue">
+        <h2>Somfy-login</h2>
+    </div>
+    <form class="w3-container" action="/thuis/pod" method="POST">
         <label for="userid">E-mailadres</label>
-        <input id="userid" name="userid" type="text" value="">
-        <br/>
+        <input class="w3-input" id="userid" name="userid" type="text" value="">
         <label for="password">Wachtwoord</label>
-        <input id="password" name="password" type="password" value="">
-        <br/>
+        <input class="w3-input" id="password" name="password" type="password" value="">
+        <input class="w3-check" id="savelogin" name="savelogin" type="checkbox" checked>
         <label for="savelogin">Bewaar de gebruiker</label>
-        <input id="savelogin" name="savelogin" type="checkbox" checked>
         <br/>
-        <input type="submit" value="Login">
+        <input class="w3-btn w3-blue" type="submit" value="Login">
     </form>
-    <p>Inloggen bij Somfy.</p>
+    <div class="w3-container w3-blue">
+        <p>Inloggen bij Somfy.</p>
+    </div>
 </div>
 {% else %}
-<p>Pod: {{pod}}</p>
-<p>JSessionid: {{jsessionid}}</p>
-<p>Token: {{token}}</p>
-<p><a href="/thuis/status">Status van de schermen</a></p>
-<p><a href="/thuis/tokens">Beheer tokens</a></p>
+<div class="w3-card-4" style="width:50%;">
+    <div class="w3-container w3-blue">
+        <h2>Informatie</h2>
+    </div>
+    <ul class="w3-ul w3-center">
+    <li>Pod: {{pod}}</li>
+    <li>JSessionid: {{jsessionid}}</li>
+    <li>Token: {{token}}</li>
+    <li><a href="/thuis/status">Status van de schermen</a></li>
+    <li><a href="/thuis/tokens">Beheer tokens</a></li>
+    </ul>
+</div>
 {% endif %}
 </body>
 </html>

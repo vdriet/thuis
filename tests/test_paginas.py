@@ -13,7 +13,7 @@ def mock_env_weerapikey(monkeypatch):
 
 @pytest.fixture()
 def app():
-  app = Flask(__name__, template_folder='../templates')
+  app = Flask(__name__, template_folder='../templates', static_folder='../static')
   app.config.update({
     "TESTING": True,
   })
@@ -76,7 +76,7 @@ def test_404(client):
 def test_hoofdpaginaget(mock_dbgetbyquery, client):
   response = client.get('/thuis')
   assert b"<h1>Thuis</h1>" in response.data
-  assert b"<p>Pod: 1234-4321-5678</p>" in response.data
+  assert b"<li>Pod: 1234-4321-5678</li>" in response.data
   assert mock_dbgetbyquery.call_count == 5
 
 
@@ -91,7 +91,7 @@ def test_hoofdpaginaget_geenpod(mock_dbgetbyquery, client):
   response = client.get('/thuis')
 
   assert b"<h1>Thuis</h1>" in response.data
-  assert b"input id=\"pod\" name=\"pod\"" in response.data
+  assert b"id=\"pod\" name=\"pod\"" in response.data
   assert mock_dbgetbyquery.call_count == 5
 
 
@@ -105,7 +105,7 @@ def test_hoofdpaginaget_geenpod(mock_dbgetbyquery, client):
 def test_hoofdpaginaget_geenjsessionid(mock_dbgetbyquery, client):
   response = client.get('/thuis')
   assert b"<h1>Thuis</h1>" in response.data
-  assert b"<p>Pod: 1234-4321-5678</p>" in response.data
+  assert b"<li>Pod: 1234-4321-5678</li>" in response.data
   assert mock_dbgetbyquery.call_count == 5
 
 
@@ -119,8 +119,8 @@ def test_hoofdpaginaget_geenjsessionid(mock_dbgetbyquery, client):
 def test_hoofdpaginaget_geenjsessionidengeenuserpass(mock_dbgetbyquery, client):
   response = client.get('/thuis')
   assert b"<h1>Thuis</h1>" in response.data
-  assert b"input id=\"userid\" name=\"userid\"" in response.data
-  assert b"input id=\"password\" name=\"password\"" in response.data
+  assert b"id=\"userid\" name=\"userid\"" in response.data
+  assert b"id=\"password\" name=\"password\"" in response.data
   assert mock_dbgetbyquery.call_count == 5
 
 
@@ -374,7 +374,7 @@ def test_statuspagina(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, clie
   assert b"<h1>Status</h1>" in response.data
   assert b"<td>label 1.1</td>" in response.data
   assert b"<td>0</td>" in response.data
-  assert b"<p>Windsnelheid 2 bft</p>" in response.data
+  assert b">Windsnelheid 2 bft<" in response.data
   assert mock_env.call_count == 3
   assert mock_somfy.call_count == 2
   assert mock_wind.call_count == 1

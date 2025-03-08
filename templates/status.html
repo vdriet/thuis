@@ -1,84 +1,89 @@
-<html lang="nl">
+<!DOCTYPE html>
+<html lang="nl"
+      xmlns="http://www.w3.org/1999/xhtml">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/static/w3.css">
 <head>
+    <meta charset="UTF-8">
+    <meta content="Pagina voor tonen van tokens." lang="nl-NL" name="description">
+    <meta property="og:image" content="https://vanderiethattem.nl/img/hattemlogo.png"/>
+    <meta property="og:title" content="Status"/>
     <title>Status</title>
-    <style>
-        body {
-            background: lightgray;
-            font-size: 16px;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        form, p {
-            text-align: center;
-        }
-
-        table, th, td {
-            margin-left: auto;
-            margin-right: auto;
-            text-align: center;
-            border: 1px solid black;
-            border-collapse: collapse;
-            padding: 3px;
-            margin-bottom: 20px;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f2f2f2
-        }
-    </style>
 </head>
 <body>
-<h1>Status</h1>
-<table>
-    <tr>
-        <th>Label</th>
-        <th>Percentage</th>
-        <th>Verplaats naar</th>
-    </tr>
-    {% for scherm in schermen %}
-    <tr>
-        <td>{{scherm['label']}}</td>
-        <td>{{scherm['percentage']}}</td>
-        <td>
+<div class="w3-threequarter w3-center w3-card-4">
+    <div class="w3-container w3-center w3-blue">
+        <h1>Status</h1>
+    </div>
+    <table class="w3-table-all w3-center">
+        <thead>
+        <tr class="w3-light-grey">
+            <th>Label</th>
+            <th>Percentage</th>
+            <th>Verplaats naar</th>
+        </tr>
+        {% for scherm in schermen %}
+        <tr>
+            <td>{{scherm['label']}}</td>
+            <td>{{scherm['percentage']}}</td>
+            <td>
+                <div class="w3-container w3-third w3-card-4">
+                    <form action="/thuis/status" method="POST">
+                        <input name="actie" type="hidden" value="zetscherm">
+                        <input name="device" type="hidden" value="{{scherm['device']}}">
+                        <label for="percentage">Percentage</label>
+                        <input class="w3-input" id="percentage" name="percentage" type="text" size="3" maxlength="3">
+                        <input class="w3-btn w3-blue" type="submit" value="Verplaats">
+                    </form>
+                </div>
+                <div class="w3-container w3-third w3-card-4">
+                    <form action="/thuis/status" method="POST">
+                        <input name="actie" type="hidden" value="zetscherm">
+                        <input name="device" type="hidden" value="{{scherm['device']}}">
+                        <input id="percentageopen" name="percentage" type="hidden" value="0">
+                        <input class="w3-btn w3-blue" type="submit" value="Open">
+                    </form>
+                </div>
+                <div class="w3-container w3-third w3-card-4">
+                    <form action="/thuis/status" method="POST">
+                        <input name="actie" type="hidden" value="zetscherm">
+                        <input name="device" type="hidden" value="{{scherm['device']}}">
+                        <input id="percentagesluit" name="percentage" type="hidden" value="100">
+                        <input class="w3-btn w3-blue" type="submit" value="Sluit">
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <div class="w3-container w3-card-4">
+        <div class="w3-container w3-blue">
+            <h2>Acties</h2>
+        </div>
+        <div class="w3-container w3-third w3-card-4">
             <form action="/thuis/status" method="POST">
-                <input name="actie" type="hidden" value="zetscherm">
-                <input name="device" type="hidden" value="{{scherm['device']}}">
-                <label for="percentage"></label>
-                <input id="percentage" name="percentage" type="text" size="3" maxlength="3">
-                <input type="submit" value="Verplaats">
+                <input name="actie" type="hidden" value="sluitalles">
+                <input class="w3-btn w3-blue" type="submit" value="Sluit alles">
             </form>
+        </div>
+        <div class="w3-container w3-third w3-card-4">
             <form action="/thuis/status" method="POST">
-                <input name="actie" type="hidden" value="zetscherm">
-                <input name="device" type="hidden" value="{{scherm['device']}}">
-                <input id="percentageopen" name="percentage" type="hidden" value="0">
-                <input type="submit" value="Open">
+                <input name="actie" type="hidden" value="openalles">
+                <input class="w3-btn w3-blue" type="submit" value="Open alles">
             </form>
+        </div>
+        <div class="w3-container w3-third w3-centered w3-card-4">
             <form action="/thuis/status" method="POST">
-                <input name="actie" type="hidden" value="zetscherm">
-                <input name="device" type="hidden" value="{{scherm['device']}}">
-                <input id="percentagesluit" name="percentage" type="hidden" value="100">
-                <input type="submit" value="Sluit">
+                <input name="actie" type="hidden" value="ververs">
+                <input class="w3-btn w3-blue" type="submit" value="Ververs schermen">
             </form>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-<form action="/thuis/status" method="POST">
-    <input name="actie" type="hidden" value="sluitalles">
-    <input type="submit" value="Sluit alles">
-</form>
-<form action="/thuis/status" method="POST">
-    <input name="actie" type="hidden" value="openalles">
-    <input type="submit" value="Open alles">
-</form>
-<form action="/thuis/status" method="POST">
-    <input name="actie" type="hidden" value="ververs">
-    <input type="submit" value="Ververs schermen">
-</form>
-<p>Windsnelheid {{windbft}} bft</p>
-<p><a href="/thuis">Terug</a></p>
+        </div>
+        <div class="w3-container w3-center w3-card-4">
+            <p class="w3-center">Windsnelheid {{windbft}} bft</p>
+        </div>
+        <div class="w3-container w3-center w3-card-4">
+            <p class="w3-center"><a href="/thuis">Terug</a></p>
+        </div>
+    </div>
 </body>
 </html>

@@ -251,7 +251,7 @@ def haalwindsnelheid():  # pragma: no cover
 def verstuurberichtmonitoring(bericht):
   """
     Verstuur bericht naar de monitoring,
-    maar niet vaker dan 1x per dag
+    maar niet vaker dan eenmaal per dag
   """
   requests.post(url="https://ntfy.sh/vanderiethattemmonitoring",
                 timeout=5,
