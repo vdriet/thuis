@@ -46,28 +46,34 @@ def test_haalwindsnelheid_geenweer(mock_requestsget):
   assert mock_requestsget.call_count == 1
 
 
-@patch("thuis.haalwindsnelheid", return_value=0)
+@patch("thuis.haalwindsnelheid", return_value=3)
 @patch("requests.post")
-def test_checkwindsnelheid_geenbericht(mock_post, mock_wind):
+@patch("thuis.sluitalles")
+def test_checkwindsnelheid_geenbericht(mock_sluiten, mock_post, mock_wind):
   thuis.checkwindsnelheid()
 
   assert mock_wind.call_count == 1
   assert mock_post.call_count == 0
+  assert mock_sluiten.call_count == 0
 
 
-@patch("thuis.haalwindsnelheid", return_value=1)
+@patch("thuis.haalwindsnelheid", return_value=5)
 @patch("requests.post")
-def test_checkwindsnelheid_geenbericht_rand(mock_post, mock_wind):
+@patch("thuis.sluitalles")
+def test_checkwindsnelheid_geenbericht_rand(mock_sluiten, mock_post, mock_wind):
   thuis.checkwindsnelheid()
 
   assert mock_wind.call_count == 1
   assert mock_post.call_count == 0
+  assert mock_sluiten.call_count == 0
 
 
-@patch("thuis.haalwindsnelheid", return_value=2)
+@patch("thuis.haalwindsnelheid", return_value=6)
 @patch("requests.post")
-def test_checkwindsnelheid_welbericht(mock_post, mock_wind):
+@patch("thuis.sluitalles")
+def test_checkwindsnelheid_welbericht(mock_sluiten, mock_post, mock_wind):
   thuis.checkwindsnelheid()
 
   assert mock_wind.call_count == 1
   assert mock_post.call_count == 1
+  assert mock_sluiten.call_count == 1
