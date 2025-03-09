@@ -1,4 +1,4 @@
-astroid==3.3.8
+astroid==3.3.9
 beautifultable==1.1.0
 blinker==1.9.0
 cachetools==5.5.2
@@ -21,13 +21,13 @@ packaging==24.2
 pip==25.0.1
 platformdirs==4.3.6
 pluggy==1.5.0
-pylint==3.3.4
+pylint==3.3.5
 pysondb==1.6.7
 pytest==8.3.5
 python-dateutil==2.9.0.post0
 requests==2.32.3
 schedule==1.2.2
-setuptools==75.8.2
+setuptools==76.0.0
 six==1.17.0
 tomlkit==0.13.2
 urllib3==2.3.0
