@@ -5,15 +5,15 @@
 <link rel="stylesheet" href="/static/w3.css">
 <head>
     <meta charset="UTF-8">
-    <meta content="Pagina voor tonen van tokens." lang="nl-NL" name="description">
+    <meta content="Pagina voor bediening van schermen." lang="nl-NL" name="description">
     <meta property="og:image" content="https://vanderiethattem.nl/img/hattemlogo.png"/>
-    <meta property="og:title" content="Status"/>
-    <title>Status</title>
+    <meta property="og:title" content="Schermen"/>
+    <title>Schermen</title>
 </head>
 <body>
 <div class="w3-center w3-card-4">
     <div class="w3-container w3-center w3-blue">
-        <h1>Status</h1>
+        <h1>Schermen</h1>
     </div>
     {% for scherm in schermen %}
     <div class="w3-panel w3-half w3-card-4">
@@ -29,7 +29,7 @@
             </div>
         </div>
         <div class="w3-container w3-padding-16 w3-card-4">
-            <form action="/thuis/status" method="POST">
+            <form action="/thuis/schermen" method="POST">
                 <input name="actie" type="hidden" value="zetscherm">
                 <input name="device" type="hidden" value="{{scherm['device']}}">
                 <label class="w3-third" for="percentage">Nieuw:</label>
@@ -40,7 +40,7 @@
         </div>
         <div class="w3-container w3-card-4">
             <div class="w3-container w3-half">
-                <form action="/thuis/status" method="POST">
+                <form action="/thuis/schermen" method="POST">
                     <input name="actie" type="hidden" value="zetscherm">
                     <input name="device" type="hidden" value="{{scherm['device']}}">
                     <input id="percentageopen" name="percentage" type="hidden" value="0">
@@ -48,7 +48,7 @@
                 </form>
             </div>
             <div class="w3-container w3-third">
-                <form action="/thuis/status" method="POST">
+                <form action="/thuis/schermen" method="POST">
                     <input name="actie" type="hidden" value="zetscherm">
                     <input name="device" type="hidden" value="{{scherm['device']}}">
                     <input id="percentagesluit" name="percentage" type="hidden" value="100">
@@ -63,19 +63,19 @@
             <h2>Acties</h2>
         </div>
         <div class="w3-container w3-third w3-card-4">
-            <form action="/thuis/status" method="POST">
+            <form action="/thuis/schermen" method="POST">
                 <input name="actie" type="hidden" value="sluitalles">
                 <input class="w3-btn w3-blue" type="submit" value="Sluit alles">
             </form>
         </div>
         <div class="w3-container w3-third w3-card-4">
-            <form action="/thuis/status" method="POST">
+            <form action="/thuis/schermen" method="POST">
                 <input name="actie" type="hidden" value="openalles">
                 <input class="w3-btn w3-blue" type="submit" value="Open alles">
             </form>
         </div>
         <div class="w3-container w3-third w3-centered w3-card-4">
-            <form action="/thuis/status" method="POST">
+            <form action="/thuis/schermen" method="POST">
                 <input name="actie" type="hidden" value="ververs">
                 <input class="w3-btn w3-blue" type="submit" value="Ververs schermen">
             </form>

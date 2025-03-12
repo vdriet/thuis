@@ -162,7 +162,7 @@ def getschermen(pod, token):
   return schermlijst
 
 
-def haalstatusentoon():
+def haalschermenentoon():
   """ Haal de status van de schermen toon deze
       Wanneer er gegevens missen, redirect naar hoofdpagina
   """
@@ -187,7 +187,7 @@ def haalstatusentoon():
                      'percentage': schermstate['value']
                      })
   windbft = haalwindsnelheid()
-  return render_template('status.html', schermen=schermen, windbft=windbft)
+  return render_template('schermen.html', schermen=schermen, windbft=windbft)
 
 
 def verplaatsscherm(device, percentage):
@@ -330,14 +330,20 @@ def tokensactiepagina():
   return redirect('/thuis/tokens')
 
 
-@app.route('/thuis/status', methods=['GET'])
-def statuspagina():
+@app.route('/thuis/schermen', methods=['GET'])
+def schermenpagina():
   """ Toon de pagina met de status van de schermen """
-  return haalstatusentoon()
+  return haalschermenentoon()
 
 
-@app.route('/thuis/status', methods=['POST'])
-def statusactiepagina():
+@app.route('/thuis/lampen', methods=['GET'])
+def lampenpagina():
+  """ Toon de pagina met de lampen """
+  return render_template('lampen.html')
+
+
+@app.route('/thuis/schermen', methods=['POST'])
+def schermenactiepagina():
   """ Verwerk het verplaatsen van een of meer schermen """
   actie = request.form['actie']
   if actie == 'zetscherm':
@@ -351,7 +357,7 @@ def statusactiepagina():
     openalles()
   elif actie == 'ververs':
     verversschermen()
-  return redirect('/thuis/status')
+  return redirect('/thuis/schermen')
 
 
 def startwebserver():

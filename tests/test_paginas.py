@@ -1,3 +1,4 @@
+from http.client import responses
 from unittest.mock import patch
 
 import pytest
@@ -38,13 +39,17 @@ def app():
   def thuistokensactiepagina():
     return thuis.tokensactiepagina()
 
-  @app.route('/thuis/status', methods=['GET'])
-  def thuisstatuspagina():
-    return thuis.statuspagina()
+  @app.route('/thuis/schermen', methods=['GET'])
+  def thuisschermenpagina():
+    return thuis.schermenpagina()
 
-  @app.route('/thuis/status', methods=['POST'])
-  def thuisstatusactiepagina():
-    return thuis.statusactiepagina()
+  @app.route('/thuis/schermen', methods=['POST'])
+  def thuisschermenactiepagina():
+    return thuis.schermenactiepagina()
+
+  @app.route('/thuis/lampen', methods=['GET'])
+  def thuislampenenpagina():
+    return thuis.lampenpagina()
 
   yield app
 
@@ -368,16 +373,21 @@ def test_tokenspaginapost_createtoken(mock_createtoken, mock_gettokens, mock_dbq
                     {'value': '50'}
                     ])
 @patch('thuis.haalwindsnelheid', return_value=2)
-def test_statuspagina(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, client):
-  response = client.get('/thuis/status')
+def test_schermenpagina(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, client):
+  response = client.get('/thuis/schermen')
 
-  assert b"<h1>Status</h1>" in response.data
+  assert b"<h1>Schermen</h1>" in response.data
   assert b">label 1.1<" in response.data
   assert b">0<" in response.data
   assert b">Windsnelheid 2 bft<" in response.data
   assert mock_env.call_count == 3
   assert mock_somfy.call_count == 2
   assert mock_wind.call_count == 1
+
+
+def test_lampenpagina(client):
+  response = client.get('/thuis/lampen')
+  assert b"<h1>Lampen</h1>" in response.data
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
@@ -387,8 +397,8 @@ def test_statuspagina(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, clie
 @patch('thuis.haalgegevensvansomfy',
        return_value={'error': 'dummy'})
 @patch('thuis.haalwindsnelheid', return_value=2)
-def test_statuspagina_geenpod(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, client):
-  response = client.get('/thuis/status')
+def test_schermenpagina_geenpod(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, client):
+  response = client.get('/thuis/schermen')
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
@@ -414,10 +424,11 @@ def test_statuspagina_geenpod(mock_wind, mock_somfy, mock_env, mock_env_weerapik
                     ]
        )
 @patch('thuis.haalwindsnelheid', return_value=2)
-def test_statuspagina_geenschermcache(mock_wind, mock_somfy, mock_schermen, mock_envquery, mock_env_weerapikey, client):
-  response = client.get('/thuis/status')
+def test_schermenpagina_geenschermcache(mock_wind, mock_somfy, mock_schermen, mock_envquery, mock_env_weerapikey,
+                                        client):
+  response = client.get('/thuis/schermen')
 
-  assert b"<h1>Status</h1>" in response.data
+  assert b"<h1>Schermen</h1>" in response.data
   assert b">label 1.2<" in response.data
   assert b">0<" in response.data
   assert mock_envquery.call_count == 3
@@ -435,8 +446,8 @@ def test_statuspagina_geenschermcache(mock_wind, mock_somfy, mock_schermen, mock
 @patch('thuis.haalgegevensvansomfy',
        return_value={'error': 'dummy'})
 @patch('thuis.haalwindsnelheid', return_value=2)
-def test_statuspagina_error(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, client):
-  response = client.get('/thuis/status')
+def test_schermenpagina_error(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, client):
+  response = client.get('/thuis/schermen')
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
@@ -447,59 +458,59 @@ def test_statuspagina_error(mock_wind, mock_somfy, mock_env, mock_env_weerapikey
 
 
 @patch('thuis.verplaatsscherm')
-def test_statuspaginapost(mock_verplaats, client):
+def test_schermenpaginapost(mock_verplaats, client):
   data = {'actie': 'zetscherm', 'device': 'dummyid', 'percentage': '20'}
-  response = client.post('/thuis/status', data=data)
+  response = client.post('/thuis/schermen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
-  assert b"/thuis/status" in response.data
+  assert b"/thuis/schermen" in response.data
   assert mock_verplaats.call_count == 1
 
 
 @patch('thuis.verplaatsscherm')
-def test_statuspaginapost_geengetal(mock_verplaats, client):
+def test_schermenpaginapost_geengetal(mock_verplaats, client):
   data = {'actie': 'zetscherm', 'device': 'dummyid', 'percentage': 'abc'}
-  response = client.post('/thuis/status', data=data)
+  response = client.post('/thuis/schermen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
-  assert b"/thuis/status" in response.data
+  assert b"/thuis/schermen" in response.data
   assert mock_verplaats.call_count == 0
 
 
 @patch('thuis.sluitalles')
 @patch('thuis.openalles')
-def test_statuspaginapost_sluitalles(mock_openalles, mock_sluitalles, client):
+def test_schermenpaginapost_sluitalles(mock_openalles, mock_sluitalles, client):
   data = {'actie': 'sluitalles', 'device': 'dummyid', 'percentage': 'abc'}
-  response = client.post('/thuis/status', data=data)
+  response = client.post('/thuis/schermen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
-  assert b"/thuis/status" in response.data
+  assert b"/thuis/schermen" in response.data
   assert mock_openalles.call_count == 0
   assert mock_sluitalles.call_count == 1
 
 
 @patch('thuis.sluitalles')
 @patch('thuis.openalles')
-def test_statuspaginapost_openalles(mock_openalles, mock_sluitalles, client):
+def test_schermenpaginapost_openalles(mock_openalles, mock_sluitalles, client):
   data = {'actie': 'openalles', 'device': 'dummyid', 'percentage': 'abc'}
-  response = client.post('/thuis/status', data=data)
+  response = client.post('/thuis/schermen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
-  assert b"/thuis/status" in response.data
+  assert b"/thuis/schermen" in response.data
   assert mock_openalles.call_count == 1
   assert mock_sluitalles.call_count == 0
 
 
 @patch('thuis.verversschermen')
-def test_statuspaginapost_ververs(mock_ververs, client):
+def test_schermenpaginapost_ververs(mock_ververs, client):
   data = {'actie': 'ververs', 'device': 'dummyid', 'percentage': 'abc'}
-  response = client.post('/thuis/status', data=data)
+  response = client.post('/thuis/schermen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
-  assert b"/thuis/status" in response.data
+  assert b"/thuis/schermen" in response.data
   assert mock_ververs.call_count == 1
