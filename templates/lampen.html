@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="nl"
+      xmlns="http://www.w3.org/1999/xhtml">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/static/w3.css">
+<head>
+    <meta charset="UTF-8">
+    <meta content="Pagina voor bediening van lampen." lang="nl-NL" name="description">
+    <meta property="og:image" content="https://vanderiethattem.nl/img/hattemlogo.png"/>
+    <meta property="og:title" content="Lampen"/>
+    <title>Lampen</title>
+</head>
+<body>
+<div class="w3-center w3-card-4">
+    <div class="w3-container w3-center w3-blue">
+        <h1>Lampen</h1>
+    </div>
+    {% for lamp in lampen %}
+    <div class="w3-panel w3-half w3-card-4">
+        <div class="w3-container w3-blue">
+            <h3>{{lamp['naam']}}</h3>
+        </div>
+        <div class="w3-container w3-card-4">
+            <div class="w3-container w3-half">
+                <p>Status:</p>
+            </div>
+            <div class="w3-container w3-third">
+                <p>{{lamp['status']}}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+</body>
+</html>

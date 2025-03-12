@@ -136,6 +136,18 @@ def haalgegevensvansomfy(token, pod, path):
     return response.json()
 
 
+def haalgegevensvanhue(hueip, hueuser, path):
+  """ Ophalen van gegevens van de hue bridge """
+  url = f'https://{hueip}/clip/v2/resource/{path}'
+  headers = {'Content-type': 'application/json',
+             'hue-application-key': hueuser}
+  with requests.get(url=url,
+                    headers=headers,
+                    timeout=5,
+                    verify=False) as response:
+    return response.json()
+
+
 def stuurgegevensnaarsomfy(token, pod, path, data):
   """ Sturen van gegevens naar het somfy kastje """
   url = f'https://{pod}.local:8443/enduser-mobile-web/1/enduserAPI/{path}'
@@ -188,6 +200,28 @@ def haalschermenentoon():
                      })
   windbft = haalwindsnelheid()
   return render_template('schermen.html', schermen=schermen, windbft=windbft)
+
+
+def haallampenentoon():
+  """ Haal de status van de lampen toon deze
+      Wanneer er gegevens missen, redirect naar hoofdpagina
+  """
+  hueip = leesenv('hueip')
+  hueuser = leesenv('hueuser')
+  if not hueip or not hueuser:
+    return redirect('/thuis')
+  lampen = []
+  lampdata = haalgegevensvanhue(hueip, hueuser, 'light')
+  if len(lampdata.get('errors', [])) == 0:
+    for lamp in lampdata.get('data', {}):
+      naam = lamp.get('metadata').get('name')
+      if lamp.get('on').get('on'):
+        status = 'Aan'
+      else:
+        status = 'Uit'
+      lampen.append({'naam': naam,
+                     'status': status})
+  return render_template('lampen.html', lampen=lampen)
 
 
 def verplaatsscherm(device, percentage):
@@ -276,12 +310,16 @@ def thuispagina():
   userid = leesenv('userid')
   password = leesenv('password')
   token = leesenv('token')
+  hueip = leesenv('hueip')
+  hueuser = leesenv('hueuser')
   return render_template('hoofdpagina.html',
                          pod=pod,
                          jsessionid=jsessionid,
                          userid=userid,
                          password=password,
-                         token=token)
+                         token=token,
+                         hueip=hueip,
+                         hueuser=hueuser)
 
 
 @app.route('/thuis/login', methods=['POST'])
@@ -303,6 +341,22 @@ def podpagina():
   """ Verwerk het opvoeren van de pod """
   pod = request.form['pod']
   envdb.add({'env': 'pod', 'value': pod})
+  return redirect('/thuis')
+
+
+@app.route('/thuis/hueip', methods=['POST'])
+def hueippagina():
+  """ Verwerk het opvoeren van de pod """
+  hueip = request.form['hueip']
+  envdb.add({'env': 'hueip', 'value': hueip})
+  return redirect('/thuis')
+
+
+@app.route('/thuis/hueuser', methods=['POST'])
+def hueuserpagina():
+  """ Verwerk het opvoeren van de pod """
+  hueuser = request.form['hueuser']
+  envdb.add({'env': 'hueuser', 'value': hueuser})
   return redirect('/thuis')
 
 
@@ -339,7 +393,7 @@ def schermenpagina():
 @app.route('/thuis/lampen', methods=['GET'])
 def lampenpagina():
   """ Toon de pagina met de lampen """
-  return render_template('lampen.html')
+  return haallampenentoon()
 
 
 @app.route('/thuis/schermen', methods=['POST'])
