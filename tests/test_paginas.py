@@ -76,13 +76,15 @@ def test_404(client):
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
                     [{'env': 'userid', 'value': 'email@adres.com', 'id': 23649273}],
                     [{'env': 'password', 'value': 'password', 'id': 9852364}],
-                    [{'env': 'token', 'value': '4321c0de', 'id': 236910029}]
+                    [{'env': 'token', 'value': '4321c0de', 'id': 236910029}],
+                    [{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
+                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     ])
 def test_hoofdpaginaget(mock_dbgetbyquery, client):
   response = client.get('/thuis')
   assert b"<h1>Thuis</h1>" in response.data
   assert b"<li>Pod: 1234-4321-5678</li>" in response.data
-  assert mock_dbgetbyquery.call_count == 5
+  assert mock_dbgetbyquery.call_count == 7
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
@@ -90,14 +92,16 @@ def test_hoofdpaginaget(mock_dbgetbyquery, client):
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
                     [{'env': 'userid', 'value': 'email@adres.com', 'id': 23649273}],
                     [{'env': 'password', 'value': 'password', 'id': 9852364}],
-                    [{'env': 'token', 'value': '4321c0de', 'id': 236910029}]
+                    [{'env': 'token', 'value': '4321c0de', 'id': 236910029}],
+                    [{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
+                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     ])
 def test_hoofdpaginaget_geenpod(mock_dbgetbyquery, client):
   response = client.get('/thuis')
 
   assert b"<h1>Thuis</h1>" in response.data
   assert b"id=\"pod\" name=\"pod\"" in response.data
-  assert mock_dbgetbyquery.call_count == 5
+  assert mock_dbgetbyquery.call_count == 7
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
@@ -105,13 +109,15 @@ def test_hoofdpaginaget_geenpod(mock_dbgetbyquery, client):
                     [],
                     [{'env': 'userid', 'value': 'email@adres.com', 'id': 23649273}],
                     [{'env': 'password', 'value': 'password', 'id': 9852364}],
-                    [{'env': 'token', 'value': '4321c0de', 'id': 236910029}]
+                    [{'env': 'token', 'value': '4321c0de', 'id': 236910029}],
+                    [{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
+                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     ])
 def test_hoofdpaginaget_geenjsessionid(mock_dbgetbyquery, client):
   response = client.get('/thuis')
   assert b"<h1>Thuis</h1>" in response.data
   assert b"<li>Pod: 1234-4321-5678</li>" in response.data
-  assert mock_dbgetbyquery.call_count == 5
+  assert mock_dbgetbyquery.call_count == 7
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
@@ -119,14 +125,16 @@ def test_hoofdpaginaget_geenjsessionid(mock_dbgetbyquery, client):
                     [],
                     [],
                     [],
-                    [{'env': 'token', 'value': '4321c0de', 'id': 236910029}]
+                    [{'env': 'token', 'value': '4321c0de', 'id': 236910029}],
+                    [{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
+                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     ])
 def test_hoofdpaginaget_geenjsessionidengeenuserpass(mock_dbgetbyquery, client):
   response = client.get('/thuis')
   assert b"<h1>Thuis</h1>" in response.data
   assert b"id=\"userid\" name=\"userid\"" in response.data
   assert b"id=\"password\" name=\"password\"" in response.data
-  assert mock_dbgetbyquery.call_count == 5
+  assert mock_dbgetbyquery.call_count == 7
 
 
 @patch('pysondb.db.JsonDatabase.add')
@@ -362,6 +370,21 @@ def test_tokenspaginapost_createtoken(mock_createtoken, mock_gettokens, mock_dbq
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
+                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    ]
+       )
+@patch('thuis.haalgegevensvanhue',
+       sice_effect=[[{'naam': 'dummy', 'status': 'on'}],
+                    ])
+def test_lampenpagina(mock_hue, mock_env, client):
+  response = client.get('/thuis/lampen')
+  assert b"<h1>Lampen</h1>" in response.data
+  assert mock_hue.call_count == 1
+  assert mock_env.call_count == 2
+
+
+@patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
                     [{'env': 'schermen', 'value': [{'label': 'label 1.1', 'device': 'io://1234-4321-5678/13579'},
@@ -383,11 +406,6 @@ def test_schermenpagina(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, cl
   assert mock_env.call_count == 3
   assert mock_somfy.call_count == 2
   assert mock_wind.call_count == 1
-
-
-def test_lampenpagina(client):
-  response = client.get('/thuis/lampen')
-  assert b"<h1>Lampen</h1>" in response.data
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
