@@ -12,6 +12,7 @@ import waitress
 from cachetools import cached, TTLCache
 from flask import Flask, render_template, request, redirect
 from pysondb import db
+from requests import ReadTimeout
 
 app = Flask(__name__,
             static_url_path='/static',
@@ -273,9 +274,13 @@ def haalwindsnelheid():  # pragma: no cover
   """ Haal de informatie van het weer van Hattem op """
   weerapikey = os.environ['WEER_API_KEY']
   url = f'https://weerlive.nl/api/weerlive_api_v2.php?key={weerapikey}&locatie=Hattem'
-  with requests.get(url=url,
-                    timeout=5) as response:
-    weerinfo = response.json()
+  try:
+    with requests.get(url=url,
+                      timeout=5) as response:
+      weerinfo = response.json()
+  except ReadTimeout as e:
+    print(f'Timeout while getting weerinfo: {e}, return 0')
+    return 0
   if weerinfo is None or \
       weerinfo.get('liveweer', None) is None or \
       weerinfo.get('liveweer')[0].get('fout', None) is not None:
