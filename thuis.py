@@ -161,6 +161,19 @@ def stuurgegevensnaarsomfy(token, pod, path, data):
     return response.json()
 
 
+def stuurgegevensnaarhue(hueip, hueuser, path, data):
+  """ Sturen van het hue kastje """
+  url = f'https://{hueip}/clip/v2/resource/{path}'
+  headers = {'Content-type': 'application/json',
+             'hue-application-key': hueuser}
+  with requests.put(url=url,
+                    headers=headers,
+                    timeout=5,
+                    verify=False,
+                    data=json.dumps(data)) as response:
+    return response.json()
+
+
 def getschermen(pod, token):
   """ Ophalen van de schermen en in de db zetten """
   schermlijst = []
@@ -218,12 +231,14 @@ def haallampenentoon():
     return redirect('/thuis')
 
   for lamp in lampdata.get('data', {}):
+    lampid = lamp.get('id')
     naam = lamp.get('metadata').get('name')
     if lamp.get('on').get('on'):
       status = 'Aan'
     else:
       status = 'Uit'
-    lampen.append({'naam': naam,
+    lampen.append({'id': lampid,
+                   'naam': naam,
                    'status': status})
   return render_template('lampen.html', lampen=lampen)
 
@@ -270,6 +285,25 @@ def openalles():
 def verversschermen():
   """ Verplaats alle schermen """
   deleteenv('schermen')
+
+
+def zetlampaanuit(lampid, status):
+  """ zet een lamp aan of uit """
+  hueip = leesenv('hueip')
+  hueuser = leesenv('hueuser')
+  path = f'light/{lampid}'
+  data = {'on': {'on': status}}
+  stuurgegevensnaarhue(hueip, hueuser, path, data)
+
+
+def zetlampaan(lampid):
+  """ zet een lamp aan """
+  zetlampaanuit(lampid, True)
+
+
+def zetlampuit(lampid):
+  """ zet een lamp uit """
+  zetlampaanuit(lampid, False)
 
 
 @cached(cache=weercache)
@@ -420,6 +454,18 @@ def schermenactiepagina():
   elif actie == 'ververs':
     verversschermen()
   return redirect('/thuis/schermen')
+
+
+@app.route('/thuis/lampen', methods=['POST'])
+def lampenenactiepagina():
+  """ Verwerk het verplaatsen van een of meer schermen """
+  actie = request.form['actie']
+  lampid = request.form['lampid']
+  if actie == 'lampaan':
+    zetlampaan(lampid)
+  elif actie == 'lampuit':
+    zetlampuit(lampid)
+  return redirect('/thuis/lampen')
 
 
 def startwebserver():

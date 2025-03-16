@@ -67,6 +67,10 @@ def app():
   def thuislampenenpagina():
     return thuis.lampenpagina()
 
+  @app.route('/thuis/lampen', methods=['POST'])
+  def thuislampenenactiepagina():
+    return thuis.lampenenactiepagina()
+
   yield app
 
 
@@ -623,3 +627,25 @@ def test_schermenpaginapost_ververs(mock_ververs, client):
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis/schermen" in response.data
   assert mock_ververs.call_count == 1
+
+
+@patch('thuis.zetlampaanuit')
+def test_lampenpaginapost_aan(mock_zetlampaanuit, client):
+  data = {'actie': 'lampaan', 'lampid': 'dummyid'}
+  response = client.post('/thuis/lampen', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis/lampen" in response.data
+  assert mock_zetlampaanuit.call_count == 1
+
+
+@patch('thuis.zetlampaanuit')
+def test_lampenpaginapost_uit(mock_zetlampaanuit, client):
+  data = {'actie': 'lampuit', 'lampid': 'dummyid'}
+  response = client.post('/thuis/lampen', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis/lampen" in response.data
+  assert mock_zetlampaanuit.call_count == 1
