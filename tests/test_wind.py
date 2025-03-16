@@ -1,6 +1,7 @@
 from unittest.mock import patch, MagicMock
 
 import pytest
+from requests import ReadTimeout
 
 import thuis
 
@@ -39,6 +40,15 @@ def test_haalwindsnelheid_uitcache(mock_requestsget):
 @patch('requests.get')
 def test_haalwindsnelheid_geenweer(mock_requestsget):
   mock_requestsget.return_value = maakmockresponse({'geenweer': [{'windbft': '4'}]})
+  thuis.haalwindsnelheid.cache_clear()
+
+  resultaat = thuis.haalwindsnelheid()
+  assert resultaat == 0
+  assert mock_requestsget.call_count == 1
+
+
+@patch('requests.get', side_effect=ReadTimeout)
+def test_haalwindsnelheid_timeout(mock_requestsget):
   thuis.haalwindsnelheid.cache_clear()
 
   resultaat = thuis.haalwindsnelheid()

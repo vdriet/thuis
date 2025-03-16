@@ -1,5 +1,5 @@
 from http.client import responses
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pytest
 from flask import Flask
@@ -10,6 +10,14 @@ import thuis
 @pytest.fixture
 def mock_env_weerapikey(monkeypatch):
   monkeypatch.setenv("WEER_API_KEY", "dummykey")
+
+
+def maakmockresponse(jsondata):
+  mock_response = MagicMock()
+  mock_response.getcode.return_value = 200
+  mock_response.json.return_value = jsondata
+  mock_response.__enter__.return_value = mock_response
+  return mock_response
 
 
 @pytest.fixture()
@@ -30,6 +38,14 @@ def app():
   @app.route('/thuis/pod', methods=['POST'])
   def thuispodpagina():
     return thuis.podpagina()
+
+  @app.route('/thuis/hueip', methods=['POST'])
+  def thuishueippagina():
+    return thuis.hueippagina()
+
+  @app.route('/thuis/hueuser', methods=['POST'])
+  def thuishueuserpagina():
+    return thuis.hueuserpagina()
 
   @app.route('/thuis/tokens', methods=['GET'])
   def thuistokenspagina():
@@ -163,6 +179,28 @@ def test_loginpaginapost_nosave(mock_dbadd, client):
 def test_podpaginapost(mock_dbadd, client):
   data = {'pod': 'dummy'}
   response = client.post('/thuis/pod', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis" in response.data
+  assert mock_dbadd.call_count == 1
+
+
+@patch('pysondb.db.JsonDatabase.add')
+def test_hueippaginapost(mock_dbadd, client):
+  data = {'hueip': 'dummy'}
+  response = client.post('/thuis/hueip', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis" in response.data
+  assert mock_dbadd.call_count == 1
+
+
+@patch('pysondb.db.JsonDatabase.add')
+def test_hueuserpaginapost(mock_dbadd, client):
+  data = {'hueuser': 'dummy'}
+  response = client.post('/thuis/hueuser', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
@@ -374,13 +412,66 @@ def test_tokenspaginapost_createtoken(mock_createtoken, mock_gettokens, mock_dbq
                     [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     ]
        )
-@patch('thuis.haalgegevensvanhue',
-       sice_effect=[[{'naam': 'dummy', 'status': 'on'}],
-                    ])
-def test_lampenpagina(mock_hue, mock_env, client):
+@patch('requests.get')
+def test_lampenpagina(mock_requestsget, mock_env, client):
+  mock_requestsget.return_value = maakmockresponse({'errors': [],
+                                                    'data': [{'metadata': {'name': 'dummyaan'},
+                                                              'on': {'on': True}
+                                                              },
+                                                             {'metadata': {'name': 'dummyuit'},
+                                                              'on': {'on': False}
+                                                              }]}
+                                                   )
   response = client.get('/thuis/lampen')
+
   assert b"<h1>Lampen</h1>" in response.data
-  assert mock_hue.call_count == 1
+  assert b">dummyaan<" in response.data
+  assert b">Aan<" in response.data
+  assert b">dummyuit<" in response.data
+  assert b">Uit<" in response.data
+  assert mock_requestsget.call_count == 1
+  assert mock_env.call_count == 2
+
+
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[],
+                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    ]
+       )
+@patch('requests.get')
+def test_lampenpagina_missendegegevens(mock_requestsget, mock_env, client):
+  mock_requestsget.return_value = maakmockresponse({'errors': [],
+                                                    'data': [{'metadata': {'name': 'dummy'},
+                                                              'on': {'on': True}
+                                                              }]}
+                                                   )
+  response = client.get('/thuis/lampen')
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis" in response.data
+  assert mock_requestsget.call_count == 0
+  assert mock_env.call_count == 2
+
+
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
+                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    ]
+       )
+@patch('requests.get')
+def test_lampenpagina_error(mock_requestsget, mock_env, client):
+  mock_requestsget.return_value = maakmockresponse({'errors': [{'error': 'error'}],
+                                                    'data': [{'metadata': {'name': 'dummy'},
+                                                              'on': {'on': True}
+                                                              }]}
+                                                   )
+  response = client.get('/thuis/lampen')
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis" in response.data
+  assert mock_requestsget.call_count == 1
   assert mock_env.call_count == 2
 
 

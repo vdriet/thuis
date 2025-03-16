@@ -213,15 +213,18 @@ def haallampenentoon():
     return redirect('/thuis')
   lampen = []
   lampdata = haalgegevensvanhue(hueip, hueuser, 'light')
-  if len(lampdata.get('errors', [])) == 0:
-    for lamp in lampdata.get('data', {}):
-      naam = lamp.get('metadata').get('name')
-      if lamp.get('on').get('on'):
-        status = 'Aan'
-      else:
-        status = 'Uit'
-      lampen.append({'naam': naam,
-                     'status': status})
+
+  if len(lampdata.get('errors', [])) != 0:
+    return redirect('/thuis')
+
+  for lamp in lampdata.get('data', {}):
+    naam = lamp.get('metadata').get('name')
+    if lamp.get('on').get('on'):
+      status = 'Aan'
+    else:
+      status = 'Uit'
+    lampen.append({'naam': naam,
+                   'status': status})
   return render_template('lampen.html', lampen=lampen)
 
 
