@@ -37,3 +37,24 @@ class MyTestCaseHue(unittest.TestCase):
     self.assertEqual(response, ANY)
     mock_get.assert_called_once()
 
+  @mock.patch('pysondb.db.JsonDatabase.getByQuery',
+              side_effect=[[{'env': 'hueip', 'value': '4.3.2.1', 'id': 82265347}],
+                           [{'env': 'hueuser', 'value': 'abcd1234qwer8765', 'id': 918273548237}]
+                           ])
+  @mock.patch('requests.put')
+  def test_zetlampaan(self, mock_requestput, mock_envdb):
+    import thuis
+    thuis.zetlampaan('lampid')
+    self.assertEqual(mock_envdb.call_count, 2)
+    self.assertEqual(mock_requestput.call_count, 1)
+
+  @mock.patch('pysondb.db.JsonDatabase.getByQuery',
+              side_effect=[[{'env': 'hueip', 'value': '4.3.2.1', 'id': 82265347}],
+                           [{'env': 'hueuser', 'value': 'abcd1234qwer8765', 'id': 918273548237}]
+                           ])
+  @mock.patch('requests.put')
+  def test_zetlampuit(self, mock_requestput, mock_envdb):
+    import thuis
+    thuis.zetlampaan('lampid')
+    self.assertEqual(mock_envdb.call_count, 2)
+    self.assertEqual(mock_requestput.call_count, 1)
