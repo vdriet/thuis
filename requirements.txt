@@ -19,7 +19,7 @@ mccabe==0.7.0
 mock==5.2.0
 packaging==24.2
 pip==25.0.1
-platformdirs==4.3.6
+platformdirs==4.3.7
 pluggy==1.5.0
 pylint==3.3.5
 pysondb==1.6.7
