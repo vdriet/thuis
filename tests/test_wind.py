@@ -80,10 +80,10 @@ def test_checkwindsnelheid_geenbericht_rand(mock_sluiten, mock_post, mock_wind):
 
 @patch("thuis.haalwindsnelheid", return_value=6)
 @patch("requests.post")
-@patch("thuis.sluitalles")
-def test_checkwindsnelheid_welbericht(mock_sluiten, mock_post, mock_wind):
+@patch("thuis.openalles")
+def test_checkwindsnelheid_welbericht(mock_openen, mock_post, mock_wind):
   thuis.checkwindsnelheid()
 
   assert mock_wind.call_count == 1
   assert mock_post.call_count == 1
-  assert mock_sluiten.call_count == 1
+  assert mock_openen.call_count == 1
