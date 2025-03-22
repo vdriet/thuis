@@ -340,8 +340,8 @@ def checkwindsnelheid():
   """ Check de windsnelheid """
   windbft = haalwindsnelheid()
   if windbft > 5:
-    verstuurberichtmonitoring(f'Windsnelheid: {windbft}, schermen sluiten!')
-    sluitalles()
+    verstuurberichtmonitoring(f'Windsnelheid: {windbft}, schermen openen!')
+    openalles()
 
 
 @app.route('/thuis', methods=['GET'])
