@@ -8,6 +8,7 @@ from urllib.parse import quote_plus
 
 import requests
 import schedule
+import urllib3
 import waitress
 from cachetools import cached, TTLCache
 from flask import Flask, render_template, request, redirect
@@ -139,6 +140,7 @@ def haalgegevensvansomfy(token, pod, path):
 
 def haalgegevensvanhue(hueip, hueuser, path):
   """ Ophalen van gegevens van de hue bridge """
+  urllib3.disable_warnings()
   url = f'https://{hueip}/clip/v2/resource/{path}'
   headers = {'Content-type': 'application/json',
              'hue-application-key': hueuser}
@@ -163,6 +165,7 @@ def stuurgegevensnaarsomfy(token, pod, path, data):
 
 def stuurgegevensnaarhue(hueip, hueuser, path, data):
   """ Sturen van het hue kastje """
+  urllib3.disable_warnings()
   url = f'https://{hueip}/clip/v2/resource/{path}'
   headers = {'Content-type': 'application/json',
              'hue-application-key': hueuser}
