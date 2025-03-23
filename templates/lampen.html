@@ -32,11 +32,17 @@
             <h3>{{lamp['naam']}}</h3>
         </div>
         <div class="w3-container w3-card-4 {{lamp['status']}}">
-            <div class="w3-container w3-half">
+            <div class="w3-container w3-quarter">
                 <p>Status:</p>
             </div>
-            <div class="w3-container w3-half">
+            <div class="w3-container w3-quarter">
                 <p>{{lamp['status']}}</p>
+            </div>
+            <div class="w3-container w3-quarter">
+                <p>Type:</p>
+            </div>
+            <div class="w3-container w3-quarter">
+                <p>{{lamp['archetype']}}</p>
             </div>
         </div>
         <div class="w3-container w3-card-4 {{lamp['status']}}">
@@ -44,14 +50,14 @@
                 <form action="/thuis/lampen" method="POST">
                     <input name="actie" type="hidden" value="lampaan">
                     <input name="lampid" type="hidden" value="{{lamp['id']}}">
-                    <input class="w3-btn Aan" type="submit" value="Aan">
+                    <input class="w3-btn w3-animate-right Aan" type="submit" value="Aan">
                 </form>
             </div>
             <div class="w3-container w3-half">
                 <form action="/thuis/lampen" method="POST">
                     <input name="actie" type="hidden" value="lampuit">
                     <input name="lampid" type="hidden" value="{{lamp['id']}}">
-                    <input class="w3-btn Uit" type="submit" value="Uit">
+                    <input class="w3-btn w3-animate-left Uit" type="submit" value="Uit">
                 </form>
             </div>
         </div>

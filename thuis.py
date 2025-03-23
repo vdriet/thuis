@@ -236,12 +236,14 @@ def haallampenentoon():
   for lamp in lampdata.get('data', {}):
     lampid = lamp.get('id')
     naam = lamp.get('metadata').get('name')
+    archetype = lamp.get('metadata').get('archetype')
     if lamp.get('on').get('on'):
       status = 'Aan'
     else:
       status = 'Uit'
     lampen.append({'id': lampid,
                    'naam': naam,
+                   'archetype': archetype,
                    'status': status})
   return render_template('lampen.html', lampen=lampen)
 
