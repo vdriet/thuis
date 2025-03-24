@@ -14,6 +14,7 @@ from cachetools import cached, TTLCache
 from flask import Flask, render_template, request, redirect
 from pysondb import db
 from requests import ReadTimeout
+from requests.exceptions import JSONDecodeError
 
 app = Flask(__name__,
             static_url_path='/static',
@@ -322,6 +323,9 @@ def haalwindsnelheid():  # pragma: no cover
       weerinfo = response.json()
   except ReadTimeout as e:
     print(f'Timeout while getting weerinfo: {e}, return 0')
+    return 0
+  except JSONDecodeError as e:
+    print(f'Result from weerlive.nl is not json: {e}, return 0')
     return 0
   if weerinfo is None or \
       weerinfo.get('liveweer', None) is None or \
