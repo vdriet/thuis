@@ -424,7 +424,12 @@ def test_lampenpagina(mock_requestsget, mock_env, client):
                                                               },
                                                              {'metadata': {'name': 'dummyuit'},
                                                               'on': {'on': False}
-                                                              }]}
+                                                              },
+                                                             {'metadata': {'name': 'dummydimbaar'},
+                                                              'on': {'on': False},
+                                                              'dimming': {'brightness': 23.34}
+                                                              }
+                                                             ]}
                                                    )
   response = client.get('/thuis/lampen')
 
@@ -433,6 +438,8 @@ def test_lampenpagina(mock_requestsget, mock_env, client):
   assert b">Aan<" in response.data
   assert b">dummyuit<" in response.data
   assert b">Uit<" in response.data
+  assert b">dummydimbaar<" in response.data
+  assert b"value=\"23.34\">" in response.data
   assert mock_requestsget.call_count == 1
   assert mock_env.call_count == 2
 
@@ -629,23 +636,33 @@ def test_schermenpaginapost_ververs(mock_ververs, client):
   assert mock_ververs.call_count == 1
 
 
-@patch('thuis.zetlampaanuit')
-def test_lampenpaginapost_aan(mock_zetlampaanuit, client):
+@patch('thuis.doeactieoplamp')
+def test_lampenpaginapost_aan(mock_doeactieoplamp, client):
   data = {'actie': 'lampaan', 'lampid': 'dummyid'}
   response = client.post('/thuis/lampen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis/lampen" in response.data
-  assert mock_zetlampaanuit.call_count == 1
+  assert mock_doeactieoplamp.call_count == 1
 
 
-@patch('thuis.zetlampaanuit')
-def test_lampenpaginapost_uit(mock_zetlampaanuit, client):
+@patch('thuis.doeactieoplamp')
+def test_lampenpaginapost_uit(mock_doeactieoplamp, client):
   data = {'actie': 'lampuit', 'lampid': 'dummyid'}
   response = client.post('/thuis/lampen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis/lampen" in response.data
-  assert mock_zetlampaanuit.call_count == 1
+  assert mock_doeactieoplamp.call_count == 1
+
+@patch('thuis.doeactieoplamp')
+def test_lampenpaginapost_dim(mock_doeactieoplamp, client):
+  data = {'actie': 'lampdim', 'lampid': 'dummyid', 'dimwaarde': '12.34'}
+  response = client.post('/thuis/lampen', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis/lampen" in response.data
+  assert mock_doeactieoplamp.call_count == 2

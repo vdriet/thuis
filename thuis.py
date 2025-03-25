@@ -239,6 +239,9 @@ def haallampenentoon():
     naam = lamp.get('metadata').get('name')
     archetype = lamp.get('metadata').get('archetype')
     dimable = lamp.get('dimming', None) is not None
+    dimwaarde = 100
+    if dimable:
+      dimwaarde = lamp.get('dimming').get('brightness')
     color = lamp.get('color', None) is not None
     if lamp.get('on').get('on'):
       status = 'Aan'
@@ -248,6 +251,7 @@ def haallampenentoon():
                    'naam': naam,
                    'archetype': archetype,
                    'dimable': dimable,
+                   'dimwaarde': dimwaarde,
                    'color': color,
                    'status': status})
   return render_template('lampen.html', lampen=lampen)
@@ -297,13 +301,18 @@ def verversschermen():
   deleteenv('schermen')
 
 
-def zetlampaanuit(lampid, status):
-  """ zet een lamp aan of uit """
+def doeactieoplamp(lampid, actie):
+  """ voer een actie uit op een lamp """
   hueip = leesenv('hueip')
   hueuser = leesenv('hueuser')
   path = f'light/{lampid}'
-  data = {'on': {'on': status}}
-  stuurgegevensnaarhue(hueip, hueuser, path, data)
+  stuurgegevensnaarhue(hueip, hueuser, path, actie)
+
+
+def zetlampaanuit(lampid, status):
+  """ zet een lamp aan of uit """
+  actie = {'on': {'on': status}}
+  doeactieoplamp(lampid, actie)
 
 
 def zetlampaan(lampid):
@@ -314,6 +323,13 @@ def zetlampaan(lampid):
 def zetlampuit(lampid):
   """ zet een lamp uit """
   zetlampaanuit(lampid, False)
+
+
+def dimlamp(lampid, dimwaarde):
+  """ dim een lamp """
+  zetlampaan(lampid)
+  actie = {'dimming': {'brightness': dimwaarde}}
+  doeactieoplamp(lampid, actie)
 
 
 @cached(cache=weercache)
@@ -478,6 +494,9 @@ def lampenenactiepagina():
     zetlampaan(lampid)
   elif actie == 'lampuit':
     zetlampuit(lampid)
+  elif actie == 'lampdim':
+    dimwaarde = request.form['dimwaarde']
+    dimlamp(lampid, float(dimwaarde))
   return redirect('/thuis/lampen')
 
 

@@ -47,11 +47,14 @@
         </div>
         {% if lamp['dimable'] %}
         <div class="w3-container w3-card-4 {{lamp['status']}}">
-            <div class="w3-container w3-half">
-                <p>Dimbaar:</p>
-            </div>
-            <div class="w3-container w3-half">
-                <p>Ja</p>
+            <div class="w3-container">
+                <form action="/thuis/lampen" method="POST">
+                    <input name="actie" type="hidden" value="lampdim">
+                    <input name="lampid" type="hidden" value="{{lamp['id']}}">
+                    <label class="w3-quarter" for="dimwaarde">Dim</label>
+                    <input class="w3-half w3-input Aan" id="dimwaarde" name="dimwaarde" type="range" value="{{lamp['dimwaarde']}}">
+                    <input class="w3-btn Aan" type="submit" value="Dim">
+                </form>
             </div>
         </div>
         {% endif %}
