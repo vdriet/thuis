@@ -45,6 +45,26 @@
                 <p>{{lamp['archetype']}}</p>
             </div>
         </div>
+        {% if lamp['dimable'] %}
+        <div class="w3-container w3-card-4 {{lamp['status']}}">
+            <div class="w3-container w3-half">
+                <p>Dimbaar:</p>
+            </div>
+            <div class="w3-container w3-half">
+                <p>Ja</p>
+            </div>
+        </div>
+        {% endif %}
+        {% if lamp['color'] %}
+        <div class="w3-container w3-card-4 {{lamp['status']}}">
+            <div class="w3-container w3-half">
+                <p>Kleur:</p>
+            </div>
+            <div class="w3-container w3-half">
+                <p>Ja</p>
+            </div>
+        </div>
+        {% endif %}
         <div class="w3-container w3-card-4 {{lamp['status']}}">
             <div class="w3-container w3-half">
                 <form action="/thuis/lampen" method="POST">

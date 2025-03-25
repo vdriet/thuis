@@ -238,6 +238,8 @@ def haallampenentoon():
     lampid = lamp.get('id')
     naam = lamp.get('metadata').get('name')
     archetype = lamp.get('metadata').get('archetype')
+    dimable = lamp.get('dimming', None) is not None
+    color = lamp.get('color', None) is not None
     if lamp.get('on').get('on'):
       status = 'Aan'
     else:
@@ -245,6 +247,8 @@ def haallampenentoon():
     lampen.append({'id': lampid,
                    'naam': naam,
                    'archetype': archetype,
+                   'dimable': dimable,
+                   'color': color,
                    'status': status})
   return render_template('lampen.html', lampen=lampen)
 
