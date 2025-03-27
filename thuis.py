@@ -13,8 +13,7 @@ import waitress
 from cachetools import cached, TTLCache
 from flask import Flask, render_template, request, redirect
 from pysondb import db
-from requests import ReadTimeout
-from requests.exceptions import JSONDecodeError
+from requests import ReadTimeout, JSONDecodeError
 
 app = Flask(__name__,
             static_url_path='/static',
@@ -229,6 +228,7 @@ def haallampenentoon():
   if not hueip or not hueuser:
     return redirect('/thuis')
   lampen = []
+  lampensorted = []
   lampdata = haalgegevensvanhue(hueip, hueuser, 'light')
 
   if len(lampdata.get('errors', [])) != 0:
@@ -254,7 +254,8 @@ def haallampenentoon():
                    'dimwaarde': dimwaarde,
                    'color': color,
                    'status': status})
-  return render_template('lampen.html', lampen=lampen)
+    lampensorted = sorted(lampen, key=lambda x: x['naam'])
+  return render_template('lampen.html', lampen=lampensorted)
 
 
 def verplaatsscherm(device, percentage):
