@@ -678,3 +678,13 @@ def test_lampenpaginapost_kleur(mock_doeactieoplamp, client):
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis/lampen" in response.data
   assert mock_doeactieoplamp.call_count == 3
+
+@patch('thuis.doeactieoplamp')
+def test_lampenpaginapost_kleurlagewaarde(mock_doeactieoplamp, client):
+  data = {'actie': 'lampkleur', 'lampid': 'dummyid', 'kleurwaarde': '#010203'}
+  response = client.post('/thuis/lampen', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis/lampen" in response.data
+  assert mock_doeactieoplamp.call_count == 3
