@@ -338,6 +338,18 @@ def kleurlamp(lampid, kleurwaarde):
   rood = float(int(kleurwaarde[1:3], 16)) / 255
   groen = float(int(kleurwaarde[3:5], 16)) / 255
   blauw = float(int(kleurwaarde[5:7], 16)) / 255
+  if rood > 0.04045:
+    rood = pow((rood + 0.055) / (1.0 + 0.055), 2.4)
+  else:
+    rood = rood / 12.92
+  if groen > 0.04045:
+    groen = pow((groen + 0.055) / (1.0 + 0.055), 2.4)
+  else:
+    groen = groen / 12.92
+  if blauw > 0.04045:
+    blauw = pow((blauw + 0.055) / (1.0 + 0.055), 2.4)
+  else:
+    blauw = blauw / 12.92
   xvalue = float(rood * 0.4124 + groen * 0.3576 + blauw * 0.1805)
   yvalue = float(rood * 0.2126 + groen * 0.7152 + blauw * 0.0722)
   zvalue = float(rood * 0.0193 + groen * 0.1192 + blauw * 0.9505)
