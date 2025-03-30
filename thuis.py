@@ -333,6 +333,22 @@ def dimlamp(lampid, dimwaarde):
   doeactieoplamp(lampid, actie)
 
 
+def kleurlamp(lampid, kleurwaarde):
+  """ verander de kleur van een lamp """
+  rood = float(int(kleurwaarde[1:3], 16)) / 255
+  groen = float(int(kleurwaarde[3:5], 16)) / 255
+  blauw = float(int(kleurwaarde[5:7], 16)) / 255
+  xvalue = float(rood * 0.4124 + groen * 0.3576 + blauw * 0.1805)
+  yvalue = float(rood * 0.2126 + groen * 0.7152 + blauw * 0.0722)
+  zvalue = float(rood * 0.0193 + groen * 0.1192 + blauw * 0.9505)
+  xwaarde = xvalue / (xvalue + yvalue + zvalue)
+  ywaarde = yvalue / (xvalue + yvalue + zvalue)
+  brightness = yvalue
+  dimlamp(lampid, brightness)
+  actie = {'color': {'xy': {'x': xwaarde, 'y': ywaarde}}}
+  doeactieoplamp(lampid, actie)
+
+
 @cached(cache=weercache)
 def haalwindsnelheid():  # pragma: no cover
   """ Haal de informatie van het weer van Hattem op """
@@ -498,6 +514,9 @@ def lampenenactiepagina():
   elif actie == 'lampdim':
     dimwaarde = request.form['dimwaarde']
     dimlamp(lampid, float(dimwaarde))
+  elif actie == 'lampkleur':
+    kleurwaarde = request.form['kleurwaarde']
+    kleurlamp(lampid, kleurwaarde)
   return redirect('/thuis/lampen')
 
 

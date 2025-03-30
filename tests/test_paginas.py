@@ -657,6 +657,7 @@ def test_lampenpaginapost_uit(mock_doeactieoplamp, client):
   assert b"/thuis/lampen" in response.data
   assert mock_doeactieoplamp.call_count == 1
 
+
 @patch('thuis.doeactieoplamp')
 def test_lampenpaginapost_dim(mock_doeactieoplamp, client):
   data = {'actie': 'lampdim', 'lampid': 'dummyid', 'dimwaarde': '12.34'}
@@ -666,3 +667,14 @@ def test_lampenpaginapost_dim(mock_doeactieoplamp, client):
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis/lampen" in response.data
   assert mock_doeactieoplamp.call_count == 2
+
+
+@patch('thuis.doeactieoplamp')
+def test_lampenpaginapost_kleur(mock_doeactieoplamp, client):
+  data = {'actie': 'lampkleur', 'lampid': 'dummyid', 'kleurwaarde': '#a1b2c3'}
+  response = client.post('/thuis/lampen', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis/lampen" in response.data
+  assert mock_doeactieoplamp.call_count == 3
