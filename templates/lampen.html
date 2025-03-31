@@ -65,7 +65,8 @@
                     <input name="actie" type="hidden" value="lampkleur">
                     <input name="lampid" type="hidden" value="{{lamp['id']}}">
                     <label class="w3-quarter" for="kleurwaarde">Kleur:</label>
-                    <input class="w3-half {{lamp['status']}}" id="kleurwaarde" name="kleurwaarde" type="color" value="">
+                    <input class="w3-half {{lamp['status']}}" id="kleurwaarde" name="kleurwaarde"
+                           type="color" value="{{lamp['rgbwaarde']}}">
                     <input class="w3-btn Aan" type="submit" value="Kleur">
                 </form>
             </div>

@@ -219,6 +219,34 @@ def haalschermenentoon():
   return render_template('schermen.html', schermen=schermen, windbft=windbft)
 
 
+def bepaalhexrgb(xwaarde, ywaarde, dimwaarde):
+  """ Bepaal de rgb waarde vanuit de x/y/dim """
+  zwaarde = 1.0 - xwaarde - ywaarde
+  tusseny = float(dimwaarde)
+  tussenx = (tusseny / ywaarde) * xwaarde
+  tussenz = (tusseny / ywaarde) * zwaarde
+
+  rood = tussenx * 1.656492 - tusseny * 0.354851 - tussenz * 0.255038
+  groen = -tussenx * 0.707196 + tusseny * 1.655397 + tussenz * 0.036152
+  blauw = tussenx * 0.051713 - tusseny * 0.121364 + tussenz * 1.011530
+
+  if rood <= 0.0031308:
+    rood = int((12.92 * rood) * 255)
+  else:
+    rood = int((1.055 * pow(rood, 1.0 / 2.4) - 0.055) * 255)
+  if groen <= 0.0031308:
+    groen = int((12.92 * groen) * 255)
+  else:
+    groen = int((1.055 * pow(groen, 1.0 / 2.4) - 0.055) * 255)
+  if blauw <= 0.0031308:
+    blauw = int((12.92 * blauw) * 255)
+  else:
+    blauw = int((1.055 * pow(blauw, 1.0 / 2.4) - 0.055) * 255)
+
+  retvalue = f'#{rood:02x}{groen:02x}{blauw:02x}'
+  return retvalue
+
+
 def haallampenentoon():
   """ Haal de status van de lampen toon deze
       Wanneer er gegevens missen, redirect naar hoofdpagina
@@ -228,34 +256,36 @@ def haallampenentoon():
   if not hueip or not hueuser:
     return redirect('/thuis')
   lampen = []
-  lampensorted = []
   lampdata = haalgegevensvanhue(hueip, hueuser, 'light')
 
   if len(lampdata.get('errors', [])) != 0:
     return redirect('/thuis')
 
   for lamp in lampdata.get('data', {}):
-    lampid = lamp.get('id')
-    naam = lamp.get('metadata').get('name')
-    archetype = lamp.get('metadata').get('archetype')
-    dimable = lamp.get('dimming', None) is not None
+    lampmetadata = lamp.get('metadata')
     dimwaarde = 100
-    if dimable:
+    if lamp.get('dimming', None) is not None:
       dimwaarde = lamp.get('dimming').get('brightness')
-    color = lamp.get('color', None) is not None
+    color = lamp.get('color', None)
+    rgbwaarde = '#000000'
+    if color is not None:
+      xywaarde = color.get('xy')
+      xwaarde = xywaarde.get('x')
+      ywaarde = xywaarde.get('y')
+      rgbwaarde = bepaalhexrgb(xwaarde, ywaarde, float(dimwaarde / 100))
     if lamp.get('on').get('on'):
       status = 'Aan'
     else:
       status = 'Uit'
-    lampen.append({'id': lampid,
-                   'naam': naam,
-                   'archetype': archetype,
-                   'dimable': dimable,
+    lampen.append({'id': lamp.get('id'),
+                   'naam': lampmetadata.get('name'),
+                   'archetype': lampmetadata.get('archetype'),
+                   'dimable': lamp.get('dimming', None) is not None,
                    'dimwaarde': dimwaarde,
                    'color': color,
+                   'rgbwaarde': rgbwaarde,
                    'status': status})
-    lampensorted = sorted(lampen, key=lambda x: x['naam'])
-  return render_template('lampen.html', lampen=lampensorted)
+  return render_template('lampen.html', lampen=sorted(lampen, key=lambda x: x['naam']))
 
 
 def verplaatsscherm(device, percentage):
@@ -355,7 +385,7 @@ def kleurlamp(lampid, kleurwaarde):
   zvalue = float(rood * 0.0193 + groen * 0.1192 + blauw * 0.9505)
   xwaarde = xvalue / (xvalue + yvalue + zvalue)
   ywaarde = yvalue / (xvalue + yvalue + zvalue)
-  brightness = yvalue
+  brightness = int(yvalue * 255)
   dimlamp(lampid, brightness)
   actie = {'color': {'xy': {'x': xwaarde, 'y': ywaarde}}}
   doeactieoplamp(lampid, actie)
