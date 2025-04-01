@@ -427,7 +427,8 @@ def test_lampenpagina(mock_requestsget, mock_env, client):
                                                               },
                                                              {'metadata': {'name': 'dummydimbaar'},
                                                               'on': {'on': False},
-                                                              'dimming': {'brightness': 23.34}
+                                                              'dimming': {'brightness': 23.34},
+                                                              'color': {'xy': {'x': 0.5612, 'y': 0.4042}}
                                                               }
                                                              ]}
                                                    )
@@ -678,6 +679,7 @@ def test_lampenpaginapost_kleur(mock_doeactieoplamp, client):
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis/lampen" in response.data
   assert mock_doeactieoplamp.call_count == 3
+
 
 @patch('thuis.doeactieoplamp')
 def test_lampenpaginapost_kleurlagewaarde(mock_doeactieoplamp, client):

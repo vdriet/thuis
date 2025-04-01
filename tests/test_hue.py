@@ -58,3 +58,21 @@ class MyTestCaseHue(unittest.TestCase):
     thuis.zetlampaan('lampid')
     self.assertEqual(mock_envdb.call_count, 2)
     self.assertEqual(mock_requestput.call_count, 1)
+
+  def test_kleurberekenen_04_04_40(self):
+    import thuis
+    kleurwaarde = thuis.bepaalhexrgbvanxy(0.4, 0.4, 40)
+    self.assertEqual(kleurwaarde, '#3d664d')
+    xwaarde, ywaarde, brightness = thuis.bepaalxyvanrgb(kleurwaarde)
+    self.assertEqual(xwaarde, 0.4)
+    self.assertEqual(ywaarde, 0.4)
+    self.assertEqual(brightness, 40)
+
+  def test_kleurberekenen_wit(self):
+    import thuis
+    kleurwaarde = thuis.bepaalhexrgbvanxy(0, 0, 100)
+    self.assertEqual(kleurwaarde, '#ffffff')
+    xwaarde, ywaarde, brightness = thuis.bepaalxyvanrgb(kleurwaarde)
+    self.assertEqual(xwaarde, 0)
+    self.assertEqual(ywaarde, 0)
+    self.assertEqual(brightness, 100)

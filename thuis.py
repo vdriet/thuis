@@ -1,5 +1,6 @@
 """ Besturing van apparatuur thuis """
 import _thread
+import colorsys
 import json
 import os
 from datetime import datetime
@@ -219,31 +220,26 @@ def haalschermenentoon():
   return render_template('schermen.html', schermen=schermen, windbft=windbft)
 
 
-def bepaalhexrgb(xwaarde, ywaarde, dimwaarde):
+def bepaalxyvanrgb(kleurwaarde):
+  """ Bepaal de xy waarde vanuit rgb """
+  rood = float(int(kleurwaarde[1:3], 16)) / 255.0
+  groen = float(int(kleurwaarde[3:5], 16)) / 255.0
+  blauw = float(int(kleurwaarde[5:7], 16)) / 255.0
+  hwaarde, swaarde, vwaarde = colorsys.rgb_to_hsv(rood, groen, blauw)
+  hwaarde = round(hwaarde, 2)
+  swaarde = round(swaarde, 2)
+  brightness = round(vwaarde * 100, 2)
+  return hwaarde, swaarde, brightness
+
+
+def bepaalhexrgbvanxy(xwaarde, ywaarde, dimwaarde):
   """ Bepaal de rgb waarde vanuit de x/y/dim """
-  zwaarde = 1.0 - xwaarde - ywaarde
-  tusseny = float(dimwaarde)
-  tussenx = (tusseny / ywaarde) * xwaarde
-  tussenz = (tusseny / ywaarde) * zwaarde
-
-  rood = tussenx * 1.656492 - tusseny * 0.354851 - tussenz * 0.255038
-  groen = -tussenx * 0.707196 + tusseny * 1.655397 + tussenz * 0.036152
-  blauw = tussenx * 0.051713 - tusseny * 0.121364 + tussenz * 1.011530
-
-  if rood <= 0.0031308:
-    rood = int((12.92 * rood) * 255)
-  else:
-    rood = int((1.055 * pow(rood, 1.0 / 2.4) - 0.055) * 255)
-  if groen <= 0.0031308:
-    groen = int((12.92 * groen) * 255)
-  else:
-    groen = int((1.055 * pow(groen, 1.0 / 2.4) - 0.055) * 255)
-  if blauw <= 0.0031308:
-    blauw = int((12.92 * blauw) * 255)
-  else:
-    blauw = int((1.055 * pow(blauw, 1.0 / 2.4) - 0.055) * 255)
-
-  retvalue = f'#{rood:02x}{groen:02x}{blauw:02x}'
+  vwaarde = float(dimwaarde / 100)
+  rood, groen, blauw = colorsys.hsv_to_rgb(xwaarde, ywaarde, vwaarde)
+  rwaarde = int(rood * 255.0)
+  gwaarde = int(groen * 255.0)
+  bwaarde = int(blauw * 255.0)
+  retvalue = f'#{rwaarde:02x}{gwaarde:02x}{bwaarde:02x}'
   return retvalue
 
 
@@ -272,7 +268,7 @@ def haallampenentoon():
       xywaarde = color.get('xy')
       xwaarde = xywaarde.get('x')
       ywaarde = xywaarde.get('y')
-      rgbwaarde = bepaalhexrgb(xwaarde, ywaarde, float(dimwaarde / 100))
+      rgbwaarde = bepaalhexrgbvanxy(xwaarde, ywaarde, dimwaarde)
     if lamp.get('on').get('on'):
       status = 'Aan'
     else:
@@ -365,27 +361,7 @@ def dimlamp(lampid, dimwaarde):
 
 def kleurlamp(lampid, kleurwaarde):
   """ verander de kleur van een lamp """
-  rood = float(int(kleurwaarde[1:3], 16)) / 255
-  groen = float(int(kleurwaarde[3:5], 16)) / 255
-  blauw = float(int(kleurwaarde[5:7], 16)) / 255
-  if rood > 0.04045:
-    rood = pow((rood + 0.055) / (1.0 + 0.055), 2.4)
-  else:
-    rood = rood / 12.92
-  if groen > 0.04045:
-    groen = pow((groen + 0.055) / (1.0 + 0.055), 2.4)
-  else:
-    groen = groen / 12.92
-  if blauw > 0.04045:
-    blauw = pow((blauw + 0.055) / (1.0 + 0.055), 2.4)
-  else:
-    blauw = blauw / 12.92
-  xvalue = float(rood * 0.4124 + groen * 0.3576 + blauw * 0.1805)
-  yvalue = float(rood * 0.2126 + groen * 0.7152 + blauw * 0.0722)
-  zvalue = float(rood * 0.0193 + groen * 0.1192 + blauw * 0.9505)
-  xwaarde = xvalue / (xvalue + yvalue + zvalue)
-  ywaarde = yvalue / (xvalue + yvalue + zvalue)
-  brightness = int(yvalue * 255)
+  xwaarde, ywaarde, brightness = bepaalxyvanrgb(kleurwaarde)
   dimlamp(lampid, brightness)
   actie = {'color': {'xy': {'x': xwaarde, 'y': ywaarde}}}
   doeactieoplamp(lampid, actie)
