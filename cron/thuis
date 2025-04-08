@@ -1,0 +1,1 @@
+@reboot root [ -x /opt/thuis/run.sh ] && cd /opt/thuis && ./run.sh
