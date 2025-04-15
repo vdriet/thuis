@@ -1,4 +1,3 @@
-from http.client import responses
 from unittest.mock import patch, MagicMock
 
 import pytest
