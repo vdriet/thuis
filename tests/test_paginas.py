@@ -46,13 +46,13 @@ def app():
   def thuishueuserpagina():
     return thuis.hueuserpagina()
 
-  @app.route('/thuis/tokens', methods=['GET'])
-  def thuistokenspagina():
-    return thuis.tokenspagina()
+  @app.route('/thuis/instellingen', methods=['GET'])
+  def thuisinstellingenpagina():
+    return thuis.instellingenpagina()
 
-  @app.route('/thuis/tokens', methods=['POST'])
-  def thuistokensactiepagina():
-    return thuis.tokensactiepagina()
+  @app.route('/thuis/instellingen', methods=['POST'])
+  def thuisinstellingenactiepagina():
+    return thuis.instellingenactiepagina()
 
   @app.route('/thuis/schermen', methods=['GET'])
   def thuisschermenpagina():
@@ -228,10 +228,10 @@ def test_hueuserpaginapost(mock_dbadd, client):
                       'gatewayCreationTime': 1739117276000,
                       'uuid': 'b3d4be51-1c5f-4f3c-acce-9f8a8f345328',
                       'scope': 'devmode'}])
-def test_tokenspaginaget(mock_getavailabletokens, mock_dbgetbyquery, client):
-  response = client.get('/thuis/tokens')
+def test_instellingenpaginaget(mock_getavailabletokens, mock_dbgetbyquery, client):
+  response = client.get('/thuis/instellingen')
 
-  assert b"<h1>Tokens</h1>" in response.data
+  assert b"<h1>Instellingen</h1>" in response.data
   assert b"<td>Thuis token</td>" in response.data
   assert b"<td>2025-02-01 1" in response.data
   assert b":10:50</td>" in response.data
@@ -249,8 +249,8 @@ def test_tokenspaginaget(mock_getavailabletokens, mock_dbgetbyquery, client):
 @patch('pysondb.db.JsonDatabase.deleteById',
        return_value=None)
 @patch('thuis.getavailabletokens', return_value={'error': 'unauthorized'})
-def test_tokenspaginaget_geensessie(mock_getavailabletokens, mock_dbdelete, mock_dbquery, client):
-  response = client.get('/thuis/tokens')
+def test_instellingenpaginaget_geensessie(mock_getavailabletokens, mock_dbdelete, mock_dbquery, client):
+  response = client.get('/thuis/instellingen')
 
   assert response.status_code == 302
   assert b"Redirecting..." in response.data
@@ -283,11 +283,11 @@ def test_tokenspaginaget_geensessie(mock_getavailabletokens, mock_dbdelete, mock
                       'gatewayCreationTime': 1739117276000,
                       'uuid': 'b3d4be51-1c5f-4f3c-acce-9f8a8f345328',
                       'scope': 'devmode'}]])
-def test_tokenspaginaget_geensessie_autologin(mock_getavailabletokens, mock_dbadd, mock_dbdelete, mock_dbquery,
+def test_instellingenpaginaget_geensessie_autologin(mock_getavailabletokens, mock_dbadd, mock_dbdelete, mock_dbquery,
                                               client):
-  response = client.get('/thuis/tokens')
+  response = client.get('/thuis/instellingen')
 
-  assert b"<h1>Tokens</h1>" in response.data
+  assert b"<h1>Instellingen</h1>" in response.data
   assert b"<td>Thuis token</td>" in response.data
   assert b"<td>2025-02-01 1" in response.data
   assert b":10:50</td>" in response.data
@@ -302,8 +302,8 @@ def test_tokenspaginaget_geensessie_autologin(mock_getavailabletokens, mock_dbad
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}]
                     ])
 @patch('thuis.getavailabletokens', return_value=[{'data': 'dummytoken'}])
-def test_tokenspaginaget_geenpod(mock_getavailabletokens, mock_dbquery, client):
-  response = client.get('/thuis/tokens')
+def test_instellingenpaginaget_geenpod(mock_getavailabletokens, mock_dbquery, client):
+  response = client.get('/thuis/instellingen')
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
@@ -319,8 +319,8 @@ def test_tokenspaginaget_geenpod(mock_getavailabletokens, mock_dbquery, client):
                     []
                     ])
 @patch('thuis.getavailabletokens', return_value=[{'data': 'dummytoken'}])
-def test_tokenspaginaget_geenjsessionid(mock_getavailabletokens, mock_dbquery, client):
-  response = client.get('/thuis/tokens')
+def test_instellingenpaginaget_geenjsessionid(mock_getavailabletokens, mock_dbquery, client):
+  response = client.get('/thuis/instellingen')
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
@@ -346,11 +346,11 @@ def test_tokenspaginaget_geenjsessionid(mock_getavailabletokens, mock_dbquery, c
                       'uuid': 'b3d4be51-1c5f-4f3c-acce-9f8a8f345328',
                       'scope': 'devmode'}])
 @patch('thuis.deletetoken', return_value=200)
-def test_tokenspaginapost_delete(mock_deletetoken, mock_gettokens, mock_getquery, client):
+def test_instellingenpaginapost_delete(mock_deletetoken, mock_gettokens, mock_getquery, client):
   data = {'actie': 'delete', 'uuid': '20547c11-73ce-475b-88be-6e30824b2b54'}
-  response = client.post('/thuis/tokens', data=data)
+  response = client.post('/thuis/instellingen', data=data)
 
-  assert b"<h1>Tokens</h1>" in response.data
+  assert b"<h1>Instellingen</h1>" in response.data
   assert mock_gettokens.call_count == 1
   assert mock_getquery.call_count == 2
   assert mock_deletetoken.call_count == 1
@@ -372,13 +372,13 @@ def test_tokenspaginapost_delete(mock_deletetoken, mock_gettokens, mock_getquery
                       'uuid': 'b3d4be51-1c5f-4f3c-acce-9f8a8f345328',
                       'scope': 'devmode'}])
 @patch('thuis.deletetoken', return_value=400)
-def test_tokenspaginapost_delete_geensessie(mock_deletetoken, mock_gettokens, mock_dbquery, client):
+def test_instellingenpaginapost_delete_geensessie(mock_deletetoken, mock_gettokens, mock_dbquery, client):
   data = {'actie': 'delete', 'uuid': '20547c11-73ce-475b-88be-6e30824b2b54'}
-  response = client.post('/thuis/tokens', data=data)
+  response = client.post('/thuis/instellingen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
-  assert b"/thuis/tokens" in response.data
+  assert b"/thuis/instellingen" in response.data
   assert mock_gettokens.call_count == 0
   assert mock_dbquery.call_count == 0
   assert mock_deletetoken.call_count == 1
@@ -400,11 +400,11 @@ def test_tokenspaginapost_delete_geensessie(mock_deletetoken, mock_gettokens, mo
                       'uuid': 'b3d4be51-1c5f-4f3c-acce-9f8a8f345328',
                       'scope': 'devmode'}])
 @patch('thuis.createtoken')
-def test_tokenspaginapost_createtoken(mock_createtoken, mock_gettokens, mock_dbquery, client):
+def test_instellingenpaginapost_createtoken(mock_createtoken, mock_gettokens, mock_dbquery, client):
   data = {'actie': 'create', 'label': 'dummy label'}
-  response = client.post('/thuis/tokens', data=data)
+  response = client.post('/thuis/instellingen', data=data)
 
-  assert b"<h1>Tokens</h1>" in response.data
+  assert b"<h1>Instellingen</h1>" in response.data
   assert mock_gettokens.call_count == 1
   assert mock_dbquery.call_count == 2
   assert mock_createtoken.call_count == 1

@@ -9,8 +9,15 @@
     <meta property="og:image" content="https://vanderiethattem.nl/img/hattemlogo.png"/>
     <meta property="og:title" content="Thuis"/>
     <title>Thuis</title>
+    <style>
+        .menu-thuis, .menu-thuis:hover {
+            color: #fff !important;
+            background-color: #2196F3 !important
+        }
+    </style>
 </head>
 <body>
+{% include "menu.html" %}
 <div class="w3-container w3-blue">
     <h1>Thuis</h1>
 </div>
@@ -88,7 +95,7 @@
         <li>Hue user: {{hueuser}}</li>
         <li><a href="/thuis/schermen">Status van de schermen</a></li>
         <li><a href="/thuis/lampen">Status van de lampen</a></li>
-        <li><a href="/thuis/tokens">Beheer tokens</a></li>
+        <li><a href="/thuis/instellingen">Instellingen</a></li>
     </ul>
 </div>
 {% endif %}

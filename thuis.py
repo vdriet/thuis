@@ -98,8 +98,8 @@ def deletetoken(uuid):
     return response.status_code
 
 
-def haaltokensentoon():
-  """ Haal de tokens van de server en toon deze
+def haalinstellingenentoon():
+  """ Haal de instellingen van de server en toon deze
       Wanneer er gegevens missen, redirect naar hoofdpagina
   """
   pod = leesenv('pod')
@@ -466,14 +466,14 @@ def hueuserpagina():
   return redirect('/thuis')
 
 
-@app.route('/thuis/tokens', methods=['GET'])
-def tokenspagina():
-  """ Toon de pagina met alle tokens """
-  return haaltokensentoon()
+@app.route('/thuis/instellingen', methods=['GET'])
+def instellingenpagina():
+  """ Toon de pagina met alle instellingen """
+  return haalinstellingenentoon()
 
 
-@app.route('/thuis/tokens', methods=['POST'])
-def tokensactiepagina():
+@app.route('/thuis/instellingen', methods=['POST'])
+def instellingenactiepagina():
   """ Verwerk een actie voor een token """
   actie = request.form.get('actie', '')
   if actie == 'delete':
@@ -481,13 +481,13 @@ def tokensactiepagina():
     responsecode = deletetoken(uuid)
     sleep(1)
     if responsecode == 200:
-      return haaltokensentoon()
+      return haalinstellingenentoon()
   elif actie == 'create':
     label = request.form['label']
     createtoken(label)
     sleep(1)
-    return haaltokensentoon()
-  return redirect('/thuis/tokens')
+    return haalinstellingenentoon()
+  return redirect('/thuis/instellingen')
 
 
 @app.route('/thuis/schermen', methods=['GET'])
