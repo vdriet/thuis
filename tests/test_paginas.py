@@ -189,10 +189,13 @@ def test_podpaginapost(mock_dbadd, client):
   assert mock_dbadd.call_count == 1
 
 
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[{'env': 'hueip', 'value': 'oldvalue', 'id': 192639182}],
+                    ])
 @patch('pysondb.db.JsonDatabase.deleteById',
        return_value=None)
 @patch('pysondb.db.JsonDatabase.add')
-def test_hueippaginapost(mock_dbadd, mock_dbdelete, client):
+def test_hueippaginapost(mock_dbadd, mock_dbdelete, mock_dbget, client):
   data = {'hueip': 'dummy'}
   response = client.post('/thuis/hueip', data=data)
 
@@ -201,12 +204,16 @@ def test_hueippaginapost(mock_dbadd, mock_dbdelete, client):
   assert b"/thuis" in response.data
   assert mock_dbadd.call_count == 1
   assert mock_dbdelete.call_count == 1
+  assert mock_dbget.call_count == 1
 
 
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[{'env': 'hueuser', 'value': 'oldvalue', 'id': 192639182}],
+                    ])
 @patch('pysondb.db.JsonDatabase.deleteById',
        return_value=None)
 @patch('pysondb.db.JsonDatabase.add')
-def test_hueuserpaginapost(mock_dbadd, mock_dbdelete, client):
+def test_hueuserpaginapost(mock_dbadd, mock_dbdelete, mock_dbget, client):
   data = {'hueuser': 'dummy'}
   response = client.post('/thuis/hueuser', data=data)
 
@@ -215,6 +222,7 @@ def test_hueuserpaginapost(mock_dbadd, mock_dbdelete, client):
   assert b"/thuis" in response.data
   assert mock_dbadd.call_count == 1
   assert mock_dbdelete.call_count == 1
+  assert mock_dbget.call_count == 1
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
