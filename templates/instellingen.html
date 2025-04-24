@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="nl"
+      xmlns="http://www.w3.org/1999/xhtml">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/static/w3.css">
+<head>
+    <meta charset="UTF-8">
+    <meta content="Pagina voor tonen van tokens." lang="nl-NL" name="description">
+    <meta property="og:image" content="https://vanderiethattem.nl/img/hattemlogo.png"/>
+    <meta property="og:title" content="Thuis"/>
+    <title>Instellingen</title>
+    <style>
+        .meun-instellingen, .meun-instellingen:hover {
+            color: #fff !important;
+            background-color: #2196F3 !important
+        }
+    </style>
+</head>
+<body>
+{% include "menu.html" %}
+<div class="w3-container w3-blue">
+    <h1>Instellingen</h1>
+</div>
+<div class="w3-card-4 w3-half">
+    <div class="w3-card-4">
+        <div class="w3-container w3-blue">
+            <h2>Tokens</h2>
+        </div>
+        <table class="w3-table-all w3-centered">
+            <thead>
+            <tr class="w3-light-grey">
+                <th>Label</th>
+                <th>Pod</th>
+                <th>Start</th>
+                <th>UUID</th>
+                <th>Delete</th>
+            </tr>
+            </thead>
+            {% for token in tokens %}
+            <tr>
+                <td>{{token['label']}}</td>
+                <td>{{token['pod']}}</td>
+                <td>{{token['start']}}</td>
+                <td>{{token['uuid']}}</td>
+                <td>
+                    <form class="w3-container" action="/thuis/instellingen" method="POST">
+                        <input name="actie" type="hidden" value="delete">
+                        <input name="uuid" type="hidden" value="{{token['uuid']}}">
+                        <input type="submit" value="Delete">
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="w3-card-4">
+        <form class="w3-container" action="/thuis/instellingen" method="POST">
+            <label for="label">Label</label>
+            <input id="label" name="label" type="text" placeholder="Label"/>
+            <input name="actie" type="hidden" value="create">
+            <input type="submit" value="Maak token">
+        </form>
+    </div>
+</div>
+<div class="w3-card-4 w3-quarter">
+    <div class="w3-container w3-blue">
+        <h2>HUE User</h2>
+    </div>
+    <form class="w3-container" action="/thuis/hueuser" method="POST">
+        <label for="hueuser">User voor de hue</label>
+        <input class="w3-input" id="hueuser" name="hueuser" type="text" value="{{hueuser}}">
+        <input class="w3-btn w3-blue" type="submit" value="Verstuur">
+    </form>
+    {% if not hueuser %}
+    <div class="w3-container w3-orange">
+        <p>Voor de werking is een userid voor de HUE-bridge nodig. Die is nog niet bekend.</p>
+    </div>
+    {% endif %}
+</div>
+<div class="w3-card-4 w3-quarter">
+    <div class="w3-container w3-blue">
+        <h2>HUE IP-adres</h2>
+    </div>
+    <form class="w3-container" action="/thuis/hueip" method="POST">
+        <label for="hueip">192.168.1.123</label>
+        <input class="w3-input" id="hueip" name="hueip" type="text" value="{{hueip}}">
+        <input class="w3-btn w3-blue" type="submit" value="Verstuur">
+    </form>
+    {% if not hueuser %}
+    <div class="w3-container w3-orange">
+        <p>Voor de werking is het IP-adres van de HUE-bridge nodig. Die is nog niet bekend.</p>
+    </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

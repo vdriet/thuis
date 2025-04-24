@@ -104,6 +104,8 @@ def haalinstellingenentoon():
   """
   pod = leesenv('pod')
   jsessionid = leesenv('jsessionid')
+  hueip = leesenv('hueip')
+  hueuser = leesenv('hueuser')
   if not pod or not jsessionid:
     return redirect('/thuis')
   servertokens = getavailabletokens(jsessionid, pod)
@@ -125,7 +127,10 @@ def haalinstellingenentoon():
                    'start': start,
                    'uuid': token['uuid'],
                    })
-  return render_template('tokens.html', tokens=tokens)
+  return render_template('instellingen.html',
+                         tokens=tokens,
+                         hueip=hueip,
+                         hueuser=hueuser)
 
 
 def haalgegevensvansomfy(token, pod, path):
@@ -454,6 +459,7 @@ def podpagina():
 def hueippagina():
   """ Verwerk het opvoeren van de pod """
   hueip = request.form['hueip']
+  deleteenv('hueip')
   envdb.add({'env': 'hueip', 'value': hueip})
   return redirect('/thuis')
 
@@ -462,8 +468,9 @@ def hueippagina():
 def hueuserpagina():
   """ Verwerk het opvoeren van de pod """
   hueuser = request.form['hueuser']
+  deleteenv('hueuser')
   envdb.add({'env': 'hueuser', 'value': hueuser})
-  return redirect('/thuis')
+  return redirect('/thuis/instellingen')
 
 
 @app.route('/thuis/instellingen', methods=['GET'])

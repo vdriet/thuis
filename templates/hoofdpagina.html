@@ -54,34 +54,6 @@
         <p>Inloggen bij Somfy.</p>
     </div>
 </div>
-{% elif not hueip %}
-<div class="w3-card-4" style="width:50%;">
-    <div class="w3-container w3-blue">
-        <h2>HUE IP-adres</h2>
-    </div>
-    <form class="w3-container" action="/thuis/hueip" method="POST">
-        <label for="hueip">192.168.1.123</label>
-        <input class="w3-input" id="hueip" name="hueip" type="text" value="">
-        <input class="w3-btn w3-blue" type="submit" value="Verstuur">
-    </form>
-    <div class="w3-container w3-blue">
-        <p>Voor de werking is het IP-adres van de HUE-bridge nodig. Die is nog niet bekend.</p>
-    </div>
-</div>
-{% elif not hueuser %}
-<div class="w3-card-4" style="width:50%;">
-    <div class="w3-container w3-blue">
-        <h2>HUE User</h2>
-    </div>
-    <form class="w3-container" action="/thuis/hueuser" method="POST">
-        <label for="hueuser">a19s6dj37dajd</label>
-        <input class="w3-input" id="hueuser" name="hueuser" type="text" value="">
-        <input class="w3-btn w3-blue" type="submit" value="Verstuur">
-    </form>
-    <div class="w3-container w3-blue">
-        <p>Voor de werking is een userid voor de HUE-bridge nodig. Die is nog niet bekend.</p>
-    </div>
-</div>
 {% else %}
 <div class="w3-card-4" style="width:50%;">
     <div class="w3-container w3-blue">
