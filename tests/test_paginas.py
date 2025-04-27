@@ -97,7 +97,7 @@ def test_404(client):
                     [{'env': 'password', 'value': 'password', 'id': 9852364}],
                     [{'env': 'token', 'value': '4321c0de', 'id': 236910029}],
                     [{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
-                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     ])
 def test_hoofdpaginaget(mock_dbgetbyquery, client):
   response = client.get('/thuis')
@@ -113,7 +113,7 @@ def test_hoofdpaginaget(mock_dbgetbyquery, client):
                     [{'env': 'password', 'value': 'password', 'id': 9852364}],
                     [{'env': 'token', 'value': '4321c0de', 'id': 236910029}],
                     [{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
-                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     ])
 def test_hoofdpaginaget_geenjsessionid(mock_dbgetbyquery, client):
   response = client.get('/thuis')
@@ -125,11 +125,10 @@ def test_hoofdpaginaget_geenjsessionid(mock_dbgetbyquery, client):
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
                     [],
-                    [],
-                    [],
-                    [{'env': 'token', 'value': '4321c0de', 'id': 236910029}],
                     [{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
-                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    [],
+                    [],
                     ])
 def test_instellingenget_geenjsessionidengeenuserpass(mock_dbgetbyquery, client):
   response = client.get('/thuis/instellingen')
@@ -265,7 +264,7 @@ def test_instellingenpaginaget_geensessie(mock_getavailabletokens, mock_dbdelete
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
                     [{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
-                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     [{'env': 'userid', 'value': 'email@adres.com', 'id': 236910029}],
                     [{'env': 'password', 'value': 'password', 'id': 236910029}],
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
@@ -313,7 +312,7 @@ def test_instellingenpaginaget_geenpod(mock_getavailabletokens, mock_dbquery, cl
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
                     [],
                     [{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
-                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     [{'env': 'userid', 'value': 'email@adres.com', 'id': 236910029}],
                     [{'env': 'password', 'value': 'password', 'id': 236910029}],
                     ])
@@ -435,7 +434,7 @@ def test_instellingenpaginapost_createtoken(mock_createtoken, mock_gettokens, mo
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
-                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     ]
        )
 @patch('requests.get')
@@ -469,7 +468,7 @@ def test_lampenpagina(mock_requestsget, mock_env, client):
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[],
-                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     ]
        )
 @patch('requests.get')
@@ -490,7 +489,7 @@ def test_lampenpagina_missendegegevens(mock_requestsget, mock_env, client):
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
-                    [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     ]
        )
 @patch('requests.get')
