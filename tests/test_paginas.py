@@ -211,10 +211,10 @@ def test_hueuserpaginapost(mock_dbadd, mock_dbdelete, mock_dbget, client):
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
+                    [],
+                    [],
                     [{'env': 'userid', 'value': 'email@adres.com', 'id': 23649273}],
                     [{'env': 'password', 'value': 'password', 'id': 9852364}],
-                    [],
-                    [],
                     ])
 @patch('thuis.getavailabletokens',
        return_value=[{'label': 'Python token',
@@ -241,7 +241,7 @@ def test_instellingenpaginaget(mock_getavailabletokens, mock_dbgetbyquery, clien
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
-                    [{'env': 'jsessionid', 'value': 'E3~5678DECA1234CAFE', 'id': 912900128634}],
+                    [],
                     [],
                     [],
                     [],
@@ -266,26 +266,16 @@ def test_instellingenpaginaget_geensessie(mock_getavailabletokens, mock_dbdelete
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
                     [{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
                     [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
-                    [{'env': 'jsessionid', 'value': 'E3~5678DECA1234CAFE', 'id': 912900128634}],
                     [{'env': 'userid', 'value': 'email@adres.com', 'id': 236910029}],
                     [{'env': 'password', 'value': 'password', 'id': 236910029}],
+                    [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
                     ])
 @patch('pysondb.db.JsonDatabase.deleteById',
        return_value=None)
 @patch('pysondb.db.JsonDatabase.add',
        return_value=None)
 @patch('thuis.getavailabletokens',
-       side_effect=[{'error': 'unauthorized'},
-                    [{'label': 'Python token',
-                      'gatewayId': '1234-4321-5678',
-                      'gatewayCreationTime': 1738422650000,
-                      'uuid': '20547c11-73ce-475b-88be-6e30824b2b54',
-                      'scope': 'devmode'},
-                     {'label': 'Thuis token',
-                      'gatewayId': '1234-4321-5678',
-                      'gatewayCreationTime': 1739117276000,
-                      'uuid': 'b3d4be51-1c5f-4f3c-acce-9f8a8f345328',
-                      'scope': 'devmode'}]])
+       side_effect=[{'error': 'unauthorized'}])
 def test_instellingenpaginaget_invalidsessie_login(mock_getavailabletokens, mock_dbadd, mock_dbdelete, mock_dbquery,
                                                    client):
   response = client.get('/thuis/instellingen')
@@ -294,9 +284,9 @@ def test_instellingenpaginaget_invalidsessie_login(mock_getavailabletokens, mock
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis/instellingen" in response.data
   assert mock_dbquery.call_count == 7
+  assert mock_getavailabletokens.call_count == 1
   assert mock_dbdelete.call_count == 1
   assert mock_dbadd.call_count == 0
-  assert mock_getavailabletokens.call_count == 1
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
@@ -324,7 +314,6 @@ def test_instellingenpaginaget_geenpod(mock_getavailabletokens, mock_dbquery, cl
                     [],
                     [{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
                     [{'env': 'huiuser', 'value': '7da7a68792t3r', 'id': 23164382}],
-                    [{'env': 'jsessionid', 'value': 'E3~5678DECA1234CAFE', 'id': 912900128634}],
                     [{'env': 'userid', 'value': 'email@adres.com', 'id': 236910029}],
                     [{'env': 'password', 'value': 'password', 'id': 236910029}],
                     ])
@@ -339,8 +328,10 @@ def test_instellingenpaginaget_geenpod(mock_getavailabletokens, mock_dbquery, cl
                       'gatewayCreationTime': 1739117276000,
                       'uuid': 'b3d4be51-1c5f-4f3c-acce-9f8a8f345328',
                       'scope': 'devmode'}])
-@patch('thuis.somfylogin', return_value='E3~5678CAFE1234DECA', )
-def test_instellingenpaginaget_geenjsessionid_autologin(mock_somfylogin, mock_getavailabletokens, mock_dbquery, client):
+@patch('thuis.somfylogin', return_value='E3~5678CAFE1234DECA')
+@patch('pysondb.db.JsonDatabase.add')
+def test_instellingenpaginaget_geenjsessionid_autologin(mock_adddb, mock_somfylogin, mock_getavailabletokens,
+                                                        mock_dbquery, client):
   response = client.get('/thuis/instellingen')
 
   assert response.status_code == 200
@@ -351,6 +342,7 @@ def test_instellingenpaginaget_geenjsessionid_autologin(mock_somfylogin, mock_ge
   assert mock_somfylogin.call_count == 1
   assert mock_dbquery.call_count == 6
   assert mock_getavailabletokens.call_count == 1
+  assert mock_adddb.call_count == 1
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
