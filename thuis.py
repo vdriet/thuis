@@ -106,31 +106,32 @@ def haalinstellingenentoon():
   jsessionid = leesenv('jsessionid')
   hueip = leesenv('hueip')
   hueuser = leesenv('hueuser')
-  if not pod or not jsessionid:
-    return redirect('/thuis')
-  servertokens = getavailabletokens(jsessionid, pod)
-  if isinstance(servertokens, dict) and not servertokens.get('error', None) is None:
-    deleteenv('jsessionid')
-    userid = leesenv('userid')
-    password = leesenv('password')
-    if not userid or not password:
-      return redirect('/thuis')
+  userid = leesenv('userid')
+  password = leesenv('password')
+  if not jsessionid and userid and password:
     jsessionid = somfylogin(userid, password)
     envdb.add({'env': 'jsessionid', 'value': jsessionid})
-    servertokens = getavailabletokens(jsessionid, pod)
   tokens = []
-  for token in servertokens:
-    aanmaaktijdstip = int(token['gatewayCreationTime'] / 1000)
-    start = datetime.fromtimestamp(aanmaaktijdstip).strftime('%Y-%m-%d %H:%M:%S')
-    tokens.append({'label': token['label'],
-                   'pod': token['gatewayId'],
-                   'start': start,
-                   'uuid': token['uuid'],
-                   })
+  if pod and jsessionid:
+    servertokens = getavailabletokens(jsessionid, pod)
+    if isinstance(servertokens, dict) and not servertokens.get('error', None) is None:
+      deleteenv('jsessionid')
+      return redirect('/thuis/instellingen')
+    for token in servertokens:
+      aanmaaktijdstip = int(token['gatewayCreationTime'] / 1000)
+      start = datetime.fromtimestamp(aanmaaktijdstip).strftime('%Y-%m-%d %H:%M:%S')
+      tokens.append({'label': token['label'],
+                     'pod': token['gatewayId'],
+                     'start': start,
+                     'uuid': token['uuid'],
+                     })
   return render_template('instellingen.html',
                          tokens=tokens,
                          hueip=hueip,
-                         hueuser=hueuser)
+                         hueuser=hueuser,
+                         pod=pod,
+                         userid=userid,
+                         password=password, )
 
 
 def haalgegevensvansomfy(token, pod, path):

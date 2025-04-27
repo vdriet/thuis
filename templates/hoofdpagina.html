@@ -21,40 +21,6 @@
 <div class="w3-container w3-blue">
     <h1>Thuis</h1>
 </div>
-{% if not pod %}
-<div class="w3-card-4" style="width:50%;">
-    <div class="w3-container w3-blue">
-        <h2>POD</h2>
-    </div>
-    <form class="w3-container" action="/thuis/pod" method="POST">
-        <label for="pod">1234-5678-9012</label>
-        <input class="w3-input" id="pod" name="pod" type="text" value="">
-        <input class="w3-btn w3-blue" type="submit" value="Verstuur">
-    </form>
-    <div class="w3-container w3-blue">
-        <p>Voor de werking is het nummer van de POD nodig. Die is nog niet bekend.</p>
-    </div>
-</div>
-{% elif not jsessionid and (not userid or not password) %}
-<div class="w3-card-4" style="width:50%;">
-    <div class="w3-container w3-blue">
-        <h2>Somfy-login</h2>
-    </div>
-    <form class="w3-container" action="/thuis/pod" method="POST">
-        <label for="userid">E-mailadres</label>
-        <input class="w3-input" id="userid" name="userid" type="text" value="">
-        <label for="password">Wachtwoord</label>
-        <input class="w3-input" id="password" name="password" type="password" value="">
-        <input class="w3-check" id="savelogin" name="savelogin" type="checkbox" checked>
-        <label for="savelogin">Bewaar de gebruiker</label>
-        <br/>
-        <input class="w3-btn w3-blue" type="submit" value="Login">
-    </form>
-    <div class="w3-container w3-blue">
-        <p>Inloggen bij Somfy.</p>
-    </div>
-</div>
-{% else %}
 <div class="w3-card-4" style="width:50%;">
     <div class="w3-container w3-blue">
         <h2>Informatie</h2>
@@ -70,6 +36,5 @@
         <li><a href="/thuis/instellingen">Instellingen</a></li>
     </ul>
 </div>
-{% endif %}
 </body>
 </html>

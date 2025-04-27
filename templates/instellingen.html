@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="/static/w3.css">
 <head>
     <meta charset="UTF-8">
-    <meta content="Pagina voor tonen van tokens." lang="nl-NL" name="description">
+    <meta content="Pagina voor instellingen." lang="nl-NL" name="description">
     <meta property="og:image" content="https://vanderiethattem.nl/img/hattemlogo.png"/>
     <meta property="og:title" content="Thuis"/>
     <title>Instellingen</title>
@@ -21,7 +21,7 @@
 <div class="w3-container w3-blue">
     <h1>Instellingen</h1>
 </div>
-<div class="w3-card-4 w3-half">
+<div class="w3-card-4">
     <div class="w3-card-4">
         <div class="w3-container w3-blue">
             <h2>Tokens</h2>
@@ -64,6 +64,41 @@
 </div>
 <div class="w3-card-4 w3-quarter">
     <div class="w3-container w3-blue">
+        <h2>POD</h2>
+    </div>
+    <form class="w3-container" action="/thuis/pod" method="POST">
+        <label for="pod">POD nr</label>
+        <input class="w3-input" id="pod" name="pod" type="text" value="{{pod}}">
+        <input class="w3-btn w3-blue" type="submit" value="Verstuur">
+    </form>
+    {% if not pod %}
+    <div class="w3-container w3-blue">
+        <p>Voor de werking is het nummer van de POD nodig. Die is nog niet bekend.</p>
+    </div>
+    {% endif %}
+</div>
+<div class="w3-card-4 w3-quarter">
+    <div class="w3-container w3-blue">
+        <h2>Somfy-login</h2>
+    </div>
+    <form class="w3-container" action="/thuis/login" method="POST">
+        <label for="userid">E-mailadres</label>
+        <input class="w3-input" id="userid" name="userid" type="text" value="{{userid}}">
+        <label for="password">Wachtwoord</label>
+        <input class="w3-input" id="password" name="password" type="password" value="{{password}}">
+        <input class="w3-check" id="savelogin" name="savelogin" type="checkbox" checked>
+        <label for="savelogin">Bewaar de gebruiker</label>
+        <br/>
+        <input class="w3-btn w3-blue" type="submit" value="Login">
+    </form>
+    {% if not userid or not password %}
+    <div class="w3-container w3-blue">
+        <p>Inloggen bij Somfy.</p>
+    </div>
+    {% endif %}
+</div>
+<div class="w3-card-4 w3-quarter">
+    <div class="w3-container w3-blue">
         <h2>HUE User</h2>
     </div>
     <form class="w3-container" action="/thuis/hueuser" method="POST">
@@ -82,7 +117,7 @@
         <h2>HUE IP-adres</h2>
     </div>
     <form class="w3-container" action="/thuis/hueip" method="POST">
-        <label for="hueip">192.168.1.123</label>
+        <label for="hueip">Adres</label>
         <input class="w3-input" id="hueip" name="hueip" type="text" value="{{hueip}}">
         <input class="w3-btn w3-blue" type="submit" value="Verstuur">
     </form>
