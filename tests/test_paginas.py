@@ -435,18 +435,23 @@ def test_instellingenpaginapost_createtoken(mock_createtoken, mock_gettokens, mo
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
                     [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    [],
                     ]
        )
 @patch('requests.get')
-def test_lampenpagina(mock_requestsget, mock_env, client):
+@patch('pysondb.db.JsonDatabase.add')
+def test_lampenpagina(mock_envadd, mock_requestsget, mock_env, client):
   mock_requestsget.return_value = maakmockresponse({'errors': [],
-                                                    'data': [{'metadata': {'name': 'dummyaan'},
+                                                    'data': [{'id': 'dummyaan_id',
+                                                              'metadata': {'name': 'dummyaan'},
                                                               'on': {'on': True}
                                                               },
-                                                             {'metadata': {'name': 'dummyuit'},
+                                                             {'id': 'dummyuit_id',
+                                                              'metadata': {'name': 'dummyuit'},
                                                               'on': {'on': False}
                                                               },
-                                                             {'metadata': {'name': 'dummydimbaar'},
+                                                             {'id': 'dummydimbaar_id',
+                                                              'metadata': {'name': 'dummydimbaar'},
                                                               'on': {'on': False},
                                                               'dimming': {'brightness': 23.34},
                                                               'color': {'xy': {'x': 0.5612, 'y': 0.4042}}
@@ -463,7 +468,8 @@ def test_lampenpagina(mock_requestsget, mock_env, client):
   assert b">dummydimbaar<" in response.data
   assert b"value=\"23.34\">" in response.data
   assert mock_requestsget.call_count == 1
-  assert mock_env.call_count == 2
+  assert mock_env.call_count == 3
+  assert mock_envadd.call_count == 1
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
@@ -490,6 +496,7 @@ def test_lampenpagina_missendegegevens(mock_requestsget, mock_env, client):
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
                     [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    [],
                     ]
        )
 @patch('requests.get')
@@ -505,7 +512,7 @@ def test_lampenpagina_error(mock_requestsget, mock_env, client):
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis" in response.data
   assert mock_requestsget.call_count == 1
-  assert mock_env.call_count == 2
+  assert mock_env.call_count == 3
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',

@@ -249,6 +249,15 @@ def bepaalhexrgbvanxy(xwaarde, ywaarde, dimwaarde):
   return retvalue
 
 
+def zetlampenindb(lampen):
+  """ Plaats de lmapen in de envdb """
+  dblampen = []
+  for lamp in lampen:
+    lampenv = {'id': lamp.get('id'), 'name': lamp.get('name')}
+    dblampen.append(lampenv)
+  envdb.add({'env': 'lampen', 'value': dblampen})
+
+
 def haallampenentoon():
   """ Haal de status van de lampen toon deze
       Wanneer er gegevens missen, redirect naar hoofdpagina
@@ -257,6 +266,7 @@ def haallampenentoon():
   hueuser = leesenv('hueuser')
   if not hueip or not hueuser:
     return redirect('/thuis')
+  dblampen = leesenv('lampen')
   lampen = []
   lampdata = haalgegevensvanhue(hueip, hueuser, 'light')
 
@@ -287,6 +297,9 @@ def haallampenentoon():
                    'color': color,
                    'rgbwaarde': rgbwaarde,
                    'status': status})
+  if not dblampen:
+    zetlampenindb(lampen)
+
   return render_template('lampen.html', lampen=sorted(lampen, key=lambda x: x['naam']))
 
 
@@ -330,7 +343,7 @@ def openalles():
 
 
 def verversschermen():
-  """ Verplaats alle schermen """
+  """ Ververs de opgeslagen schermen """
   deleteenv('schermen')
 
 
@@ -371,6 +384,16 @@ def kleurlamp(lampid, kleurwaarde):
   dimlamp(lampid, brightness)
   actie = {'color': {'xy': {'x': xwaarde, 'y': ywaarde}}}
   doeactieoplamp(lampid, actie)
+
+
+def allelampenuit():
+  """ Alle lampen uit """
+  print('ToDo: alle lampen uit')
+
+
+def ververslampen():
+  """ Ververs de opgeslagen lampen """
+  deleteenv('lampen')
 
 
 @cached(cache=weercache)
@@ -532,17 +555,24 @@ def schermenactiepagina():
 def lampenenactiepagina():
   """ Verwerk het verplaatsen van een of meer schermen """
   actie = request.form['actie']
-  lampid = request.form['lampid']
   if actie == 'lampaan':
+    lampid = request.form['lampid']
     zetlampaan(lampid)
   elif actie == 'lampuit':
+    lampid = request.form['lampid']
     zetlampuit(lampid)
   elif actie == 'lampdim':
+    lampid = request.form['lampid']
     dimwaarde = request.form['dimwaarde']
     dimlamp(lampid, float(dimwaarde))
   elif actie == 'lampkleur':
+    lampid = request.form['lampid']
     kleurwaarde = request.form['kleurwaarde']
     kleurlamp(lampid, kleurwaarde)
+  elif actie == 'allesuit':
+    allelampenuit()
+  elif actie == 'ververs':
+    ververslampen()
   return redirect('/thuis/lampen')
 
 
