@@ -59,6 +59,31 @@ class MyTestCaseHue(unittest.TestCase):
     self.assertEqual(mock_envdb.call_count, 2)
     self.assertEqual(mock_requestput.call_count, 1)
 
+  @mock.patch('pysondb.db.JsonDatabase.getByQuery',
+              side_effect=[[{'env': 'lampen', 'value': [{"id": "guid-1-2-3", "naam": "Test Lamp"},
+                                                        {"id": "guid-4-5-6", "naam": "Lamp 2"}], 'id': 192378239}],
+                           [{'env': 'hueip', 'value': '4.3.2.1', 'id': 82265347}],
+                           [{'env': 'hueuser', 'value': 'abcd1234qwer8765', 'id': 918273548237}],
+                           [{'env': 'hueip', 'value': '4.3.2.1', 'id': 82265347}],
+                           [{'env': 'hueuser', 'value': 'abcd1234qwer8765', 'id': 918273548237}],
+                           ])
+  @mock.patch('requests.put')
+  def test_zetallelampenuit(self, mock_requestput, mock_envdb):
+    import thuis
+    thuis.allelampenuit()
+    self.assertEqual(mock_envdb.call_count, 5)
+    self.assertEqual(mock_requestput.call_count, 2)
+
+  @mock.patch('pysondb.db.JsonDatabase.getByQuery',
+              return_value=[{'env': 'lampen', 'value': [], 'id': 29346298364}])
+  @mock.patch('pysondb.db.JsonDatabase.deleteById')
+  def test_ververslampen(self, mock_delete, mock_query):
+    import thuis
+    thuis.ververslampen()
+
+    self.assertEqual(mock_delete.call_count, 1)
+    self.assertEqual(mock_query.call_count, 1)
+
   def test_kleurberekenen_04_04_40(self):
     import thuis
     kleurwaarde = thuis.bepaalhexrgbvanxy(0.4, 0.4, 40)

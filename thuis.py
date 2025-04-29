@@ -253,7 +253,7 @@ def zetlampenindb(lampen):
   """ Plaats de lmapen in de envdb """
   dblampen = []
   for lamp in lampen:
-    lampenv = {'id': lamp.get('id'), 'name': lamp.get('name')}
+    lampenv = {'id': lamp.get('id'), 'naam': lamp.get('naam')}
     dblampen.append(lampenv)
   envdb.add({'env': 'lampen', 'value': dblampen})
 
@@ -388,7 +388,10 @@ def kleurlamp(lampid, kleurwaarde):
 
 def allelampenuit():
   """ Alle lampen uit """
-  print('ToDo: alle lampen uit')
+  lampen = leesenv('lampen')
+  for lamp in lampen:
+    lampid = lamp.get('id')
+    zetlampuit(lampid)
 
 
 def ververslampen():

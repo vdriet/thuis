@@ -656,7 +656,7 @@ def test_schermenpaginapost_openalles(mock_openalles, mock_sluitalles, client):
 
 @patch('thuis.verversschermen')
 def test_schermenpaginapost_ververs(mock_ververs, client):
-  data = {'actie': 'ververs', 'device': 'dummyid', 'percentage': 'abc'}
+  data = {'actie': 'ververs'}
   response = client.post('/thuis/schermen', data=data)
 
   assert response.status_code == 302
@@ -709,12 +709,23 @@ def test_lampenpaginapost_kleur(mock_doeactieoplamp, client):
   assert mock_doeactieoplamp.call_count == 3
 
 
-@patch('thuis.doeactieoplamp')
-def test_lampenpaginapost_kleurlagewaarde(mock_doeactieoplamp, client):
-  data = {'actie': 'lampkleur', 'lampid': 'dummyid', 'kleurwaarde': '#010203'}
+@patch('thuis.allelampenuit')
+def test_lampenpaginapost_allesuit(mock_allelampenuit, client):
+  data = {'actie': 'allesuit'}
   response = client.post('/thuis/lampen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis/lampen" in response.data
-  assert mock_doeactieoplamp.call_count == 3
+  assert mock_allelampenuit.call_count == 1
+
+
+@patch('thuis.ververslampen')
+def test_lampenpaginapost_ververs(mock_ververs, client):
+  data = {'actie': 'ververs'}
+  response = client.post('/thuis/lampen', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis/lampen" in response.data
+  assert mock_ververs.call_count == 1
