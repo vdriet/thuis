@@ -252,8 +252,10 @@ def bepaalhexrgbvanxy(xwaarde, ywaarde, dimwaarde):
 def zetlampenindb(lampen):
   """ Plaats de lmapen in de envdb """
   dblampen = []
+  volgorde = 1
   for lamp in lampen:
-    lampenv = {'id': lamp.get('id'), 'naam': lamp.get('naam')}
+    lampenv = {'id': lamp.get('id'), 'naam': lamp.get('naam'), 'volgorde': volgorde}
+    volgorde += 1
     dblampen.append(lampenv)
   envdb.add({'env': 'lampen', 'value': dblampen})
 
@@ -298,7 +300,7 @@ def haallampenentoon():
                    'rgbwaarde': rgbwaarde,
                    'status': status})
   if not dblampen:
-    zetlampenindb(lampen)
+    zetlampenindb(sorted(lampen, key=lambda x: x['naam']))
 
   return render_template('lampen.html', lampen=sorted(lampen, key=lambda x: x['naam']))
 
