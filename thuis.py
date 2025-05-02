@@ -252,10 +252,24 @@ def bepaalhexrgbvanxy(xwaarde, ywaarde, dimwaarde):
 def zetlampenindb(lampen):
   """ Plaats de lmapen in de envdb """
   dblampen = []
-  volgorde = 1
+  gridbreedte = leesenv('gridbreedte')
+  if gridbreedte is None:
+    gridbreedte = 3
+    envdb.add({'env': 'gridbreedte', 'value': gridbreedte})
+  gridhoogte = leesenv('gridhoogte')
+  if gridhoogte is None:
+    gridhoogte = 4
+    envdb.add({'env': 'gridhoogte', 'value': gridhoogte})
+  volgordex = 1
+  volgordey = 1
   for lamp in lampen:
-    lampenv = {'id': lamp.get('id'), 'naam': lamp.get('naam'), 'volgorde': volgorde}
-    volgorde += 1
+    lampenv = {'id': lamp.get('id'),
+               'naam': lamp.get('naam'),
+               'volgorde': volgordey * 10 + volgordex}
+    volgordex += 1
+    if volgordex > gridbreedte:
+      volgordex = 1
+      volgordey += 1
     dblampen.append(lampenv)
   envdb.add({'env': 'lampen', 'value': dblampen})
 

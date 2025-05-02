@@ -436,6 +436,8 @@ def test_instellingenpaginapost_createtoken(mock_createtoken, mock_gettokens, mo
        side_effect=[[{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
                     [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     [],
+                    [],
+                    [],
                     ]
        )
 @patch('requests.get')
@@ -468,8 +470,8 @@ def test_lampenpagina(mock_envadd, mock_requestsget, mock_env, client):
   assert b">dummydimbaar<" in response.data
   assert b"value=\"23.34\">" in response.data
   assert mock_requestsget.call_count == 1
-  assert mock_env.call_count == 3
-  assert mock_envadd.call_count == 1
+  assert mock_env.call_count == 5
+  assert mock_envadd.call_count == 3
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
