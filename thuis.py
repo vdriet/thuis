@@ -108,6 +108,8 @@ def haalinstellingenentoon():
   hueuser = leesenv('hueuser')
   userid = leesenv('userid')
   password = leesenv('password')
+  gridbreedte = leesenv('gridbreedte')
+  gridhoogte = leesenv('gridhoogte')
   if not jsessionid and userid and password:
     jsessionid = somfylogin(userid, password)
     envdb.add({'env': 'jsessionid', 'value': jsessionid})
@@ -131,7 +133,9 @@ def haalinstellingenentoon():
                          hueuser=hueuser,
                          pod=pod,
                          userid=userid,
-                         password=password, )
+                         password=password,
+                         gridbreedte=gridbreedte,
+                         gridhoogte=gridhoogte, )
 
 
 def haalgegevensvansomfy(token, pod, path):
@@ -500,7 +504,7 @@ def podpagina():
 
 @app.route('/thuis/hueip', methods=['POST'])
 def hueippagina():
-  """ Verwerk het opvoeren van de pod """
+  """ Verwerk het opvoeren van het ip van de hue """
   hueip = request.form['hueip']
   deleteenv('hueip')
   envdb.add({'env': 'hueip', 'value': hueip})
@@ -509,10 +513,20 @@ def hueippagina():
 
 @app.route('/thuis/hueuser', methods=['POST'])
 def hueuserpagina():
-  """ Verwerk het opvoeren van de pod """
+  """ Verwerk het opvoeren van de hueuser """
   hueuser = request.form['hueuser']
   deleteenv('hueuser')
   envdb.add({'env': 'hueuser', 'value': hueuser})
+  return redirect('/thuis/instellingen')
+
+
+@app.route('/thuis/grid', methods=['POST'])
+def gridpagina():
+  """ Verwerk het aanpassen van de gridlayout """
+  deleteenv('gridbreedte')
+  envdb.add({'env': 'gridbreedte', 'value': request.form['gridbreedte']})
+  deleteenv('gridhoogte')
+  envdb.add({'env': 'gridhoogte', 'value': request.form['gridhoogte']})
   return redirect('/thuis/instellingen')
 
 
