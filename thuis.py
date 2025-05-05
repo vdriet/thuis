@@ -319,8 +319,13 @@ def haallampenentoon():
                    'status': status})
   if not dblampen:
     zetlampenindb(sorted(lampen, key=lambda x: x['naam']))
-
-  return render_template('lampen.html', lampen=sorted(lampen, key=lambda x: x['naam']))
+  gridbreedte = leesenv('gridbreedte')
+  gridhoogte = leesenv('gridhoogte')
+  return render_template('lampen.html',
+                         lampen=sorted(lampen, key=lambda x: x['naam']),
+                         gridbreedte=gridbreedte,
+                         gridhoogte=gridhoogte,
+                         )
 
 
 def verplaatsscherm(device, percentage):
@@ -524,9 +529,9 @@ def hueuserpagina():
 def gridpagina():
   """ Verwerk het aanpassen van de gridlayout """
   deleteenv('gridbreedte')
-  envdb.add({'env': 'gridbreedte', 'value': request.form['gridbreedte']})
+  envdb.add({'env': 'gridbreedte', 'value': int(request.form['gridbreedte'])})
   deleteenv('gridhoogte')
-  envdb.add({'env': 'gridhoogte', 'value': request.form['gridhoogte']})
+  envdb.add({'env': 'gridhoogte', 'value': int(request.form['gridhoogte'])})
   return redirect('/thuis/instellingen')
 
 
