@@ -475,9 +475,17 @@ def test_instellingenpaginapost_createtoken(mock_createtoken, mock_gettokens, mo
        side_effect=[[{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
                     [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     [],
-                    [],
-                    [],
-                    [],
+                    [{'env': 'gridbreedte', 'value': 2, 'id': 13478564}],
+                    [{'env': 'gridhoogte', 'value': 5, 'id': 923784393}],
+                    [{"env": "lampen",
+                      "value": [{"id": "dummyaan_id", "naam": "dummyaan", "volgorde": 11},
+                                {"id": "dummyuit_id", "naam": "dummyuit", "volgorde": 12},
+                                {"id": "dummydimbaar_id", "naam": "dummydimbaar", "volgorde": 21}],
+                      "id": 293874398
+                      }
+                     ],
+                    [{'env': 'gridbreedte', 'value': 2, 'id': 13478564}],
+                    [{'env': 'gridhoogte', 'value': 5, 'id': 923784393}],
                     [],
                     ]
        )
@@ -511,7 +519,59 @@ def test_lampenpagina(mock_envadd, mock_requestsget, mock_env, client):
   assert b">dummydimbaar<" in response.data
   assert b"value=\"23.34\">" in response.data
   assert mock_requestsget.call_count == 1
-  assert mock_env.call_count == 7
+  assert mock_env.call_count == 8
+  assert mock_envadd.call_count == 1
+
+
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[{'env': 'hueip', 'value': '1.2.3.4', 'id': 298346936}],
+                    [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
+                    [],
+                    [],
+                    [],
+                    [{"env": "lampen",
+                      "value": [{"id": "dummyaan_id", "naam": "dummyaan", "volgorde": 11},
+                                {"id": "dummyuit_id", "naam": "dummyuit", "volgorde": 12},
+                                {"id": "dummydimbaar_id", "naam": "dummydimbaar", "volgorde": 21}],
+                      "id": 293874398
+                      }
+                     ],
+                    [{'env': 'gridbreedte', 'value': 3, 'id': 13478564}],
+                    [{'env': 'gridhoogte', 'value': 4, 'id': 923784393}],
+                    [],
+                    ]
+       )
+@patch('requests.get')
+@patch('pysondb.db.JsonDatabase.add')
+def test_lampenpagina_defaultgrid(mock_envadd, mock_requestsget, mock_env, client):
+  mock_requestsget.return_value = maakmockresponse({'errors': [],
+                                                    'data': [{'id': 'dummyaan_id',
+                                                              'metadata': {'name': 'dummyaan'},
+                                                              'on': {'on': True}
+                                                              },
+                                                             {'id': 'dummyuit_id',
+                                                              'metadata': {'name': 'dummyuit'},
+                                                              'on': {'on': False}
+                                                              },
+                                                             {'id': 'dummydimbaar_id',
+                                                              'metadata': {'name': 'dummydimbaar'},
+                                                              'on': {'on': False},
+                                                              'dimming': {'brightness': 23.34},
+                                                              'color': {'xy': {'x': 0.5612, 'y': 0.4042}}
+                                                              }
+                                                             ]}
+                                                   )
+  response = client.get('/thuis/lampen')
+
+  assert b"<h1>Lampen</h1>" in response.data
+  assert b">dummyaan<" in response.data
+  assert b">Aan<" in response.data
+  assert b">dummyuit<" in response.data
+  assert b">Uit<" in response.data
+  assert b">dummydimbaar<" in response.data
+  assert b"value=\"23.34\">" in response.data
+  assert mock_requestsget.call_count == 1
+  assert mock_env.call_count == 8
   assert mock_envadd.call_count == 3
 
 

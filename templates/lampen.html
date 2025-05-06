@@ -10,6 +10,16 @@
     <meta property="og:title" content="Lampen"/>
     <title>Lampen</title>
     <style>
+        .container {
+            display: grid;
+        }
+        {% for h in range(1, gridhoogte+1) %}
+        {% for b in range(1, gridbreedte+1) %}
+        .item{{h}}{{b}} {
+            grid-area: {{h}} / {{b}} / auto;
+        }
+        {% endfor %}
+        {% endfor %}
         .menu-lampen, .menu-lampen:hover {
             color: #fff !important;
             background-color: #2196F3 !important
@@ -30,71 +40,73 @@
     <div class="w3-container w3-center w3-blue">
         <h1>Lampen</h1>
     </div>
-    {% for lamp in lampen %}
-    <div class="w3-panel w3-third w3-card-4">
-        <div class="w3-container w3-blue">
-            <h3>{{lamp['naam']}}</h3>
+    <div class="container">
+        {% for lamp in lampen %}
+        <div class="item{{lamp['volgorde']}} w3-panel">
+            <div class="w3-container w3-blue">
+                <h3>{{lamp['naam']}}</h3>
+            </div>
+            <div class="w3-container w3-card-4 {{lamp['status']}}">
+                <div class="w3-container w3-quarter">
+                    <p>Status:</p>
+                </div>
+                <div class="w3-container w3-quarter">
+                    <p>{{lamp['status']}}</p>
+                </div>
+                <div class="w3-container w3-quarter">
+                    <p>Type:</p>
+                </div>
+                <div class="w3-container w3-quarter">
+                    <p>{{lamp['archetype']}}</p>
+                </div>
+            </div>
+            {% if lamp['dimable'] %}
+            <div class="w3-container w3-card-4 {{lamp['status']}}">
+                <div class="w3-container">
+                    <form action="/thuis/lampen" method="POST">
+                        <input name="actie" type="hidden" value="lampdim">
+                        <input name="lampid" type="hidden" value="{{lamp['id']}}">
+                        <label class="w3-quarter" for="dimwaarde">Dim:</label>
+                        <input class="w3-half w3-input Aan" id="dimwaarde" name="dimwaarde" type="range"
+                               value="{{lamp['dimwaarde']}}">
+                        <input class="w3-btn Aan" type="submit" value="Dim">
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            {% if lamp['color'] %}
+            <div class="w3-container w3-card-4 {{lamp['status']}}">
+                <div class="w3-container">
+                    <form action="/thuis/lampen" method="POST">
+                        <input name="actie" type="hidden" value="lampkleur">
+                        <input name="lampid" type="hidden" value="{{lamp['id']}}">
+                        <label class="w3-quarter" for="kleurwaarde">Kleur:</label>
+                        <input class="w3-half {{lamp['status']}}" id="kleurwaarde" name="kleurwaarde"
+                               type="color" value="{{lamp['rgbwaarde']}}">
+                        <input class="w3-btn Aan" type="submit" value="Kleur">
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            <div class="w3-container w3-card-4 {{lamp['status']}}">
+                <div class="w3-container w3-half">
+                    <form action="/thuis/lampen" method="POST">
+                        <input name="actie" type="hidden" value="lampaan">
+                        <input name="lampid" type="hidden" value="{{lamp['id']}}">
+                        <input class="w3-btn w3-animate-right Aan" type="submit" value="Aan">
+                    </form>
+                </div>
+                <div class="w3-container w3-half">
+                    <form action="/thuis/lampen" method="POST">
+                        <input name="actie" type="hidden" value="lampuit">
+                        <input name="lampid" type="hidden" value="{{lamp['id']}}">
+                        <input class="w3-btn w3-animate-left Uit" type="submit" value="Uit">
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="w3-container w3-card-4 {{lamp['status']}}">
-            <div class="w3-container w3-quarter">
-                <p>Status:</p>
-            </div>
-            <div class="w3-container w3-quarter">
-                <p>{{lamp['status']}}</p>
-            </div>
-            <div class="w3-container w3-quarter">
-                <p>Type:</p>
-            </div>
-            <div class="w3-container w3-quarter">
-                <p>{{lamp['archetype']}}</p>
-            </div>
-        </div>
-        {% if lamp['dimable'] %}
-        <div class="w3-container w3-card-4 {{lamp['status']}}">
-            <div class="w3-container">
-                <form action="/thuis/lampen" method="POST">
-                    <input name="actie" type="hidden" value="lampdim">
-                    <input name="lampid" type="hidden" value="{{lamp['id']}}">
-                    <label class="w3-quarter" for="dimwaarde">Dim:</label>
-                    <input class="w3-half w3-input Aan" id="dimwaarde" name="dimwaarde" type="range"
-                           value="{{lamp['dimwaarde']}}">
-                    <input class="w3-btn Aan" type="submit" value="Dim">
-                </form>
-            </div>
-        </div>
-        {% endif %}
-        {% if lamp['color'] %}
-        <div class="w3-container w3-card-4 {{lamp['status']}}">
-            <div class="w3-container">
-                <form action="/thuis/lampen" method="POST">
-                    <input name="actie" type="hidden" value="lampkleur">
-                    <input name="lampid" type="hidden" value="{{lamp['id']}}">
-                    <label class="w3-quarter" for="kleurwaarde">Kleur:</label>
-                    <input class="w3-half {{lamp['status']}}" id="kleurwaarde" name="kleurwaarde"
-                           type="color" value="{{lamp['rgbwaarde']}}">
-                    <input class="w3-btn Aan" type="submit" value="Kleur">
-                </form>
-            </div>
-        </div>
-        {% endif %}
-        <div class="w3-container w3-card-4 {{lamp['status']}}">
-            <div class="w3-container w3-half">
-                <form action="/thuis/lampen" method="POST">
-                    <input name="actie" type="hidden" value="lampaan">
-                    <input name="lampid" type="hidden" value="{{lamp['id']}}">
-                    <input class="w3-btn w3-animate-right Aan" type="submit" value="Aan">
-                </form>
-            </div>
-            <div class="w3-container w3-half">
-                <form action="/thuis/lampen" method="POST">
-                    <input name="actie" type="hidden" value="lampuit">
-                    <input name="lampid" type="hidden" value="{{lamp['id']}}">
-                    <input class="w3-btn w3-animate-left Uit" type="submit" value="Uit">
-                </form>
-            </div>
-        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
     <div class="w3-panel w3-margin w3-card-4">
         <div class="w3-container w3-blue">
             <h2>Acties</h2>
