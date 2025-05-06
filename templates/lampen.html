@@ -47,16 +47,18 @@
                 <h3>{{lamp['naam']}}</h3>
             </div>
             <div class="w3-container w3-card-4 {{lamp['status']}}">
-                <div class="w3-container w3-quarter">
-                    <p>Status:</p>
+                <div class="w3-third">
+                    <div class="w3-container w3-half">
+                        <p>Status:</p>
+                    </div>
+                    <div class="w3-container w3-half">
+                        <p>{{lamp['status']}}</p>
+                    </div>
                 </div>
-                <div class="w3-container w3-quarter">
-                    <p>{{lamp['status']}}</p>
-                </div>
-                <div class="w3-container w3-quarter">
+                <div class="w3-container w3-third">
                     <p>Type:</p>
                 </div>
-                <div class="w3-container w3-quarter">
+                <div class="w3-container w3-third">
                     <p>{{lamp['archetype']}}</p>
                 </div>
             </div>
