@@ -319,12 +319,10 @@ def haallampenentoon():
                    'status': status})
   if not dblampen:
     zetlampenindb(sorted(lampen, key=lambda x: x['naam']))
-  gridbreedte = leesenv('gridbreedte')
-  gridhoogte = leesenv('gridhoogte')
   return render_template('lampen.html',
                          lampen=sorted(lampen, key=lambda x: x['naam']),
-                         gridbreedte=gridbreedte,
-                         gridhoogte=gridhoogte,
+                         gridbreedte=leesenv('gridbreedte'),
+                         gridhoogte=leesenv('gridhoogte'),
                          )
 
 
