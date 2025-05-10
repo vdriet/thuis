@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="nl"
+      xmlns="http://www.w3.org/1999/xhtml">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/static/w3.css">
+<head>
+    <meta charset="UTF-8">
+    <meta content="Pagina voor instellingen voor de lampen." lang="nl-NL" name="description">
+    <meta property="og:image" content="https://vanderiethattem.nl/img/hattemlogo.png"/>
+    <meta property="og:title" content="Lampengrid"/>
+    <title>Lampengrid</title>
+    <style>
+        .container {
+            display: grid;
+        }
+        {% for h in range(1, gridhoogte+1) %}
+        {% for b in range(1, gridbreedte+1) %}
+        .item{{h}}{{b}} {
+            grid-area: {{h}} / {{b}} / auto;
+        }
+        {% endfor %}
+        {% endfor %}
+        .gridactie {
+            grid-area: {{gridhoogte}}+1 / auto / auto;
+        }
+        .menu-lampen, .menu-lampen:hover {
+            color: #fff !important;
+            background-color: #2196F3 !important
+        }
+    </style>
+</head>
+<body>
+{% include "menu.html" %}
+<div class="w3-center w3-card-4">
+    <div class="w3-container w3-center w3-blue">
+        <h1>Lampengrid</h1>
+    </div>
+    <form action="/thuis/lampengrid" method="POST">
+        <div class="container">
+            {% for lamp in lampen %}
+            <div class="item{{lamp['volgorde']}} w3-panel">
+                <div class="w3-container w3-blue">
+                    <h3>{{lamp['naam']}}</h3>
+                </div>
+                <div class="w3-container w3-card-4">
+                    <div class="w3-container">
+                            <label for="{{lamp['id']}}">Plaats</label>
+                            <input class="w3-input" id="{{lamp['id']}}" name="{{lamp['id']}}"
+                                   type="text" value="{{lamp['volgorde']}}">
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="w3-container gridactie">
+            <input class="w3-btn w3-animate-right Aan" type="submit" value="Verstuur">
+        </div>
+    </form>
+</div>
+</body>
+</html>
