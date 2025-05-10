@@ -67,12 +67,20 @@ def app():
     return thuis.schermenactiepagina()
 
   @app.route('/thuis/lampen', methods=['GET'])
-  def thuislampenenpagina():
+  def thuislampenpagina():
     return thuis.lampenpagina()
 
   @app.route('/thuis/lampen', methods=['POST'])
-  def thuislampenenactiepagina():
-    return thuis.lampenenactiepagina()
+  def thuislampenactiepagina():
+    return thuis.lampenactiepagina()
+
+  @app.route('/thuis/lampengrid', methods=['GET'])
+  def thuislampengridpagina():
+    return thuis.lampengridpagina()
+
+  @app.route('/thuis/lampengrid', methods=['POST'])
+  def thuislampengridactiepagina():
+    return thuis.lampengridactiepagina()
 
   yield app
 
@@ -832,3 +840,43 @@ def test_lampenpaginapost_ververs(mock_ververs, client):
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis/lampen" in response.data
   assert mock_ververs.call_count == 1
+
+
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[
+         [{'env': 'lampen', 'value': [{"id": "dummyid1", "naam": "Lampnaam1", "volgorde": 11},
+                                      {"id": "dummyid2", "naam": "Lampnaam2", "volgorde": 22}], 'id': 92734098234}],
+         [{'env': 'gridbreedte', 'value': 2, 'id': 13478564}],
+         [{'env': 'gridhoogte', 'value': 5, 'id': 923784393}],
+       ])
+def test_lampengrid(mock_env, client):
+  response = client.get('/thuis/lampengrid')
+  assert b"<h1>Lampengrid</h1>" in response.data
+  assert b">Lampnaam1<" in response.data
+  assert b"id=\"dummyid1\"" in response.data
+  assert b"value=\"11\"" in response.data
+  assert b">Lampnaam2<" in response.data
+  assert b"id=\"dummyid2\"" in response.data
+  assert b"value=\"22\"" in response.data
+  assert mock_env.call_count == 3
+
+
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[
+         [{'env': 'lampen', 'value': [{"id": "dummyid1", "naam": "Lampnaam1", "volgorde": 11},
+                                      {"id": "dummyid2", "naam": "Lampnaam2", "volgorde": 22}], 'id': 92734098234}],
+         [{'env': 'gridbreedte', 'value': 2, 'id': 13478564}],
+         [{'env': 'gridhoogte', 'value': 5, 'id': 923784393}],
+       ])
+@patch('pysondb.db.JsonDatabase.deleteById', return_value=None)
+@patch('pysondb.db.JsonDatabase.add')
+def test_lampengrid_post(mock_add, mock_del, mock_env, client):
+  data = {'dummyid1': '11', 'dummyid2': '33'}
+  response = client.post('/thuis/lampengrid', data=data)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis" in response.data
+  assert mock_env.call_count == 2
+  assert mock_del.call_count == 1
+  assert mock_add.call_count == 1

@@ -585,20 +585,6 @@ def lampengridpagina():
                          gridhoogte=leesenv('gridhoogte'),
                          )
 
-@app.route('/thuis/lampengrid', methods=['POST'])
-def lampengridactiepagina():
-  """ Verwerk de aanpassingen van de lampengrid """
-  lampen = leesenv('lampen')
-  for key in request.form.keys():
-    val = request.form[key]
-    for lamp in lampen:
-      if lamp['id'] == key:
-        lamp['volgorde'] = int(val)
-        break
-  deleteenv('lampen')
-  envdb.add({'env': 'lampen', 'value': lampen})
-  return redirect('/thuis/lampengrid')
-
 
 @app.route('/thuis/schermen', methods=['POST'])
 def schermenactiepagina():
@@ -619,7 +605,7 @@ def schermenactiepagina():
 
 
 @app.route('/thuis/lampen', methods=['POST'])
-def lampenenactiepagina():
+def lampenactiepagina():
   """ Verwerk het verplaatsen van een of meer schermen """
   actie = request.form['actie']
   if actie == 'lampaan':
@@ -641,6 +627,21 @@ def lampenenactiepagina():
   elif actie == 'ververs':
     ververslampen()
   return redirect('/thuis/lampen')
+
+
+@app.route('/thuis/lampengrid', methods=['POST'])
+def lampengridactiepagina():
+  """ Verwerk de aanpassingen van de lampengrid """
+  lampen = leesenv('lampen')
+  for key in request.form.keys():
+    val = request.form[key]
+    for lamp in lampen:
+      if lamp['id'] == key:
+        lamp['volgorde'] = int(val)
+        break
+  deleteenv('lampen')
+  envdb.add({'env': 'lampen', 'value': lampen})
+  return redirect('/thuis/lampengrid')
 
 
 def startwebserver():
