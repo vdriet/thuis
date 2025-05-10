@@ -575,6 +575,31 @@ def lampenpagina():
   return haallampenentoon()
 
 
+@app.route('/thuis/lampengrid', methods=['GET'])
+def lampengridpagina():
+  """ Toon de pagina met de lampengrid """
+  lampen = leesenv('lampen')
+  return render_template('lampengrid.html',
+                         lampen=sorted(lampen, key=lambda x: x['naam']),
+                         gridbreedte=leesenv('gridbreedte'),
+                         gridhoogte=leesenv('gridhoogte'),
+                         )
+
+@app.route('/thuis/lampengrid', methods=['POST'])
+def lampengridactiepagina():
+  """ Verwerk de aanpassingen van de lampengrid """
+  lampen = leesenv('lampen')
+  for key in request.form.keys():
+    val = request.form[key]
+    for lamp in lampen:
+      if lamp['id'] == key:
+        lamp['volgorde'] = int(val)
+        break
+  deleteenv('lampen')
+  envdb.add({'env': 'lampen', 'value': lampen})
+  return redirect('/thuis/lampengrid')
+
+
 @app.route('/thuis/schermen', methods=['POST'])
 def schermenactiepagina():
   """ Verwerk het verplaatsen van een of meer schermen """
