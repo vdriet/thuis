@@ -22,6 +22,7 @@ app = Flask(__name__,
 envdb = db.getDb('envdb.json')
 BASEURL = 'ha101-1.overkiz.com'
 weercache = TTLCache(maxsize=1, ttl=900)
+zonnesterktecache = TTLCache(maxsize=1, ttl=900)
 monitoringcache = TTLCache(maxsize=1, ttl=86400)
 
 
@@ -302,9 +303,7 @@ def haallampenentoon():
     rgbwaarde = '#000000'
     if color is not None:
       xywaarde = color.get('xy')
-      xwaarde = xywaarde.get('x')
-      ywaarde = xywaarde.get('y')
-      rgbwaarde = bepaalhexrgbvanxy(xwaarde, ywaarde, dimwaarde)
+      rgbwaarde = bepaalhexrgbvanxy(xywaarde.get('x'), xywaarde.get('y'), dimwaarde)
     if lamp.get('on').get('on'):
       status = 'Aan'
     else:
@@ -325,10 +324,12 @@ def haallampenentoon():
       if lamp.get('id') == lamp2.get('id'):
         lamp2['volgorde'] = lamp.get('volgorde')
         break
+  zonnesterkte = haalzonnesterkte()['value']
   return render_template('lampen.html',
                          lampen=sorted(lampen, key=lambda x: x['naam']),
                          gridbreedte=leesenv('gridbreedte'),
                          gridhoogte=leesenv('gridhoogte'),
+                         zonnesterkte=zonnesterkte
                          )
 
 
@@ -642,6 +643,45 @@ def lampengridactiepagina():
   deleteenv('lampen')
   envdb.add({'env': 'lampen', 'value': lampen})
   return redirect('/thuis/lampengrid')
+
+
+def haalzonnesensors(pod, token):
+  """ Ophalen van de zonnesensors en in de db zetten """
+  sensorlijst = []
+  path = f'setup/devices/controllables/{quote_plus("io:LightIOSystemSensor")}'
+  sensorurls = haalgegevensvansomfy(token, pod, path)
+  print(sensorurls)
+  if not (isinstance(sensorurls, dict) and not sensorurls.get('error', None) is None):
+    for sensorurl in sensorurls:
+      sensorurlencoded = quote_plus(sensorurl)
+      device = haalgegevensvansomfy(token, pod, f'setup/devices/{sensorurlencoded}')
+      sensorlijst.append({'label': device['label'], 'device': sensorurl})
+  envdb.add({'env': 'sensors', 'value': sensorlijst})
+  return sensorlijst
+
+
+@cached(cache=zonnesterktecache)
+def haalzonnesterkte():
+  """ Haal de zonnesterkte op """
+  token = leesenv('token')
+  pod = leesenv('pod')
+  if not token or not pod:
+    return redirect('/thuis/instellingen')
+  sensors = leesenv('sensors')
+  if sensors is None:
+    sensors = haalzonnesensors(pod, token)
+    print(sensors)
+  lichtsterkte = 'core:LuminanceState'
+  sensorwaarde = {'value': -1}
+  for sensor in sensors:
+    sensorurlencoded = quote_plus(sensor['device'])
+    sensorwaarde = haalgegevensvansomfy(token,
+                                        pod,
+                                        f'setup/devices/{sensorurlencoded}/states/{lichtsterkte}')
+    if isinstance(sensorwaarde, dict) and not sensorwaarde.get('error', None) is None:
+      return redirect('/thuis')
+  print(sensorwaarde)
+  return sensorwaarde
 
 
 def startwebserver():

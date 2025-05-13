@@ -499,7 +499,8 @@ def test_instellingenpaginapost_createtoken(mock_createtoken, mock_gettokens, mo
        )
 @patch('requests.get')
 @patch('pysondb.db.JsonDatabase.add')
-def test_lampenpagina(mock_envadd, mock_requestsget, mock_env, client):
+@patch('thuis.haalzonnesterkte', side_effect=[{'value': 123}])
+def test_lampenpagina(mock_zonnesterkte, mock_envadd, mock_requestsget, mock_env, client):
   mock_requestsget.return_value = maakmockresponse({'errors': [],
                                                     'data': [{'id': 'dummyaan_id',
                                                               'metadata': {'name': 'dummyaan'},
@@ -529,6 +530,7 @@ def test_lampenpagina(mock_envadd, mock_requestsget, mock_env, client):
   assert mock_requestsget.call_count == 1
   assert mock_env.call_count == 8
   assert mock_envadd.call_count == 1
+  assert mock_zonnesterkte.call_count == 1
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
@@ -551,7 +553,8 @@ def test_lampenpagina(mock_envadd, mock_requestsget, mock_env, client):
        )
 @patch('requests.get')
 @patch('pysondb.db.JsonDatabase.add')
-def test_lampenpagina_defaultgrid(mock_envadd, mock_requestsget, mock_env, client):
+@patch('thuis.haalzonnesterkte', side_effect=[{'value': 123}])
+def test_lampenpagina_defaultgrid(mock_zonnesterkte, mock_envadd, mock_requestsget, mock_env, client):
   mock_requestsget.return_value = maakmockresponse({'errors': [],
                                                     'data': [{'id': 'dummyaan_id',
                                                               'metadata': {'name': 'dummyaan'},
@@ -581,6 +584,7 @@ def test_lampenpagina_defaultgrid(mock_envadd, mock_requestsget, mock_env, clien
   assert mock_requestsget.call_count == 1
   assert mock_env.call_count == 8
   assert mock_envadd.call_count == 3
+  assert mock_zonnesterkte.call_count == 1
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
