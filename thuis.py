@@ -324,12 +324,11 @@ def haallampenentoon():
       if lamp.get('id') == lamp2.get('id'):
         lamp2['volgorde'] = lamp.get('volgorde')
         break
-  zonnesterkte = haalzonnesterkte()['value']
   return render_template('lampen.html',
                          lampen=sorted(lampen, key=lambda x: x['naam']),
                          gridbreedte=leesenv('gridbreedte'),
                          gridhoogte=leesenv('gridhoogte'),
-                         zonnesterkte=zonnesterkte
+                         zonnesterkte=haalzonnesterkte()
                          )
 
 
@@ -650,7 +649,6 @@ def haalzonnesensors(pod, token):
   sensorlijst = []
   path = f'setup/devices/controllables/{quote_plus("io:LightIOSystemSensor")}'
   sensorurls = haalgegevensvansomfy(token, pod, path)
-  print(sensorurls)
   if not (isinstance(sensorurls, dict) and not sensorurls.get('error', None) is None):
     for sensorurl in sensorurls:
       sensorurlencoded = quote_plus(sensorurl)
@@ -665,23 +663,21 @@ def haalzonnesterkte():
   """ Haal de zonnesterkte op """
   token = leesenv('token')
   pod = leesenv('pod')
-  if not token or not pod:
-    return redirect('/thuis/instellingen')
+  if token is None or pod is None:
+    return -1
   sensors = leesenv('sensors')
   if sensors is None:
     sensors = haalzonnesensors(pod, token)
-    print(sensors)
   lichtsterkte = 'core:LuminanceState'
-  sensorwaarde = {'value': -1}
   for sensor in sensors:
     sensorurlencoded = quote_plus(sensor['device'])
     sensorwaarde = haalgegevensvansomfy(token,
                                         pod,
                                         f'setup/devices/{sensorurlencoded}/states/{lichtsterkte}')
     if isinstance(sensorwaarde, dict) and not sensorwaarde.get('error', None) is None:
-      return redirect('/thuis')
-  print(sensorwaarde)
-  return sensorwaarde
+      return -2
+    return sensorwaarde.get('value', -3)
+  return -4
 
 
 def startwebserver():
