@@ -20,9 +20,10 @@ app = Flask(__name__,
             static_url_path='/static',
             template_folder='templates')
 envdb = db.getDb('envdb.json')
+zondb = db.getDb('zonnesterkte.json')
 BASEURL = 'ha101-1.overkiz.com'
 weercache = TTLCache(maxsize=1, ttl=900)
-zonnesterktecache = TTLCache(maxsize=1, ttl=900)
+zonnesterktecache = TTLCache(maxsize=1, ttl=60)
 monitoringcache = TTLCache(maxsize=1, ttl=86400)
 
 
@@ -469,6 +470,31 @@ def checkwindsnelheid():
     openalles()
 
 
+def haalzonnesterkteuitdb():
+  """ Haal de zonnesterkte uit de db """
+  records = zondb.getByQuery({'key': 'zonnesterkte'})
+  if len(records) > 0:
+    return records[0].get('value')
+  zondb.add({'key': 'zonnesterkte', 'value': 0})
+  return 0
+
+
+def schakellampenaan(vorigesterkte, zonnesterkte):
+  """ Schakel lampen aan bij donker worden """
+  verstuurberichtmonitoring(f'Zonnesterkte van {vorigesterkte} naar {zonnesterkte}, lampen aan?')
+
+
+def checkzonnesterkte():
+  """ Check de zonnesterkte """
+  vorigesterkte = haalzonnesterkteuitdb()
+  zonnesterkte = haalzonnesterkte()
+  tijd = datetime.now()
+  if zonnesterkte < 500 < vorigesterkte and 9 <= tijd.hour < 23:
+    schakellampenaan(vorigesterkte, zonnesterkte)
+  zondb.updateByQuery({'key': 'zonnesterkte'},
+                      {'key': 'zonnesterkte', 'value': zonnesterkte})
+
+
 @app.route('/thuis', methods=['GET'])
 def thuispagina():
   """ Toon de hoofdpagina """
@@ -692,6 +718,10 @@ if __name__ == '__main__':
   checkwindsnelheid()
   # Elke kwartier check windsnelheid
   schedule.every(15).minutes.do(checkwindsnelheid)
+  checkzonnesterkte()
+  # Elke 2 minuten check zonnesterkte
+  # schedule.every(2).minutes.do(checkzonnesterkte)
+  schedule.every(10).seconds.do(checkzonnesterkte)
   while True:
     waittime = schedule.idle_seconds()
     print(f'wacht {waittime} seconden')
