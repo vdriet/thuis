@@ -4,4 +4,5 @@ thuis_venv/
 .venv/
 .idea/
 envdb.json*
+zonnesterkte.json*
 env.list
