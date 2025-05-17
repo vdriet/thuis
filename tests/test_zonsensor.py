@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+from freezegun import freeze_time
+
 import thuis
 
 
@@ -135,3 +137,106 @@ def test_haalzonnesensors(mock_somfy, mock_envdbadd):
   assert resultaat == [{'label': 'zonlabel', 'device': 'io://sensorurl'}]
   assert mock_envdbadd.call_count == 1
   assert mock_somfy.call_count == 2
+
+
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[{'key': 'zonnesterkte', 'value': 1234, 'id': 29346023}],
+                    ])
+@patch('pysondb.db.JsonDatabase.add')
+def test_haalzonnesterkteuitdb(mock_envdbadd, mock_zondbget):
+  resultaat = thuis.haalzonnesterkteuitdb()
+
+  assert resultaat == 1234
+  assert mock_zondbget.call_count == 1
+  assert mock_envdbadd.call_count == 0
+
+
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[],
+                    ])
+@patch('pysondb.db.JsonDatabase.add')
+def test_haalzonnesterkteuitdb_nieuw(mock_envdbadd, mock_zondbget):
+  resultaat = thuis.haalzonnesterkteuitdb()
+
+  assert resultaat == 0
+  assert mock_zondbget.call_count == 1
+  assert mock_envdbadd.call_count == 1
+
+
+@patch('thuis.haalzonnesterkteuitdb', return_value=600)
+@patch('thuis.haalzonnesterkte', return_value=400)
+@patch('thuis.schakellampenaan')
+@freeze_time("2025-05-17 17:01:02")
+def test_checkzonnesterkte_hoog_laag(mock_schakelaan, mock_haalzonnesterkte, mock_haaluitdb):
+  thuis.checkzonnesterkte()
+
+  assert mock_haaluitdb.call_count == 1
+  assert mock_haalzonnesterkte.call_count == 1
+  assert mock_schakelaan.call_count == 1
+
+
+@patch('thuis.haalzonnesterkteuitdb', return_value=4321)
+@patch('thuis.haalzonnesterkte', return_value=4000)
+@patch('thuis.schakellampenaan')
+@freeze_time("2025-05-17 17:01:02")
+def test_checkzonnesterkte_hoog_hoog(mock_schakelaan, mock_haalzonnesterkte, mock_haaluitdb):
+  thuis.checkzonnesterkte()
+
+  assert mock_haaluitdb.call_count == 1
+  assert mock_haalzonnesterkte.call_count == 1
+  assert mock_schakelaan.call_count == 0
+
+
+@patch('thuis.haalzonnesterkteuitdb', return_value=300)
+@patch('thuis.haalzonnesterkte', return_value=350)
+@patch('thuis.schakellampenaan')
+@freeze_time("2025-05-17 17:01:02")
+def test_checkzonnesterkte_laag_laag(mock_schakelaan, mock_haalzonnesterkte, mock_haaluitdb):
+  thuis.checkzonnesterkte()
+
+  assert mock_haaluitdb.call_count == 1
+  assert mock_haalzonnesterkte.call_count == 1
+  assert mock_schakelaan.call_count == 0
+
+
+@patch('thuis.haalzonnesterkteuitdb', return_value=490)
+@patch('thuis.haalzonnesterkte', return_value=600)
+@patch('thuis.schakellampenaan')
+@freeze_time("2025-05-17 17:01:02")
+def test_checkzonnesterkte_laag_hoog(mock_schakelaan, mock_haalzonnesterkte, mock_haaluitdb):
+  thuis.checkzonnesterkte()
+
+  assert mock_haaluitdb.call_count == 1
+  assert mock_haalzonnesterkte.call_count == 1
+  assert mock_schakelaan.call_count == 0
+
+
+@patch('thuis.haalzonnesterkteuitdb', return_value=600)
+@patch('thuis.haalzonnesterkte', return_value=400)
+@patch('thuis.schakellampenaan')
+@freeze_time("2025-05-17 08:34:56")
+def test_checkzonnesterkte_vroeg(mock_schakelaan, mock_haalzonnesterkte, mock_haaluitdb):
+  thuis.checkzonnesterkte()
+
+  assert mock_haaluitdb.call_count == 1
+  assert mock_haalzonnesterkte.call_count == 1
+  assert mock_schakelaan.call_count == 0
+
+
+@patch('thuis.haalzonnesterkteuitdb', return_value=600)
+@patch('thuis.haalzonnesterkte', return_value=400)
+@patch('thuis.schakellampenaan')
+@freeze_time("2025-05-17 23:45:12")
+def test_checkzonnesterkte_laat(mock_schakelaan, mock_haalzonnesterkte, mock_haaluitdb):
+  thuis.checkzonnesterkte()
+
+  assert mock_haaluitdb.call_count == 1
+  assert mock_haalzonnesterkte.call_count == 1
+  assert mock_schakelaan.call_count == 0
+
+
+@patch('thuis.verstuurberichtmonitoring')
+def test_schakellampenaan(mock_bericht):
+  thuis.schakellampenaan(654, 321)
+
+  assert mock_bericht.call_count == 1
