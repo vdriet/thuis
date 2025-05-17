@@ -484,6 +484,11 @@ def schakellampenaan(vorigesterkte, zonnesterkte):
   verstuurberichtmonitoring(f'Zonnesterkte van {vorigesterkte} naar {zonnesterkte}, lampen aan?')
 
 
+def schakellampenuit(vorigesterkte, zonnesterkte):
+  """ Schakel lampen aan bij donker worden """
+  verstuurberichtmonitoring(f'Zonnesterkte van {vorigesterkte} naar {zonnesterkte}, lampen uit?')
+
+
 def checkzonnesterkte():
   """ Check de zonnesterkte """
   vorigesterkte = haalzonnesterkteuitdb()
@@ -491,6 +496,8 @@ def checkzonnesterkte():
   tijd = datetime.now()
   if zonnesterkte < 500 < vorigesterkte and 9 <= tijd.hour < 23:
     schakellampenaan(vorigesterkte, zonnesterkte)
+  if vorigesterkte < 500 < zonnesterkte and 9 <= tijd.hour < 23:
+    schakellampenuit(vorigesterkte, zonnesterkte)
   zondb.updateByQuery({'key': 'zonnesterkte'},
                       {'key': 'zonnesterkte', 'value': zonnesterkte})
 
