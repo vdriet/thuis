@@ -727,10 +727,9 @@ if __name__ == '__main__':
   schedule.every(15).minutes.do(checkwindsnelheid)
   checkzonnesterkte()
   # Elke 2 minuten check zonnesterkte
-  # schedule.every(2).minutes.do(checkzonnesterkte)
-  schedule.every(10).seconds.do(checkzonnesterkte)
+  schedule.every(2).minutes.do(checkzonnesterkte)
   while True:
-    waittime = schedule.idle_seconds()
+    waittime = max(schedule.idle_seconds(), 1.0)
     print(f'wacht {waittime} seconden')
     sleep(waittime)
     schedule.run_pending()
