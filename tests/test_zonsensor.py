@@ -163,8 +163,8 @@ def test_haalzonnesterkteuitdb_nieuw(mock_envdbadd, mock_zondbget):
   assert mock_envdbadd.call_count == 1
 
 
-@patch('thuis.haalzonnesterkteuitdb', return_value=600)
-@patch('thuis.haalzonnesterkte', return_value=400)
+@patch('thuis.haalzonnesterkteuitdb', return_value=500)
+@patch('thuis.haalzonnesterkte', return_value=300)
 @patch('thuis.schakellampenaan')
 @patch('thuis.schakellampenuit')
 @patch('pysondb.db.JsonDatabase.updateByQuery')
@@ -214,8 +214,8 @@ def test_checkzonnesterkte_laag_laag(mock_updatedb, mock_schakeluit, mock_schake
   assert mock_updatedb.call_count == 1
 
 
-@patch('thuis.haalzonnesterkteuitdb', return_value=490)
-@patch('thuis.haalzonnesterkte', return_value=600)
+@patch('thuis.haalzonnesterkteuitdb', return_value=390)
+@patch('thuis.haalzonnesterkte', return_value=500)
 @patch('thuis.schakellampenaan')
 @patch('thuis.schakellampenuit')
 @patch('pysondb.db.JsonDatabase.updateByQuery')
