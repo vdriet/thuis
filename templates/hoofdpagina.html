@@ -14,6 +14,7 @@
             color: #fff !important;
             background-color: #2196F3 !important
         }
+
         .container {
             display: grid;
         }
@@ -28,6 +29,7 @@
             color: white;
             background-color: red;
         }
+
         .Aan {
             color: white;
             background-color: limegreen;
@@ -39,7 +41,7 @@
 <div class="w3-container w3-blue">
     <h1>Thuis</h1>
 </div>
-<div class="w3-card-4" style="width:50%;">
+<div class="w3-card-4">
     <div class="container">
         {% for lamp in lampen %}
         <div class="item{{lamp['volgorde']}} w3-panel">
@@ -69,10 +71,22 @@
         <div class="w3-container w3-blue">
             <h2>Acties</h2>
         </div>
-        <div class="w3-container w3-third w3-card-4">
+        <div class="w3-container w3-third w3-card-4 w3-center">
             <form action="/thuis/lampen" method="POST">
                 <input name="actie" type="hidden" value="allesuit">
-                <input class="w3-btn w3-blue" type="submit" value="Alles Uit">
+                <input class="w3-btn w3-blue" type="submit" value="Alles lampen uit">
+            </form>
+        </div>
+        <div class="w3-container w3-third w3-card-4 w3-center">
+            <form action="/thuis/schermen" method="POST">
+                <input name="actie" type="hidden" value="sluitalles">
+                <input class="w3-btn w3-blue" type="submit" value="Sluit alle schermen">
+            </form>
+        </div>
+        <div class="w3-container w3-third w3-card-4 w3-center">
+            <form action="/thuis/schermen" method="POST">
+                <input name="actie" type="hidden" value="openalles">
+                <input class="w3-btn w3-blue" type="submit" value="Open alle schermen">
             </form>
         </div>
     </div>
