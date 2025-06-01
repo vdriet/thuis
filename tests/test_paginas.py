@@ -356,6 +356,7 @@ def test_instellingenpaginaget_geenpod(mock_getavailabletokens, mock_dbquery, cl
                     [{'env': 'password', 'value': 'password', 'id': 236910029}],
                     [],
                     [],
+                    [],
                     ])
 @patch('thuis.getavailabletokens',
        return_value=[{'label': 'Python token',
@@ -380,7 +381,7 @@ def test_instellingenpaginaget_geenjsessionid_autologin(mock_adddb, mock_somfylo
   assert b"<td>2025-02-01 1" in response.data
   assert b":10:50</td>" in response.data
   assert mock_somfylogin.call_count == 1
-  assert mock_dbquery.call_count == 8
+  assert mock_dbquery.call_count == 9
   assert mock_getavailabletokens.call_count == 1
   assert mock_adddb.call_count == 1
 

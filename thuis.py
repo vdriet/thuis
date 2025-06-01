@@ -41,9 +41,9 @@ def leesenv(env: str):
 
 
 def deleteenv(env: str) -> None:
-  """ Verwijder een gegeven uit de envdb 
+  """ Verwijder gegevens uit de envdb
 
-  Args: env (str): De naam van het te verwijderen gegeven
+  Args: env (str): De naam van het te verwijderen gegevens
   """
   rows = envdb.getByQuery({'env': env})
   for row in rows:
@@ -152,6 +152,7 @@ def haalinstellingenentoon():
   gridhoogte = leesenv('gridhoogte')
   if not jsessionid and userid and password:
     jsessionid = somfylogin(userid, password)
+    deleteenv('jsessionid')
     envdb.add({'env': 'jsessionid', 'value': jsessionid})
   tokens = []
   if pod and jsessionid:
@@ -729,9 +730,12 @@ def loginpagina():
   password = request.form['password']
   bewaargegevens = request.form['savelogin']
   if bewaargegevens == 'on':
+    deleteenv('userid')
     envdb.add({'env': 'userid', 'value': userid})
+    deleteenv('password')
     envdb.add({'env': 'password', 'value': password})
   jsessionid = somfylogin(userid, password)
+  deleteenv('jsessionid')
   envdb.add({'env': 'jsessionid', 'value': jsessionid})
   return redirect('/thuis')
 
