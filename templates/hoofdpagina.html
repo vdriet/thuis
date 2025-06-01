@@ -14,6 +14,24 @@
             color: #fff !important;
             background-color: #2196F3 !important
         }
+        .container {
+            display: grid;
+        }
+        {% for h in range(1, gridhoogte+1) %}
+        {% for b in range(1, gridbreedte+1) %}
+        .item{{h}}{{b}} {
+            grid-area: {{h}} / {{b}} / auto;
+        }
+        {% endfor %}
+        {% endfor %}
+        .Uit {
+            color: white;
+            background-color: red;
+        }
+        .Aan {
+            color: white;
+            background-color: limegreen;
+        }
     </style>
 </head>
 <body>
@@ -22,19 +40,42 @@
     <h1>Thuis</h1>
 </div>
 <div class="w3-card-4" style="width:50%;">
-    <div class="w3-container w3-blue">
-        <h2>Informatie</h2>
+    <div class="container">
+        {% for lamp in lampen %}
+        <div class="item{{lamp['volgorde']}} w3-panel">
+            <div class="w3-container w3-blue">
+                <h3>{{lamp['naam']}}</h3>
+            </div>
+            <div class="w3-container w3-card-4 {{lamp['status']}}">
+                <div class="w3-container w3-half">
+                    <form action="/thuis/lampen" method="POST">
+                        <input name="actie" type="hidden" value="lampaan">
+                        <input name="lampid" type="hidden" value="{{lamp['id']}}">
+                        <input class="w3-btn w3-animate-right Aan" type="submit" value="Aan">
+                    </form>
+                </div>
+                <div class="w3-container w3-half">
+                    <form action="/thuis/lampen" method="POST">
+                        <input name="actie" type="hidden" value="lampuit">
+                        <input name="lampid" type="hidden" value="{{lamp['id']}}">
+                        <input class="w3-btn w3-animate-left Uit" type="submit" value="Uit">
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
-    <ul class="w3-ul w3-center">
-        <li>Pod: {{pod}}</li>
-        <li>JSessionid: {{jsessionid}}</li>
-        <li>Token: {{token}}</li>
-        <li>Hue IP-adres: {{hueip}}</li>
-        <li>Hue user: {{hueuser}}</li>
-        <li><a href="/thuis/schermen">Status van de schermen</a></li>
-        <li><a href="/thuis/lampen">Status van de lampen</a></li>
-        <li><a href="/thuis/instellingen">Instellingen</a></li>
-    </ul>
+    <div class="w3-panel w3-margin w3-card-4">
+        <div class="w3-container w3-blue">
+            <h2>Acties</h2>
+        </div>
+        <div class="w3-container w3-third w3-card-4">
+            <form action="/thuis/lampen" method="POST">
+                <input name="actie" type="hidden" value="allesuit">
+                <input class="w3-btn w3-blue" type="submit" value="Alles Uit">
+            </form>
+        </div>
+    </div>
 </div>
 </body>
 </html>

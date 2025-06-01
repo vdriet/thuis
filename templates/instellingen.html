@@ -82,6 +82,8 @@
         <h2>Somfy-login</h2>
     </div>
     <form class="w3-container" action="/thuis/login" method="POST">
+        <label for="jsessionid">JSessionid</label>
+        <input class="w3-input" id="jsessionid" name="jsessionid" type="text" value="{{jsessionid}}" readonly>
         <label for="userid">E-mailadres</label>
         <input class="w3-input" id="userid" name="userid" type="text" value="{{userid}}">
         <label for="password">Wachtwoord</label>

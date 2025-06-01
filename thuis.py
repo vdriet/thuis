@@ -174,6 +174,7 @@ def haalinstellingenentoon():
                          pod=pod,
                          userid=userid,
                          password=password,
+                         jsessionid=jsessionid,
                          gridbreedte=gridbreedte,
                          gridhoogte=gridhoogte, )
 
@@ -371,22 +372,22 @@ def zetlampenindb(lampen: list) -> None:
   envdb.add({'env': 'lampen', 'value': dblampen})
 
 
-def haallampenentoon():
-  """ Haal de status van de lampen toon deze
-      Wanneer er gegevens missen, redirect naar hoofdpagina
+def haallampen() -> list:
+  """ Haal de status van de lampen
+      Wanneer er gegevens missen, geef een lege lijst terug
 
   Returns: Template: De lampen-pagina of een redirect
   """
   hueip = leesenv('hueip')
   hueuser = leesenv('hueuser')
   if not hueip or not hueuser:
-    return redirect('/thuis')
+    return []
   dblampen = leesenv('lampen')
   lampen = []
   lampdata = haalgegevensvanhue(hueip, hueuser, 'light')
 
   if len(lampdata.get('errors', [])) != 0:
-    return redirect('/thuis')
+    return []
 
   for lamp in lampdata.get('data', {}):
     lampmetadata = lamp.get('metadata')
@@ -418,12 +419,7 @@ def haallampenentoon():
       if lamp.get('id') == lamp2.get('id'):
         lamp2['volgorde'] = lamp.get('volgorde')
         break
-  return render_template('lampen.html',
-                         lampen=sorted(lampen, key=lambda x: x['naam']),
-                         gridbreedte=leesenv('gridbreedte'),
-                         gridhoogte=leesenv('gridhoogte'),
-                         zonnesterkte=haalzonnesterkte()
-                         )
+  return lampen
 
 
 def verplaatsscherm(device: str, percentage: int) -> None:
@@ -710,23 +706,15 @@ def haalzonnesterkte() -> int:
 def thuispagina():
   """ Toon de hoofdpagina 
 
-  Returns: Template: De hoofdpagina met instellingen
+  Returns: Template: De hoofdpagina met knoppen voor lampen en schermen.
   """
-  pod = leesenv('pod')
-  jsessionid = leesenv('jsessionid')
-  userid = leesenv('userid')
-  password = leesenv('password')
-  token = leesenv('token')
-  hueip = leesenv('hueip')
-  hueuser = leesenv('hueuser')
+  lampen = haallampen()
   return render_template('hoofdpagina.html',
-                         pod=pod,
-                         jsessionid=jsessionid,
-                         userid=userid,
-                         password=password,
-                         token=token,
-                         hueip=hueip,
-                         hueuser=hueuser)
+                         lampen=sorted(lampen, key=lambda x: x['naam']),
+                         gridbreedte=leesenv('gridbreedte'),
+                         gridhoogte=leesenv('gridhoogte'),
+                         zonnesterkte=haalzonnesterkte(),
+                         )
 
 
 @app.route('/thuis/login', methods=['POST'])
@@ -851,7 +839,15 @@ def lampenpagina():
 
   Returns: Template: De lampenpagina
   """
-  return haallampenentoon()
+  lampen = haallampen()
+  if not lampen:
+    return redirect('/thuis')
+  return render_template('lampen.html',
+                         lampen=sorted(lampen, key=lambda x: x['naam']),
+                         gridbreedte=leesenv('gridbreedte'),
+                         gridhoogte=leesenv('gridhoogte'),
+                         zonnesterkte=haalzonnesterkte()
+                         )
 
 
 @app.route('/thuis/lampengrid', methods=['GET'])
