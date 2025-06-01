@@ -914,6 +914,8 @@ def lampenactiepagina():
     allelampenuit()
   elif actie == 'ververs':
     ververslampen()
+  if request.referrer and request.referrer.endswith('/thuis'):
+    return redirect('/thuis')
   return redirect('/thuis/lampen')
 
 

@@ -801,6 +801,18 @@ def test_lampenpaginapost_uit(mock_doeactieoplamp, client):
 
 
 @patch('thuis.doeactieoplamp')
+def test_lampenpaginapost_vanhoofdpagina(mock_doeactieoplamp, client):
+  data = {'actie': 'lampuit', 'lampid': 'dummyid'}
+  headers = {'Referer': '/thuis'}
+  response = client.post('/thuis/lampen', data=data, headers=headers)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis" in response.data
+  assert mock_doeactieoplamp.call_count == 1
+
+
+@patch('thuis.doeactieoplamp')
 def test_lampenpaginapost_dim(mock_doeactieoplamp, client):
   data = {'actie': 'lampdim', 'lampid': 'dummyid', 'dimwaarde': '12.34'}
   response = client.post('/thuis/lampen', data=data)
