@@ -768,6 +768,20 @@ def test_schermenpaginapost_openalles(mock_openalles, mock_sluitalles, client):
   assert mock_sluitalles.call_count == 0
 
 
+@patch('thuis.sluitalles')
+@patch('thuis.openalles')
+def test_schermenpaginapost_openalles_vanafhoofdpagina(mock_openalles, mock_sluitalles, client):
+  data = {'actie': 'openalles', 'device': 'dummyid', 'percentage': 'abc'}
+  headers = {'Referer': '/thuis'}
+  response = client.post('/thuis/schermen', data=data, headers=headers)
+
+  assert response.status_code == 302
+  assert b"<h1>Redirecting...</h1>" in response.data
+  assert b"/thuis" in response.data
+  assert mock_openalles.call_count == 1
+  assert mock_sluitalles.call_count == 0
+
+
 @patch('thuis.verversschermen')
 def test_schermenpaginapost_ververs(mock_ververs, client):
   data = {'actie': 'ververs'}

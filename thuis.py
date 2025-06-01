@@ -888,6 +888,8 @@ def schermenactiepagina():
     openalles()
   elif actie == 'ververs':
     verversschermen()
+  if request.referrer and request.referrer.endswith('/thuis'):
+    return redirect('/thuis')
   return redirect('/thuis/schermen')
 
 
