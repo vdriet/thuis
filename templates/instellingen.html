@@ -141,5 +141,16 @@
         <input class="w3-btn w3-blue" type="submit" value="Verstuur">
     </form>
 </div>
+<div class="w3-card-4 w3-quarter">
+    <div class="w3-container w3-blue">
+        <h2>Zonsterkte voor aan/uit van lampen</h2>
+    </div>
+    <form class="w3-container" action="/thuis/instellingen" method="POST">
+        <input name="actie" type="hidden" value="updatezonsterkte">
+        <label for="zonsterkte">Zonsterkte</label>
+        <input class="w3-input" id="zonsterkte" name="zonsterkte" type="text" value="{{zonsterktelampen}}">
+        <input class="w3-btn w3-blue" type="submit" value="Verstuur">
+    </form>
+</div>
 </body>
 </html>

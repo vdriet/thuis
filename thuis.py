@@ -150,6 +150,9 @@ def haalinstellingenentoon():
   password = leesenv('password')
   gridbreedte = leesenv('gridbreedte')
   gridhoogte = leesenv('gridhoogte')
+  zonsterktelampen = leesenv('zonsterktelampen')
+  if not zonsterktelampen:
+    zonsterktelampen = 400
   if not jsessionid and userid and password:
     jsessionid = somfylogin(userid, password)
     deleteenv('jsessionid')
@@ -177,7 +180,9 @@ def haalinstellingenentoon():
                          password=password,
                          jsessionid=jsessionid,
                          gridbreedte=gridbreedte,
-                         gridhoogte=gridhoogte, )
+                         gridhoogte=gridhoogte,
+                         zonsterktelampen=zonsterktelampen,
+                         )
 
 
 def haalgegevensvansomfy(token: str, pod: str, path: str) -> dict:
@@ -816,15 +821,16 @@ def instellingenactiepagina():
   actie = request.form.get('actie', '')
   if actie == 'delete':
     uuid = request.form['uuid']
-    responsecode = deletetoken(uuid)
+    deletetoken(uuid)
     sleep(1)
-    if responsecode == 200:
-      return haalinstellingenentoon()
   elif actie == 'create':
     label = request.form['label']
     createtoken(label)
     sleep(1)
-    return haalinstellingenentoon()
+  elif actie == 'updatezonsterkte':
+    zonsterkte = request.form.get('zonsterkte', '')
+    deleteenv('zonsterktelampen')
+    envdb.add({'env': 'zonsterktelampen', 'value': int(zonsterkte)})
   return redirect('/thuis/instellingen')
 
 
