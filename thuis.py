@@ -654,10 +654,13 @@ def checkzonnesterkte() -> None:
   """
   vorigesterkte = haalzonnesterkteuitdb()
   zonnesterkte = haalzonnesterkte()
+  zonsterktelampen = leesenv('zonsterktelampen')
+  if not zonsterktelampen:
+    zonsterktelampen = 400
   tijd = datetime.now()
-  if zonnesterkte < 400 < vorigesterkte and 9 <= tijd.hour < 23:
+  if zonnesterkte < zonsterktelampen < vorigesterkte and 9 <= tijd.hour < 23:
     schakellampenaan(vorigesterkte, zonnesterkte)
-  if vorigesterkte < 400 < zonnesterkte and 9 <= tijd.hour < 23:
+  if vorigesterkte < zonsterktelampen < zonnesterkte and 9 <= tijd.hour < 23:
     schakellampenuit(vorigesterkte, zonnesterkte)
   zondb.updateByQuery({'key': 'zonnesterkte'},
                       {'key': 'zonnesterkte', 'value': zonnesterkte})
