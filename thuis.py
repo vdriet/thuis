@@ -635,7 +635,9 @@ def schakellampenaan(vorigesterkte: int, zonnesterkte: int):
   Args: vorigesterkte (int): De vorige gemeten zonnesterkte
         zonnesterkte (int): De huidige zonnesterkte
   """
-  verstuurberichtmonitoring(f'Zonnesterkte van {vorigesterkte} naar {zonnesterkte}, lampen aan?')
+  verstuurberichtmonitoring(f'Zonnesterkte van {vorigesterkte} naar {zonnesterkte}, lampen aan!')
+  # TV-lampen aan
+  zetlampaan("204ce609-0221-438e-89f4-769d87d78a9e")
 
 
 def schakellampenuit(vorigesterkte: int, zonnesterkte: int):
@@ -644,7 +646,9 @@ def schakellampenuit(vorigesterkte: int, zonnesterkte: int):
   Args: vorigesterkte (int): De vorige gemeten zonnesterkte
         zonnesterkte (int): De huidige zonnesterkte
   """
-  verstuurberichtmonitoring(f'Zonnesterkte van {vorigesterkte} naar {zonnesterkte}, lampen uit?')
+  verstuurberichtmonitoring(f'Zonnesterkte van {vorigesterkte} naar {zonnesterkte}, lampen uit!')
+  # TV-lampen aan
+  zetlampuit("204ce609-0221-438e-89f4-769d87d78a9e")
 
 
 def checkzonnesterkte() -> None:

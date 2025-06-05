@@ -195,8 +195,8 @@ def test_checkzonnesterkte_hoog_laag(mock_leesdb, mock_updatedb, mock_schakeluit
                     ])
 @freeze_time("2025-05-17 17:01:02")
 def test_checkzonnesterkte_hoog_laag_default(mock_leesdb, mock_updatedb, mock_schakeluit, mock_schakelaan,
-                                     mock_haalzonnesterkte,
-                                     mock_haaluitdb):
+                                             mock_haalzonnesterkte,
+                                             mock_haaluitdb):
   thuis.checkzonnesterkte()
 
   assert mock_haaluitdb.call_count == 1
@@ -316,14 +316,18 @@ def test_checkzonnesterkte_laat(mock_leesdb, mock_updatedb, mock_schakeluit, moc
 
 
 @patch('thuis.verstuurberichtmonitoring')
-def test_schakellampenaan(mock_bericht):
+@patch('thuis.zetlampaan')
+def test_schakellampenaan(mock_lampaan, mock_bericht):
   thuis.schakellampenaan(654, 321)
 
   assert mock_bericht.call_count == 1
+  assert mock_lampaan.call_count == 1
 
 
 @patch('thuis.verstuurberichtmonitoring')
-def test_schakellampenuit(mock_bericht):
+@patch('thuis.zetlampuit')
+def test_schakellampenuit(mock_lampuit, mock_bericht):
   thuis.schakellampenuit(123, 456)
 
   assert mock_bericht.call_count == 1
+  assert mock_lampuit.call_count == 1
