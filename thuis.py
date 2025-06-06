@@ -636,8 +636,9 @@ def schakellampenaan(vorigesterkte: int, zonnesterkte: int):
         zonnesterkte (int): De huidige zonnesterkte
   """
   verstuurberichtmonitoring(f'Zonnesterkte van {vorigesterkte} naar {zonnesterkte}, lampen aan!')
-  # TV-lampen aan
-  zetlampaan("204ce609-0221-438e-89f4-769d87d78a9e")
+  for lamp in leesenv('lampen'):
+    if lamp.get('automatisch', False):
+      zetlampaan(lamp.get('id'))
 
 
 def schakellampenuit(vorigesterkte: int, zonnesterkte: int):
@@ -647,8 +648,9 @@ def schakellampenuit(vorigesterkte: int, zonnesterkte: int):
         zonnesterkte (int): De huidige zonnesterkte
   """
   verstuurberichtmonitoring(f'Zonnesterkte van {vorigesterkte} naar {zonnesterkte}, lampen uit!')
-  # TV-lampen aan
-  zetlampuit("204ce609-0221-438e-89f4-769d87d78a9e")
+  for lamp in leesenv('lampen'):
+    if lamp.get('automatisch', False):
+      zetlampuit(lamp.get('id'))
 
 
 def checkzonnesterkte() -> None:
@@ -874,6 +876,9 @@ def lampengridpagina():
   Returns: Template: De lampengrid configuratiepagina
   """
   lampen = leesenv('lampen')
+  for lamp in lampen:
+    if not lamp.get('automatisch'):
+      lamp['checked'] = False
   return render_template('lampengrid.html',
                          lampen=sorted(lampen, key=lambda x: x['naam']),
                          gridbreedte=leesenv('gridbreedte'),
@@ -947,12 +952,21 @@ def lampengridactiepagina():
   Returns: Redirect: Terug naar de lampengrid pagina
   """
   lampen = leesenv('lampen')
+  for lamp in lampen:
+    lamp['automatisch'] = False
   for key in request.form.keys():
     val = request.form[key]
-    for lamp in lampen:
-      if lamp['id'] == key:
-        lamp['volgorde'] = int(val)
-        break
+    lampid = key[:-5]
+    if key.endswith('plek'):
+      for lamp in lampen:
+        if lamp['id'] == lampid:
+          lamp['volgorde'] = int(val)
+          break
+    elif key.endswith('auto'):
+      for lamp in lampen:
+        if lamp['id'] == lampid:
+          lamp['automatisch'] = True
+          break
   deleteenv('lampen')
   envdb.add({'env': 'lampen', 'value': lampen})
   return redirect('/thuis/lampengrid')

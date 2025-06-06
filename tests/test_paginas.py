@@ -872,8 +872,9 @@ def test_lampenpaginapost_ververs(mock_ververs, client):
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[
-         [{'env': 'lampen', 'value': [{"id": "dummyid1", "naam": "Lampnaam1", "volgorde": 11},
-                                      {"id": "dummyid2", "naam": "Lampnaam2", "volgorde": 22}], 'id': 92734098234}],
+         [{'env': 'lampen', 'value': [{"id": "dummyid1", "naam": "Lampnaam1", "volgorde": 11, "automatisch": True},
+                                      {"id": "dummyid2", "naam": "Lampnaam2", "volgorde": 22, "automatisch": False}],
+           'id': 92734098234}],
          [{'env': 'gridbreedte', 'value': 2, 'id': 13478564}],
          [{'env': 'gridhoogte', 'value': 5, 'id': 923784393}],
        ])
@@ -881,11 +882,13 @@ def test_lampengrid(mock_env, client):
   response = client.get('/thuis/lampengrid')
   assert b"<h1>Lampengrid</h1>" in response.data
   assert b">Lampnaam1<" in response.data
-  assert b"id=\"dummyid1\"" in response.data
+  assert b"id=\"dummyid1-plek\"" in response.data
   assert b"value=\"11\"" in response.data
+  assert b"id=\"dummyid1-auto\"" in response.data
   assert b">Lampnaam2<" in response.data
-  assert b"id=\"dummyid2\"" in response.data
+  assert b"id=\"dummyid2-plek\"" in response.data
   assert b"value=\"22\"" in response.data
+  assert b"id=\"dummyid2-auto\"" in response.data
   assert mock_env.call_count == 3
 
 
@@ -899,7 +902,7 @@ def test_lampengrid(mock_env, client):
 @patch('pysondb.db.JsonDatabase.deleteById', return_value=None)
 @patch('pysondb.db.JsonDatabase.add')
 def test_lampengrid_post(mock_add, mock_del, mock_env, client):
-  data = {'dummyid1': '11', 'dummyid2': '33'}
+  data = {'dummyid1-plek': '11', 'dummyid2-plek': '33', 'dummyid1-auto': 'on'}
   response = client.post('/thuis/lampengrid', data=data)
 
   assert response.status_code == 302

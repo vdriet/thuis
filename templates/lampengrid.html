@@ -44,9 +44,12 @@
                 </div>
                 <div class="w3-container w3-card-4">
                     <div class="w3-container">
-                            <label for="{{lamp['id']}}">Plaats</label>
-                            <input class="w3-input" id="{{lamp['id']}}" name="{{lamp['id']}}"
-                                   type="text" value="{{lamp['volgorde']}}">
+                        <label for="{{lamp['id']}}-plek">plek</label>
+                        <input class="w3-input" id="{{lamp['id']}}-plek" name="{{lamp['id']}}-plek"
+                               type="text" value="{{lamp['volgorde']}}">
+                        <label for="{{lamp['id']}}-auto">Automatisch</label>
+                        <input class="w3-checkbox" id="{{lamp['id']}}-auto" name="{{lamp['id']}}-auto"
+                               type="checkbox" {% if lamp['automatisch'] == true %}checked{% endif %}>
                     </div>
                 </div>
             </div>

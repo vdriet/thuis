@@ -317,17 +317,63 @@ def test_checkzonnesterkte_laat(mock_leesdb, mock_updatedb, mock_schakeluit, moc
 
 @patch('thuis.verstuurberichtmonitoring')
 @patch('thuis.zetlampaan')
-def test_schakellampenaan(mock_lampaan, mock_bericht):
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[
+         [{'env': 'lampen', 'value': [{"id": "dummyid1", "naam": "Lampnaam1", "volgorde": 11, "automatisch": True},
+                                      {"id": "dummyid2", "naam": "Lampnaam2", "volgorde": 22, "automatisch": False}],
+           'id': 92734098234}],
+       ])
+def test_schakellampenaan(mock_db, mock_lampaan, mock_bericht):
   thuis.schakellampenaan(654, 321)
 
   assert mock_bericht.call_count == 1
   assert mock_lampaan.call_count == 1
+  assert mock_db.call_count == 1
+
+
+@patch('thuis.verstuurberichtmonitoring')
+@patch('thuis.zetlampaan')
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[
+         [{'env': 'lampen', 'value': [{"id": "dummyid1", "naam": "Lampnaam1", "volgorde": 11, "automatisch": False},
+                                      {"id": "dummyid2", "naam": "Lampnaam2", "volgorde": 22, "automatisch": False}],
+           'id': 92734098234}],
+       ])
+def test_schakellampenaan_minder(mock_db, mock_lampaan, mock_bericht):
+  thuis.schakellampenaan(654, 321)
+
+  assert mock_bericht.call_count == 1
+  assert mock_lampaan.call_count == 0
+  assert mock_db.call_count == 1
 
 
 @patch('thuis.verstuurberichtmonitoring')
 @patch('thuis.zetlampuit')
-def test_schakellampenuit(mock_lampuit, mock_bericht):
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[
+         [{'env': 'lampen', 'value': [{"id": "dummyid1", "naam": "Lampnaam1", "volgorde": 11, "automatisch": True},
+                                      {"id": "dummyid2", "naam": "Lampnaam2", "volgorde": 22, "automatisch": False}],
+           'id': 92734098234}],
+       ])
+def test_schakellampenuit(mock_db, mock_lampuit, mock_bericht):
   thuis.schakellampenuit(123, 456)
 
   assert mock_bericht.call_count == 1
   assert mock_lampuit.call_count == 1
+  assert mock_db.call_count == 1
+
+
+@patch('thuis.verstuurberichtmonitoring')
+@patch('thuis.zetlampuit')
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[
+         [{'env': 'lampen', 'value': [{"id": "dummyid1", "naam": "Lampnaam1", "volgorde": 11, "automatisch": True},
+                                      {"id": "dummyid2", "naam": "Lampnaam2", "volgorde": 22, "automatisch": True}],
+           'id': 92734098234}],
+       ])
+def test_schakellampenuit_meer(mock_db, mock_lampuit, mock_bericht):
+  thuis.schakellampenuit(123, 456)
+
+  assert mock_bericht.call_count == 1
+  assert mock_lampuit.call_count == 2
+  assert mock_db.call_count == 1
