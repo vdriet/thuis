@@ -28,10 +28,8 @@ monitoringcache = TTLCache(maxsize=1, ttl=86400)
 
 
 def leesenv(env: str):
-  """ Lees een gegeven uit de envdb 
-
+  """ Lees een gegeven uit de envdb
   Args: env (str): De naam van het op te halen gegeven
-
   Returns: De waarde van het gegeven of None als het niet bestaat
   """
   rows = envdb.getByQuery({'env': env})
@@ -42,7 +40,6 @@ def leesenv(env: str):
 
 def deleteenv(env: str) -> None:
   """ Verwijder gegevens uit de envdb
-
   Args: env (str): De naam van het te verwijderen gegevens
   """
   rows = envdb.getByQuery({'env': env})
@@ -51,11 +48,9 @@ def deleteenv(env: str) -> None:
 
 
 def somfylogin(userid: str, password: str) -> str:
-  """ Inloggen bij somfy voor ophalen key 
-
+  """ Inloggen bij somfy voor ophalen key
   Args: userid (str): De gebruikersnaam voor Somfy
         password (str): Het wachtwoord voor Somfy
-
   Returns: str: De verkregen sessie-ID
   """
   url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/login'
@@ -68,11 +63,9 @@ def somfylogin(userid: str, password: str) -> str:
 
 
 def getavailabletokens(jsessionid: str, pod: str) -> list:
-  """ Haal beschikbare tokens van de server 
-
+  """ Haal beschikbare tokens van de server
   Args: jsessionid (str): De geldige sessie-ID
         pod (str): De pod-identificatie
-
   Returns: list: Lijst met beschikbare tokens
   """
   url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/devmode'
@@ -84,10 +77,8 @@ def getavailabletokens(jsessionid: str, pod: str) -> list:
 
 
 def createtoken(label: str) -> int:
-  """ Voeg een token toe op de server 
-
+  """ Voeg een token toe op de server
   Args: label (str): Het label voor de nieuwe token
-
   Returns: int: HTTP-statuscode (200 bij succes)
   """
   pod = leesenv('pod')
@@ -105,8 +96,7 @@ def createtoken(label: str) -> int:
 
 
 def activatetoken(jsessionid: str, pod: str, label: str, token: str) -> None:
-  """ Activeer een token 
-
+  """ Activeer een token
   Args: jsessionid (str): De geldige sessie-ID
         pod (str): De pod-identificatie
         label (str): Het label voor het token
@@ -121,10 +111,8 @@ def activatetoken(jsessionid: str, pod: str, label: str, token: str) -> None:
 
 
 def deletetoken(uuid: str) -> int:
-  """ Verwijder een token van de server 
-
+  """ Verwijder een token van de server
   Args: uuid (str): De unieke identificatie van de token
-
   Returns: int: HTTP-statuscode van de verwijder-actie
   """
   pod = leesenv('pod')
@@ -139,7 +127,6 @@ def deletetoken(uuid: str) -> int:
 def haalinstellingenentoon():
   """ Haal de instellingen van de server en toon deze
       Wanneer er gegevens missen, redirect naar hoofdpagina
-
   Returns: Template: De instellingen-pagina of een redirect
   """
   pod = leesenv('pod')
@@ -148,11 +135,15 @@ def haalinstellingenentoon():
   hueuser = leesenv('hueuser')
   userid = leesenv('userid')
   password = leesenv('password')
-  gridbreedte = leesenv('gridbreedte')
-  gridhoogte = leesenv('gridhoogte')
   zonsterktelampen = leesenv('zonsterktelampen')
   if not zonsterktelampen:
     zonsterktelampen = 400
+  starttijd = leesenv('starttijd')
+  if not starttijd:
+    starttijd = 9
+  eindtijd = leesenv('eindtijd')
+  if not eindtijd:
+    eindtijd = 23
   if not jsessionid and userid and password:
     jsessionid = somfylogin(userid, password)
     deleteenv('jsessionid')
@@ -179,19 +170,19 @@ def haalinstellingenentoon():
                          userid=userid,
                          password=password,
                          jsessionid=jsessionid,
-                         gridbreedte=gridbreedte,
-                         gridhoogte=gridhoogte,
+                         gridbreedte=leesenv('gridbreedte'),
+                         gridhoogte=leesenv('gridhoogte'),
                          zonsterktelampen=zonsterktelampen,
+                         starttijd=starttijd,
+                         eindtijd=eindtijd,
                          )
 
 
 def haalgegevensvansomfy(token: str, pod: str, path: str) -> dict:
-  """ Ophalen van gegevens van het somfy kastje 
-
+  """ Ophalen van gegevens van het somfy kastje
   Args: token (str): De geldige token
         pod (str): De pod-identificatie
         path (str): Het pad naar de op te vragen gegevens
-
   Returns: dict: De opgehaalde gegevens in JSON-formaat
   """
   url = f'https://{pod}.local:8443/enduser-mobile-web/1/enduserAPI/{path}'
@@ -204,12 +195,10 @@ def haalgegevensvansomfy(token: str, pod: str, path: str) -> dict:
 
 
 def haalgegevensvanhue(hueip: str, hueuser: str, path: str) -> dict:
-  """ Ophalen van gegevens van de hue bridge 
-
+  """ Ophalen van gegevens van de hue bridge
   Args: hueip (str): Het IP-adres van de Hue bridge
         hueuser (str): De geautoriseerde gebruiker
         path (str): Het pad naar de op te vragen gegevens
-
   Returns: dict: De opgehaalde gegevens in JSON -formaat
   """
   urllib3.disable_warnings()
@@ -224,13 +213,11 @@ def haalgegevensvanhue(hueip: str, hueuser: str, path: str) -> dict:
 
 
 def stuurgegevensnaarsomfy(token: str, pod: str, path: str, data: str) -> dict:
-  """ Sturen van gegevens naar het somfy kastje 
-
+  """ Sturen van gegevens naar het somfy kastje
   Args: token (str): De geldige token
         pod (str): De pod-identificatie
         path (str): Het pad voor de te versturen gegevens
         data (str): De te versturen gegevens
-
   Returns: dict: Het antwoord van de server in JSON-formaat
   """
   url = f'https://{pod}.local:8443/enduser-mobile-web/1/enduserAPI/{path}'
@@ -244,13 +231,11 @@ def stuurgegevensnaarsomfy(token: str, pod: str, path: str, data: str) -> dict:
 
 
 def stuurgegevensnaarhue(hueip: str, hueuser: str, path: str, data: dict) -> dict:
-  """ Sturen van gegevens naar de hue bridge 
-
+  """ Sturen van gegevens naar de hue bridge
   Args: hueip (str): Het IP-adres van de Hue bridge
         hueuser (str): De geautoriseerde gebruiker
         path (str): Het pad voor de te versturen gegevens
         data (dict): De te versturen gegevens
-
   Returns: dict: Het antwoord van de bridge in JSON-formaat
   """
   urllib3.disable_warnings()
@@ -266,11 +251,9 @@ def stuurgegevensnaarhue(hueip: str, hueuser: str, path: str, data: dict) -> dic
 
 
 def getschermen(pod: str, token: str) -> list:
-  """ Ophalen van de schermen en in de db zetten 
-
+  """ Ophalen van de schermen en in de db zetten
   Args: pod (str): De pod-identificatie
         token (str): De geldige token
-
   Returns: list: Lijst met gevonden schermen
   """
   schermlijst = []
@@ -288,7 +271,6 @@ def getschermen(pod: str, token: str) -> list:
 def haalschermenentoon():
   """ Haal de status van de schermen toon deze
       Wanneer er gegevens missen, redirect naar hoofdpagina
-
   Returns: Template: De schermen-pagina of een redirect
   """
   pod = leesenv('pod')
@@ -316,10 +298,8 @@ def haalschermenentoon():
 
 
 def bepaalxyvanrgb(kleurwaarde: str) -> tuple[float, float, float]:
-  """ Bepaal de xy waarde vanuit rgb 
-
+  """ Bepaal de xy waarde vanuit rgb
   Args: kleurwaarde (str): De kleur in RGB hexadecimaal formaat
-
   Returns: tuple: h-waarde, s-waarde en brightness als decimale getallen
   """
   rood = float(int(kleurwaarde[1:3], 16)) / 255.0
@@ -333,12 +313,10 @@ def bepaalxyvanrgb(kleurwaarde: str) -> tuple[float, float, float]:
 
 
 def bepaalhexrgbvanxy(xwaarde: float, ywaarde: float, dimwaarde: int) -> str:
-  """ Bepaal de rgb waarde vanuit de x/y/dim 
-
+  """ Bepaal de rgb waarde vanuit de x/y/dim
   Args: xwaarde (float): De x-coördinaat van de kleur
         ywaarde (float): De y-coördinaat van de kleur
         dimwaarde (int): De helderheid als percentage
-
   Returns: str: De kleur in RGB hexadecimaal formaat
   """
   vwaarde = float(dimwaarde / 100)
@@ -351,8 +329,7 @@ def bepaalhexrgbvanxy(xwaarde: float, ywaarde: float, dimwaarde: int) -> str:
 
 
 def zetlampenindb(lampen: list) -> None:
-  """ Plaats de lampen in de envdb 
-
+  """ Plaats de lampen in de envdb
   Args: lampen (list): Lijst met lampen om op te slaan
   """
   dblampen = []
@@ -381,7 +358,6 @@ def zetlampenindb(lampen: list) -> None:
 def haallampen() -> list:
   """ Haal de status van de lampen
       Wanneer er gegevens missen, geef een lege lijst terug
-
   Returns: Template: De lampen-pagina of een redirect
   """
   hueip = leesenv('hueip')
@@ -429,8 +405,7 @@ def haallampen() -> list:
 
 
 def verplaatsscherm(device: str, percentage: int) -> None:
-  """ Verplaats een scherm 
-
+  """ Verplaats een scherm
   Args: device (str): De device-URL van het scherm
         percentage (int): Het gewenste openingspercentage
   """
@@ -439,13 +414,10 @@ def verplaatsscherm(device: str, percentage: int) -> None:
   data = json.dumps({
     "label": "verplaats scherm",
     "actions": [
-      {
-        "commands": [
-          {
-            "name": "setClosure",
-            "parameters": [percentage]
-          }
-        ],
+      {"commands": [
+        {"name": "setClosure",
+         "parameters": [percentage]
+         }],
         "deviceURL": device
       }
     ]
@@ -454,8 +426,7 @@ def verplaatsscherm(device: str, percentage: int) -> None:
 
 
 def verplaatsalleschermen(percentage: int) -> None:
-  """ Verplaats alle schermen naar zelfde percentage 
-
+  """ Verplaats alle schermen naar zelfde percentage
   Args: percentage (int): Het gewenste openingspercentage
   """
   schermen = leesenv('schermen')
@@ -465,32 +436,28 @@ def verplaatsalleschermen(percentage: int) -> None:
 
 
 def sluitalles() -> None:
-  """ Sluiten van alle schermen 
-
+  """ Sluiten van alle schermen
   Zet alle schermen op 100% dicht
   """
   verplaatsalleschermen(100)
 
 
 def openalles() -> None:
-  """ Openen van alle schermen 
-
+  """ Openen van alle schermen
   Zet alle schermen op 0% dicht (volledig open)
   """
   verplaatsalleschermen(0)
 
 
 def verversschermen() -> None:
-  """ Ververs de opgeslagen schermen 
-
+  """ Ververs de opgeslagen schermen
   Verwijdert de schermen uit de database zodat ze opnieuw worden opgehaald
   """
   deleteenv('schermen')
 
 
 def doeactieoplamp(lampid: str, actie: dict) -> None:
-  """ voer een actie uit op een lamp 
-
+  """ voer een actie uit op een lamp
   Args: lampid (str): De ID van de lamp
         actie (dict): De uit te voeren actie
   """
@@ -501,8 +468,7 @@ def doeactieoplamp(lampid: str, actie: dict) -> None:
 
 
 def zetlampaanuit(lampid: str, status: bool) -> None:
-  """ zet een lamp aan of uit 
-
+  """ zet een lamp aan of uit
   Args: lampid (str): De ID van de lamp
         status (bool): True voor aan, False voor uit
   """
@@ -511,24 +477,21 @@ def zetlampaanuit(lampid: str, status: bool) -> None:
 
 
 def zetlampaan(lampid: str) -> None:
-  """ zet een lamp aan 
-
+  """ zet een lamp aan
   Args: lampid (str): De ID van de lamp
   """
   zetlampaanuit(lampid, True)
 
 
 def zetlampuit(lampid: str) -> None:
-  """ zet een lamp uit 
-
+  """ zet een lamp uit
   Args: lampid (str): De ID van de lamp
   """
   zetlampaanuit(lampid, False)
 
 
 def dimlamp(lampid: str, dimwaarde: float) -> None:
-  """ dim een lamp 
-
+  """ dim een lamp
   Args: lampid (str): De ID van de lamp
         dimwaarde (float): De gewenste helderheid als percentage
   """
@@ -538,8 +501,7 @@ def dimlamp(lampid: str, dimwaarde: float) -> None:
 
 
 def kleurlamp(lampid: str, kleurwaarde: str) -> None:
-  """ verander de kleur van een lamp 
-
+  """ verander de kleur van een lamp
   Args: lampid (str): De ID van de lamp
         kleurwaarde (str): De gewenste kleur in RGB hexadecimaal formaat
   """
@@ -550,8 +512,7 @@ def kleurlamp(lampid: str, kleurwaarde: str) -> None:
 
 
 def allelampenuit() -> None:
-  """ Alle lampen uit 
-
+  """ Alle lampen uit
   Zet alle bekende lampen uit
   """
   lampen = leesenv('lampen')
@@ -570,8 +531,7 @@ def ververslampen() -> None:
 
 @cached(cache=weercache)
 def haalwindsnelheid() -> int:  # pragma: no cover
-  """ Haal de informatie van het weer van Hattem op 
-
+  """ Haal de informatie van het weer van Hattem op
   Returns: int: De windsnelheid in Beaufort of 0 bij een fout
   """
   weerapikey = os.environ['WEER_API_KEY']
@@ -596,9 +556,7 @@ def haalwindsnelheid() -> int:  # pragma: no cover
 @cached(cache=monitoringcache)
 def verstuurberichtmonitoring(bericht: str) -> None:
   """
-    Verstuur bericht naar de monitoring,
-    maar niet vaker dan eenmaal per dag
-
+    Verstuur bericht naar de monitoring, maar niet vaker dan eenmaal per dag
   Args: bericht (str): Het te versturen bericht
   """
   requests.post(url="https://ntfy.sh/vanderiethattemmonitoring",
@@ -607,8 +565,7 @@ def verstuurberichtmonitoring(bericht: str) -> None:
 
 
 def checkwindsnelheid() -> None:
-  """ Check de windsnelheid 
-
+  """ Check de windsnelheid
   Controleert de windsnelheid en opent schermen bij te hoge wind
   """
   windbft = haalwindsnelheid()
@@ -618,8 +575,7 @@ def checkwindsnelheid() -> None:
 
 
 def haalzonnesterkteuitdb() -> int:
-  """ Haal de zonnesterkte uit de db 
-
+  """ Haal de zonnesterkte uit de db
   Returns: int: De laatst gemeten zonnesterkte of 0 als er geen meting is
   """
   records = zondb.getByQuery({'key': 'zonnesterkte'})
@@ -630,8 +586,7 @@ def haalzonnesterkteuitdb() -> int:
 
 
 def schakellampenaan(vorigesterkte: int, zonnesterkte: int):
-  """ Schakel lampen aan bij donker worden 
-
+  """ Schakel lampen aan bij donker worden
   Args: vorigesterkte (int): De vorige gemeten zonnesterkte
         zonnesterkte (int): De huidige zonnesterkte
   """
@@ -642,8 +597,7 @@ def schakellampenaan(vorigesterkte: int, zonnesterkte: int):
 
 
 def schakellampenuit(vorigesterkte: int, zonnesterkte: int):
-  """ Schakel lampen uit bij licht worden 
-
+  """ Schakel lampen uit bij licht worden
   Args: vorigesterkte (int): De vorige gemeten zonnesterkte
         zonnesterkte (int): De huidige zonnesterkte
   """
@@ -654,8 +608,7 @@ def schakellampenuit(vorigesterkte: int, zonnesterkte: int):
 
 
 def checkzonnesterkte() -> None:
-  """ Check de zonnesterkte 
-
+  """ Check de zonnesterkte
   Controleert of de zonnesterkte is veranderd en schakelt indien nodig lampen
   """
   vorigesterkte = haalzonnesterkteuitdb()
@@ -663,21 +616,25 @@ def checkzonnesterkte() -> None:
   zonsterktelampen = leesenv('zonsterktelampen')
   if not zonsterktelampen:
     zonsterktelampen = 400
+  starttijd = leesenv('starttijd')
+  if not starttijd:
+    starttijd = 9
+  eindtijd = leesenv('eindtijd')
+  if not eindtijd:
+    eindtijd = 23
   tijd = datetime.now()
-  if zonnesterkte < zonsterktelampen < vorigesterkte and 9 <= tijd.hour < 23:
+  if zonnesterkte < zonsterktelampen < vorigesterkte and starttijd <= tijd.hour < eindtijd:
     schakellampenaan(vorigesterkte, zonnesterkte)
-  if vorigesterkte < zonsterktelampen < zonnesterkte and 9 <= tijd.hour < 23:
+  if vorigesterkte < zonsterktelampen < zonnesterkte and starttijd <= tijd.hour < eindtijd:
     schakellampenuit(vorigesterkte, zonnesterkte)
   zondb.updateByQuery({'key': 'zonnesterkte'},
                       {'key': 'zonnesterkte', 'value': zonnesterkte})
 
 
 def haalzonnesensors(pod: str, token: str) -> list:
-  """ Ophalen van de zonnesensors en in de db zetten 
-
+  """ Ophalen van de zonnesensors en in de db zetten
   Args: pod (str): De pod-identificatie
         token (str): De geldige token
-
   Returns: list: Lijst met gevonden zonnesensors
   """
   sensorlijst = []
@@ -694,8 +651,7 @@ def haalzonnesensors(pod: str, token: str) -> list:
 
 @cached(cache=zonnesterktecache)
 def haalzonnesterkte() -> int:
-  """ Haal de zonnesterkte op 
-
+  """ Haal de zonnesterkte op
   Returns: int: De gemeten zonnesterkte of een negatieve waarde bij een fout
   """
   token = leesenv('token')
@@ -719,8 +675,7 @@ def haalzonnesterkte() -> int:
 
 @app.route('/thuis', methods=['GET'])
 def thuispagina():
-  """ Toon de hoofdpagina 
-
+  """ Toon de hoofdpagina
   Returns: Template: De hoofdpagina met knoppen voor lampen en schermen.
   """
   lampen = haallampen()
@@ -734,10 +689,7 @@ def thuispagina():
 
 @app.route('/thuis/login', methods=['POST'])
 def loginpagina():
-  """ Verwerk de login 
-
-  Verwerkt het inlogformulier en slaat de gegevens op
-
+  """ Verwerkt het inlogformulier en slaat de gegevens op
   Returns: Redirect: Terug naar de hoofdpagina
   """
   userid = request.form['userid']
@@ -756,10 +708,8 @@ def loginpagina():
 
 @app.route('/thuis/pod', methods=['POST'])
 def podpagina():
-  """ Verwerk het opvoeren van de pod 
-
+  """ Verwerk het opvoeren van de pod
   Verwerkt het pod-formulier en slaat de gegevens op
-
   Returns: Redirect: Terug naar de hoofdpagina
   """
   pod = request.form['pod']
@@ -769,10 +719,8 @@ def podpagina():
 
 @app.route('/thuis/hueip', methods=['POST'])
 def hueippagina():
-  """ Verwerk het opvoeren van het ip van de hue 
-
+  """ Verwerk het opvoeren van het ip van de hue
   Verwerkt het Hue IP-formulier en slaat de gegevens op
-
   Returns: Redirect: Terug naar de hoofdpagina
   """
   hueip = request.form['hueip']
@@ -783,10 +731,7 @@ def hueippagina():
 
 @app.route('/thuis/hueuser', methods=['POST'])
 def hueuserpagina():
-  """ Verwerk het opvoeren van de hueuser 
-
-  Verwerkt het Hue gebruiker-formulier en slaat de gegevens op
-
+  """ Verwerkt het Hue gebruiker-formulier en slaat de gegevens op
   Returns: Redirect: Terug naar de instellingenpagina
   """
   hueuser = request.form['hueuser']
@@ -797,10 +742,7 @@ def hueuserpagina():
 
 @app.route('/thuis/grid', methods=['POST'])
 def gridpagina():
-  """ Verwerk het aanpassen van de gridlayout 
-
-  Verwerkt het grid-formulier en slaat de gegevens op
-
+  """ Verwerkt het grid-formulier en slaat de gegevens op
   Returns: Redirect: Terug naar de instellingenpagina
   """
   deleteenv('gridbreedte')
@@ -812,8 +754,7 @@ def gridpagina():
 
 @app.route('/thuis/instellingen', methods=['GET'])
 def instellingenpagina():
-  """ Toon de pagina met alle instellingen 
-
+  """ Toon de pagina met alle instellingen
   Returns: Template: De instellingenpagina
   """
   return haalinstellingenentoon()
@@ -821,10 +762,8 @@ def instellingenpagina():
 
 @app.route('/thuis/instellingen', methods=['POST'])
 def instellingenactiepagina():
-  """ Verwerk een actie voor een token 
-
+  """ Verwerk een actie voor een token
   Verwerkt acties voor tokens (aanmaken/verwijderen)
-
   Returns: Template/Redirect: De instellingenpagina of een redirect
   """
   actie = request.form.get('actie', '')
@@ -836,17 +775,22 @@ def instellingenactiepagina():
     label = request.form['label']
     createtoken(label)
     sleep(1)
-  elif actie == 'updatezonsterkte':
+  elif actie == 'updateautolampen':
     zonsterkte = request.form.get('zonsterkte', '')
     deleteenv('zonsterktelampen')
     envdb.add({'env': 'zonsterktelampen', 'value': int(zonsterkte)})
+    starttijd = request.form.get('starttijd', '')
+    deleteenv('starttijd')
+    envdb.add({'env': 'starttijd', 'value': int(starttijd)})
+    eindtijd = request.form.get('eindtijd', '')
+    deleteenv('eindtijd')
+    envdb.add({'env': 'eindtijd', 'value': int(eindtijd)})
   return redirect('/thuis/instellingen')
 
 
 @app.route('/thuis/schermen', methods=['GET'])
 def schermenpagina():
-  """ Toon de pagina met de status van de schermen 
-
+  """ Toon de pagina met de status van de schermen
   Returns: Template: De schermenpagina
   """
   return haalschermenentoon()
@@ -854,8 +798,7 @@ def schermenpagina():
 
 @app.route('/thuis/lampen', methods=['GET'])
 def lampenpagina():
-  """ Toon de pagina met de lampen 
-
+  """ Toon de pagina met de lampen
   Returns: Template: De lampenpagina
   """
   lampen = haallampen()
@@ -871,8 +814,7 @@ def lampenpagina():
 
 @app.route('/thuis/lampengrid', methods=['GET'])
 def lampengridpagina():
-  """ Toon de pagina met de lampengrid 
-
+  """ Toon de pagina met de lampengrid
   Returns: Template: De lampengrid configuratiepagina
   """
   lampen = leesenv('lampen')
@@ -888,10 +830,8 @@ def lampengridpagina():
 
 @app.route('/thuis/schermen', methods=['POST'])
 def schermenactiepagina():
-  """ Verwerk het verplaatsen van een of meer schermen 
-
+  """ Verwerk het verplaatsen van een of meer schermen
   Verwerkt acties voor schermen (open/dicht/verplaats)
-
   Returns: Redirect: Terug naar de schermenpagina
   """
   actie = request.form['actie']
@@ -899,7 +839,7 @@ def schermenactiepagina():
     device = request.form['device']
     percentage = request.form['percentage']
     if percentage.isnumeric():
-      verplaatsscherm(device, percentage)
+      verplaatsscherm(device, int(percentage))
   elif actie == 'sluitalles':
     sluitalles()
   elif actie == 'openalles':
@@ -913,10 +853,7 @@ def schermenactiepagina():
 
 @app.route('/thuis/lampen', methods=['POST'])
 def lampenactiepagina():
-  """ Verwerk acties voor lampen 
-
-  Verwerkt acties voor lampen (aan/uit/dim/kleur)
-
+  """ Verwerkt acties voor lampen (aan/uit/dim/kleur)
   Returns: Redirect: Terug naar de lampenpagina
   """
   actie = request.form['actie']
@@ -945,10 +882,7 @@ def lampenactiepagina():
 
 @app.route('/thuis/lampengrid', methods=['POST'])
 def lampengridactiepagina():
-  """ Verwerk de aanpassingen van de lampengrid 
-
-  Verwerkt de nieuwe volgorde van lampen in het grid
-
+  """ Verwerkt de nieuwe volgorde van lampen in het grid
   Returns: Redirect: Terug naar de lampengrid pagina
   """
   lampen = leesenv('lampen')
@@ -973,8 +907,7 @@ def lampengridactiepagina():
 
 
 def startwebserver() -> None:
-  """ Start webserver 
-
+  """ Start webserver
   Start de waitress WSGI server op poort 8088
   """
   waitress.serve(app, host="0.0.0.0", port=8088)

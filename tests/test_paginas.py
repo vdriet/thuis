@@ -142,13 +142,15 @@ def test_hoofdpaginaget_geenjsessionid(mock_zonnesterkte, mock_dbgetbyquery, cli
                     [],
                     [],
                     [],
+                    [],
+                    [],
                     ])
 def test_instellingenget_geenjsessionidengeenuserpass(mock_dbgetbyquery, client):
   response = client.get('/thuis/instellingen')
   assert b"<h1>Instellingen</h1>" in response.data
   assert b"id=\"userid\" name=\"userid\"" in response.data
   assert b"id=\"password\" name=\"password\"" in response.data
-  assert mock_dbgetbyquery.call_count == 9
+  assert mock_dbgetbyquery.call_count == 11
 
 
 @patch('pysondb.db.JsonDatabase.add')
@@ -251,6 +253,8 @@ def test_gridpaginapost(mock_dbadd, mock_dbdelete, mock_dbget, client):
                     [],
                     [],
                     [],
+                    [],
+                    [],
                     ])
 @patch('thuis.getavailabletokens',
        return_value=[{'label': 'Python token',
@@ -270,7 +274,7 @@ def test_instellingenpaginaget(mock_getavailabletokens, mock_dbgetbyquery, clien
   assert b"<td>Thuis token</td>" in response.data
   assert b"<td>2025-02-01 1" in response.data
   assert b":10:50</td>" in response.data
-  assert mock_dbgetbyquery.call_count == 9
+  assert mock_dbgetbyquery.call_count == 11
   assert mock_getavailabletokens.call_count == 1
 
 
@@ -341,6 +345,8 @@ def test_instellingenpaginaget_invalidsessie_login(mock_getavailabletokens, mock
                     [],
                     [],
                     [],
+                    [],
+                    [],
                     ])
 @patch('thuis.getavailabletokens', return_value=[{'data': 'dummytoken'}])
 def test_instellingenpaginaget_geenpod(mock_getavailabletokens, mock_dbquery, client):
@@ -350,7 +356,7 @@ def test_instellingenpaginaget_geenpod(mock_getavailabletokens, mock_dbquery, cl
   assert b"<h1>Instellingen</h1>" in response.data
   assert b"Voor de werking is het nummer van de POD nodig" in response.data
   assert b"dummytoken" not in response.data
-  assert mock_dbquery.call_count == 9
+  assert mock_dbquery.call_count == 11
   assert mock_getavailabletokens.call_count == 0
 
 
@@ -361,6 +367,8 @@ def test_instellingenpaginaget_geenpod(mock_getavailabletokens, mock_dbquery, cl
                     [{'env': 'hueuser', 'value': '7da7a68792t3r', 'id': 23164382}],
                     [{'env': 'userid', 'value': 'email@adres.com', 'id': 236910029}],
                     [{'env': 'password', 'value': 'password', 'id': 236910029}],
+                    [],
+                    [],
                     [],
                     [],
                     [],
@@ -389,7 +397,7 @@ def test_instellingenpaginaget_geenjsessionid_autologin(mock_adddb, mock_somfylo
   assert b"<td>2025-02-01 1" in response.data
   assert b":10:50</td>" in response.data
   assert mock_somfylogin.call_count == 1
-  assert mock_dbquery.call_count == 10
+  assert mock_dbquery.call_count == 12
   assert mock_getavailabletokens.call_count == 1
   assert mock_adddb.call_count == 1
 
@@ -464,17 +472,23 @@ def test_instellingenpaginapost_createtoken(mock_createtoken, mock_gettokens, mo
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'zonsterktelampen', 'value': 375, 'id': 92374019283}],
+                    [{'env': 'starttijd', 'value': 10, 'id': 3937243}],
+                    [{'env': 'eindtijd', 'value': 21, 'id': 8237849237}],
                     ])
 @patch('pysondb.db.JsonDatabase.deleteById', return_value=None)
 @patch('pysondb.db.JsonDatabase.add')
 def test_instellingenpaginapost_zonsterkte(mock_dbadd, mock_dbdel, mock_dbget, client):
-  data = {'actie': 'updatezonsterkte', 'zonsterkte': '350'}
+  data = {'actie': 'updateautolampen',
+          'zonsterkte': '350',
+          'starttijd': '9',
+          'eindtijd': '23',
+          }
   response = client.post('/thuis/instellingen', data=data)
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis/instellingen" in response.data
-  assert mock_dbadd.call_count == 1
-  assert mock_dbdel.call_count == 1
-  assert mock_dbget.call_count == 1
+  assert mock_dbadd.call_count == 3
+  assert mock_dbdel.call_count == 3
+  assert mock_dbget.call_count == 3
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',
