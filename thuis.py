@@ -699,17 +699,6 @@ def hueippagina():
   return redirect('/thuis')
 
 
-@app.route('/thuis/hueuser', methods=['POST'])
-def hueuserpagina():
-  """ Verwerkt het Hue gebruiker-formulier en slaat de gegevens op
-  Returns: Redirect: Terug naar de instellingenpagina
-  """
-  hueuser = request.form['hueuser']
-  deleteenv('hueuser')
-  envdb.add({'env': 'hueuser', 'value': hueuser})
-  return redirect('/thuis/instellingen')
-
-
 @app.route('/thuis/grid', methods=['POST'])
 def gridpagina():
   """ Verwerkt het grid-formulier en slaat de gegevens op
@@ -772,6 +761,10 @@ def instellingenactiepagina():
     jsessionid = somfylogin(userid, password)
     deleteenv('jsessionid')
     envdb.add({'env': 'jsessionid', 'value': jsessionid})
+  elif actie == 'updatehueuser':
+    hueuser = request.form['hueuser']
+    deleteenv('hueuser')
+    envdb.add({'env': 'hueuser', 'value': hueuser})
   return redirect('/thuis/instellingen')
 
 

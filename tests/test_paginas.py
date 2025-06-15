@@ -34,10 +34,6 @@ def app():
   def thuishueippagina():
     return thuis.hueippagina()
 
-  @app.route('/thuis/hueuser', methods=['POST'])
-  def thuishueuserpagina():
-    return thuis.hueuserpagina()
-
   @app.route('/thuis/grid', methods=['POST'])
   def thuisgridpagina():
     return thuis.gridpagina()
@@ -153,7 +149,7 @@ def test_loginpaginapost_save(mock_deleteenv, mock_dbadd, client):
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
-  assert b"/thuis" in response.data
+  assert b"/thuis/instellingen" in response.data
   assert mock_dbadd.call_count == 3
   assert mock_deleteenv.call_count == 3
 
@@ -165,7 +161,7 @@ def test_loginpaginapost_nosave(mock_dbadd, client):
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
-  assert b"/thuis" in response.data
+  assert b"/thuis/instellingen" in response.data
   assert mock_dbadd.call_count == 1
 
 
@@ -212,12 +208,12 @@ def test_hueippaginapost(mock_dbadd, mock_dbdelete, mock_dbget, client):
        return_value=None)
 @patch('pysondb.db.JsonDatabase.add')
 def test_hueuserpaginapost(mock_dbadd, mock_dbdelete, mock_dbget, client):
-  data = {'hueuser': 'dummy'}
-  response = client.post('/thuis/hueuser', data=data)
+  data = {'actie': 'updatehueuser', 'hueuser': 'dummy'}
+  response = client.post('/thuis/instellingen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
-  assert b"/thuis" in response.data
+  assert b"/thuis/instellingen" in response.data
   assert mock_dbadd.call_count == 1
   assert mock_dbdelete.call_count == 1
   assert mock_dbget.call_count == 1

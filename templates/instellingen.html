@@ -105,7 +105,8 @@
     <div class="w3-container w3-blue">
         <h2>HUE User</h2>
     </div>
-    <form class="w3-container" action="/thuis/hueuser" method="POST">
+    <form class="w3-container" action="/thuis/instellingen" method="POST">
+        <input name="actie" type="hidden" value="updatehueuser">
         <label for="hueuser">User voor de hue</label>
         <input class="w3-input" id="hueuser" name="hueuser" type="text" value="{{hueuser}}">
         <input class="w3-btn w3-blue" type="submit" value="Verstuur">
