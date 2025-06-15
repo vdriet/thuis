@@ -687,18 +687,6 @@ def thuispagina():
                          )
 
 
-@app.route('/thuis/grid', methods=['POST'])
-def gridpagina():
-  """ Verwerkt het grid-formulier en slaat de gegevens op
-  Returns: Redirect: Terug naar de instellingenpagina
-  """
-  deleteenv('gridbreedte')
-  envdb.add({'env': 'gridbreedte', 'value': int(request.form['gridbreedte'])})
-  deleteenv('gridhoogte')
-  envdb.add({'env': 'gridhoogte', 'value': int(request.form['gridhoogte'])})
-  return redirect('/thuis/instellingen')
-
-
 @app.route('/thuis/instellingen', methods=['GET'])
 def instellingenpagina():
   """ Toon de pagina met alle instellingen
@@ -757,6 +745,11 @@ def instellingenactiepagina():
     hueip = request.form['hueip']
     deleteenv('hueip')
     envdb.add({'env': 'hueip', 'value': hueip})
+  elif actie == 'updategrid':
+    deleteenv('gridbreedte')
+    envdb.add({'env': 'gridbreedte', 'value': int(request.form['gridbreedte'])})
+    deleteenv('gridhoogte')
+    envdb.add({'env': 'gridhoogte', 'value': int(request.form['gridhoogte'])})
   return redirect('/thuis/instellingen')
 
 
