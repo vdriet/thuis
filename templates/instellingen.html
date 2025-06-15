@@ -67,8 +67,8 @@
         <h2>POD</h2>
     </div>
     <form class="w3-container" action="/thuis/instellingen" method="POST">
-        <label for="pod">POD nr</label>
         <input name="actie" type="hidden" value="updatepod">
+        <label for="pod">POD nr</label>
         <input class="w3-input" id="pod" name="pod" type="text" value="{{pod}}">
         <input class="w3-btn w3-blue" type="submit" value="Verstuur">
     </form>
@@ -82,7 +82,8 @@
     <div class="w3-container w3-blue">
         <h2>Somfy-login</h2>
     </div>
-    <form class="w3-container" action="/thuis/login" method="POST">
+    <form class="w3-container" action="/thuis/instellingen" method="POST">
+        <input name="actie" type="hidden" value="login">
         <label for="jsessionid">JSessionid</label>
         <input class="w3-input" id="jsessionid" name="jsessionid" type="text" value="{{jsessionid}}" readonly>
         <label for="userid">E-mailadres</label>

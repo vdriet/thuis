@@ -687,25 +687,6 @@ def thuispagina():
                          )
 
 
-@app.route('/thuis/login', methods=['POST'])
-def loginpagina():
-  """ Verwerkt het inlogformulier en slaat de gegevens op
-  Returns: Redirect: Terug naar de hoofdpagina
-  """
-  userid = request.form['userid']
-  password = request.form['password']
-  bewaargegevens = request.form['savelogin']
-  if bewaargegevens == 'on':
-    deleteenv('userid')
-    envdb.add({'env': 'userid', 'value': userid})
-    deleteenv('password')
-    envdb.add({'env': 'password', 'value': password})
-  jsessionid = somfylogin(userid, password)
-  deleteenv('jsessionid')
-  envdb.add({'env': 'jsessionid', 'value': jsessionid})
-  return redirect('/thuis')
-
-
 @app.route('/thuis/hueip', methods=['POST'])
 def hueippagina():
   """ Verwerk het opvoeren van het ip van de hue
@@ -779,6 +760,18 @@ def instellingenactiepagina():
     deleteenv('pod')
     envdb.add({'env': 'pod', 'value': pod})
     return redirect('/thuis')
+  elif actie == 'login':
+    userid = request.form['userid']
+    password = request.form['password']
+    bewaargegevens = request.form['savelogin']
+    if bewaargegevens == 'on':
+      deleteenv('userid')
+      envdb.add({'env': 'userid', 'value': userid})
+      deleteenv('password')
+      envdb.add({'env': 'password', 'value': password})
+    jsessionid = somfylogin(userid, password)
+    deleteenv('jsessionid')
+    envdb.add({'env': 'jsessionid', 'value': jsessionid})
   return redirect('/thuis/instellingen')
 
 

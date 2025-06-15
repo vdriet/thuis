@@ -30,10 +30,6 @@ def app():
   def thuishoofdpagina():
     return thuis.thuispagina()
 
-  @app.route('/thuis/login', methods=['POST'])
-  def thuisloginpagina():
-    return thuis.loginpagina()
-
   @app.route('/thuis/hueip', methods=['POST'])
   def thuishueippagina():
     return thuis.hueippagina()
@@ -152,8 +148,8 @@ def test_instellingenget_geenjsessionidengeenuserpass(mock_dbgetbyquery, client)
 @patch('pysondb.db.JsonDatabase.add')
 @patch('thuis.deleteenv')
 def test_loginpaginapost_save(mock_deleteenv, mock_dbadd, client):
-  data = {'userid': 'dummy', 'password': '<PASSWORD>', 'savelogin': 'on'}
-  response = client.post('/thuis/login', data=data)
+  data = {'actie': 'login', 'userid': 'dummy', 'password': '<PASSWORD>', 'savelogin': 'on'}
+  response = client.post('/thuis/instellingen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
@@ -164,8 +160,8 @@ def test_loginpaginapost_save(mock_deleteenv, mock_dbadd, client):
 
 @patch('pysondb.db.JsonDatabase.add')
 def test_loginpaginapost_nosave(mock_dbadd, client):
-  data = {'userid': 'dummy', 'password': '<PASSWORD>', 'savelogin': 'off'}
-  response = client.post('/thuis/login', data=data)
+  data = {'actie': 'login', 'userid': 'dummy', 'password': '<PASSWORD>', 'savelogin': 'off'}
+  response = client.post('/thuis/instellingen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
