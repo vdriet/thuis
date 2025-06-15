@@ -687,18 +687,6 @@ def thuispagina():
                          )
 
 
-@app.route('/thuis/hueip', methods=['POST'])
-def hueippagina():
-  """ Verwerk het opvoeren van het ip van de hue
-  Verwerkt het Hue IP-formulier en slaat de gegevens op
-  Returns: Redirect: Terug naar de hoofdpagina
-  """
-  hueip = request.form['hueip']
-  deleteenv('hueip')
-  envdb.add({'env': 'hueip', 'value': hueip})
-  return redirect('/thuis')
-
-
 @app.route('/thuis/grid', methods=['POST'])
 def gridpagina():
   """ Verwerkt het grid-formulier en slaat de gegevens op
@@ -765,6 +753,10 @@ def instellingenactiepagina():
     hueuser = request.form['hueuser']
     deleteenv('hueuser')
     envdb.add({'env': 'hueuser', 'value': hueuser})
+  elif actie == 'updatehueip':
+    hueip = request.form['hueip']
+    deleteenv('hueip')
+    envdb.add({'env': 'hueip', 'value': hueip})
   return redirect('/thuis/instellingen')
 
 

@@ -30,10 +30,6 @@ def app():
   def thuishoofdpagina():
     return thuis.thuispagina()
 
-  @app.route('/thuis/hueip', methods=['POST'])
-  def thuishueippagina():
-    return thuis.hueippagina()
-
   @app.route('/thuis/grid', methods=['POST'])
   def thuisgridpagina():
     return thuis.gridpagina()
@@ -190,12 +186,12 @@ def test_instellingen_pod(mock_dbadd, mock_dbdelete, mock_dbget, client):
        return_value=None)
 @patch('pysondb.db.JsonDatabase.add')
 def test_hueippaginapost(mock_dbadd, mock_dbdelete, mock_dbget, client):
-  data = {'hueip': 'dummy'}
-  response = client.post('/thuis/hueip', data=data)
+  data = {'actie': 'updatehueip', 'hueip': 'dummy'}
+  response = client.post('/thuis/instellingen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
-  assert b"/thuis" in response.data
+  assert b"/thuis/instellingen" in response.data
   assert mock_dbadd.call_count == 1
   assert mock_dbdelete.call_count == 1
   assert mock_dbget.call_count == 1

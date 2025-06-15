@@ -121,8 +121,9 @@
     <div class="w3-container w3-blue">
         <h2>HUE IP-adres</h2>
     </div>
-    <form class="w3-container" action="/thuis/hueip" method="POST">
+    <form class="w3-container" action="/thuis/instellingen" method="POST">
         <label for="hueip">Adres</label>
+        <input name="actie" type="hidden" value="updatehueip">
         <input class="w3-input" id="hueip" name="hueip" type="text" value="{{hueip}}">
         <input class="w3-btn w3-blue" type="submit" value="Verstuur">
     </form>
