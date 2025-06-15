@@ -34,10 +34,6 @@ def app():
   def thuisloginpagina():
     return thuis.loginpagina()
 
-  @app.route('/thuis/pod', methods=['POST'])
-  def thuispodpagina():
-    return thuis.podpagina()
-
   @app.route('/thuis/hueip', methods=['POST'])
   def thuishueippagina():
     return thuis.hueippagina()
@@ -177,15 +173,22 @@ def test_loginpaginapost_nosave(mock_dbadd, client):
   assert mock_dbadd.call_count == 1
 
 
+@patch('pysondb.db.JsonDatabase.getByQuery',
+       side_effect=[[{'env': 'pod', 'value': 'oldvalue', 'id': 92374834}],
+                    ])
+@patch('pysondb.db.JsonDatabase.deleteById',
+       return_value=None)
 @patch('pysondb.db.JsonDatabase.add')
-def test_podpaginapost(mock_dbadd, client):
-  data = {'pod': 'dummy'}
-  response = client.post('/thuis/pod', data=data)
+def test_instellingen_pod(mock_dbadd, mock_dbdelete, mock_dbget, client):
+  data = {'actie': 'updatepod', 'pod': 'dummy'}
+  response = client.post('/thuis/instellingen', data=data)
 
   assert response.status_code == 302
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis" in response.data
   assert mock_dbadd.call_count == 1
+  assert mock_dbdelete.call_count == 1
+  assert mock_dbget.call_count == 1
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',

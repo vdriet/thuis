@@ -706,17 +706,6 @@ def loginpagina():
   return redirect('/thuis')
 
 
-@app.route('/thuis/pod', methods=['POST'])
-def podpagina():
-  """ Verwerk het opvoeren van de pod
-  Verwerkt het pod-formulier en slaat de gegevens op
-  Returns: Redirect: Terug naar de hoofdpagina
-  """
-  pod = request.form['pod']
-  envdb.add({'env': 'pod', 'value': pod})
-  return redirect('/thuis')
-
-
 @app.route('/thuis/hueip', methods=['POST'])
 def hueippagina():
   """ Verwerk het opvoeren van het ip van de hue
@@ -785,6 +774,11 @@ def instellingenactiepagina():
     eindtijd = request.form.get('eindtijd', '')
     deleteenv('eindtijd')
     envdb.add({'env': 'eindtijd', 'value': int(eindtijd)})
+  elif actie == 'updatepod':
+    pod = request.form['pod']
+    deleteenv('pod')
+    envdb.add({'env': 'pod', 'value': pod})
+    return redirect('/thuis')
   return redirect('/thuis/instellingen')
 
 
