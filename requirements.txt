@@ -22,6 +22,7 @@ packaging==25.0
 pip==25.1.1
 platformdirs==4.3.8
 pluggy==1.6.0
+Pygments==2.19.2
 pylint==3.3.7
 pysondb==1.6.7
 pytest==8.4.1

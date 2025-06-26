@@ -134,7 +134,7 @@ def test_instellingenget_geenjsessionidengeenuserpass(mock_dbgetbyquery, client)
 
 
 @patch('pysondb.db.JsonDatabase.add')
-@patch('thuis.deleteenv')
+@patch('gegevens.Gegevens.verwijder')
 def test_loginpaginapost_save(mock_deleteenv, mock_dbadd, client):
   data = {'actie': 'login', 'userid': 'dummy', 'password': '<PASSWORD>', 'savelogin': 'on'}
   response = client.post('/thuis/instellingen', data=data)

@@ -13,38 +13,18 @@ import urllib3
 import waitress
 from cachetools import cached, TTLCache
 from flask import Flask, render_template, request, redirect
-from pysondb import db
 from requests import ReadTimeout, JSONDecodeError
+from gegevens import Gegevens
 
 app = Flask(__name__,
             static_url_path='/static',
             template_folder='templates')
-envdb = db.getDb('envdb.json')
-zondb = db.getDb('zonnesterkte.json')
+envdb = Gegevens('envdb.json')
+zondb = Gegevens('zonnesterkte.json')
 BASEURL = 'ha101-1.overkiz.com'
 weercache = TTLCache(maxsize=1, ttl=900)
 zonnesterktecache = TTLCache(maxsize=1, ttl=60)
 monitoringcache = TTLCache(maxsize=1, ttl=86400)
-
-
-def leesenv(env: str):
-  """ Lees een gegeven uit de envdb
-  Args: env (str): De naam van het op te halen gegeven
-  Returns: De waarde van het gegeven of None als het niet bestaat
-  """
-  rows = envdb.getByQuery({'env': env})
-  if len(rows) != 1:
-    return None
-  return rows[0].get('value')
-
-
-def deleteenv(env: str) -> None:
-  """ Verwijder gegevens uit de envdb
-  Args: env (str): De naam van het te verwijderen gegevens
-  """
-  rows = envdb.getByQuery({'env': env})
-  for row in rows:
-    envdb.deleteById(row.get('id'))
 
 
 def somfylogin(userid: str, password: str) -> str:
@@ -81,16 +61,15 @@ def createtoken(label: str) -> int:
   Args: label (str): Het label voor de nieuwe token
   Returns: int: HTTP-statuscode (200 bij succes)
   """
-  pod = leesenv('pod')
-  jsessionid = leesenv('jsessionid')
+  pod = envdb.lees('pod')
+  jsessionid = envdb.lees('jsessionid')
   url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/generate'
   headers = {'Content-Type': 'application/json'
     , 'Cookie': f'JSESSIONID={jsessionid}'}
   with requests.get(url=url, headers=headers, timeout=10) as response:
     contentjson = response.json()
     rettoken = contentjson['token']
-    deleteenv('token')
-    envdb.add({'env': 'token', 'value': rettoken})
+    envdb.wijzig('token', rettoken)
     activatetoken(jsessionid, pod, label, rettoken)
     return 200
 
@@ -115,8 +94,8 @@ def deletetoken(uuid: str) -> int:
   Args: uuid (str): De unieke identificatie van de token
   Returns: int: HTTP-statuscode van de verwijder-actie
   """
-  pod = leesenv('pod')
-  jsessionid = leesenv('jsessionid')
+  pod = envdb.lees('pod')
+  jsessionid = envdb.lees('jsessionid')
   url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/{uuid}'
   headers = {'Content-Type': 'application/json'
     , 'Cookie': f'JSESSIONID={jsessionid}'}
@@ -129,30 +108,29 @@ def haalinstellingenentoon():
       Wanneer er gegevens missen, redirect naar hoofdpagina
   Returns: Template: De instellingen-pagina of een redirect
   """
-  pod = leesenv('pod')
-  jsessionid = leesenv('jsessionid')
-  hueip = leesenv('hueip')
-  hueuser = leesenv('hueuser')
-  userid = leesenv('userid')
-  password = leesenv('password')
-  zonsterktelampen = leesenv('zonsterktelampen')
+  pod = envdb.lees('pod')
+  jsessionid = envdb.lees('jsessionid')
+  hueip = envdb.lees('hueip')
+  hueuser = envdb.lees('hueuser')
+  userid = envdb.lees('userid')
+  password = envdb.lees('password')
+  zonsterktelampen = envdb.lees('zonsterktelampen')
   if not zonsterktelampen:
     zonsterktelampen = 400
-  starttijd = leesenv('starttijd')
+  starttijd = envdb.lees('starttijd')
   if not starttijd:
     starttijd = 9
-  eindtijd = leesenv('eindtijd')
+  eindtijd = envdb.lees('eindtijd')
   if not eindtijd:
     eindtijd = 23
   if not jsessionid and userid and password:
     jsessionid = somfylogin(userid, password)
-    deleteenv('jsessionid')
-    envdb.add({'env': 'jsessionid', 'value': jsessionid})
+    envdb.wijzig('jsessionid', jsessionid)
   tokens = []
   if pod and jsessionid:
     servertokens = getavailabletokens(jsessionid, pod)
     if isinstance(servertokens, dict) and not servertokens.get('error', None) is None:
-      deleteenv('jsessionid')
+      envdb.verwijder('jsessionid')
       return redirect('/thuis/instellingen')
     for token in servertokens:
       aanmaaktijdstip = int(token['gatewayCreationTime'] / 1000)
@@ -170,8 +148,8 @@ def haalinstellingenentoon():
                          userid=userid,
                          password=password,
                          jsessionid=jsessionid,
-                         gridbreedte=leesenv('gridbreedte'),
-                         gridhoogte=leesenv('gridhoogte'),
+                         gridbreedte=envdb.lees('gridbreedte'),
+                         gridhoogte=envdb.lees('gridhoogte'),
                          zonsterktelampen=zonsterktelampen,
                          starttijd=starttijd,
                          eindtijd=eindtijd,
@@ -264,7 +242,7 @@ def getschermen(pod: str, token: str) -> list:
       scherurlencoded = quote_plus(schermurl)
       device = haalgegevensvansomfy(token, pod, f'setup/devices/{scherurlencoded}')
       schermlijst.append({'label': device['label'], 'device': schermurl})
-  envdb.add({'env': 'schermen', 'value': schermlijst})
+  envdb.schrijf('schermen', schermlijst)
   return schermlijst
 
 
@@ -273,11 +251,11 @@ def haalschermenentoon():
       Wanneer er gegevens missen, redirect naar hoofdpagina
   Returns: Template: De schermen-pagina of een redirect
   """
-  pod = leesenv('pod')
-  token = leesenv('token')
+  pod = envdb.lees('pod')
+  token = envdb.lees('token')
   if not pod or not token:
     return redirect('/thuis')
-  envschermen = leesenv('schermen')
+  envschermen = envdb.lees('schermen')
   if not envschermen:
     envschermen = getschermen(pod, token)
   schermen = []
@@ -329,18 +307,18 @@ def bepaalhexrgbvanxy(xwaarde: float, ywaarde: float, dimwaarde: int) -> str:
 
 
 def zetlampenindb(lampen: list) -> None:
-  """ Plaats de lampen in de envdb
+  """ Plaats de lampen in de gegevens
   Args: lampen (list): Lijst met lampen om op te slaan
   """
   dblampen = []
-  gridbreedte = leesenv('gridbreedte')
-  if gridbreedte is None:
+  gridbreedte = envdb.lees('gridbreedte')
+  if not gridbreedte:
     gridbreedte = 3
-    envdb.add({'env': 'gridbreedte', 'value': gridbreedte})
-  gridhoogte = leesenv('gridhoogte')
-  if gridhoogte is None:
+    envdb.schrijf('gridbreedte', gridbreedte)
+  gridhoogte = envdb.lees('gridhoogte')
+  if not gridhoogte:
     gridhoogte = 4
-    envdb.add({'env': 'gridhoogte', 'value': gridhoogte})
+    envdb.schrijf('gridhoogte', gridhoogte)
   volgordex = 1
   volgordey = 1
   for lamp in lampen:
@@ -352,7 +330,7 @@ def zetlampenindb(lampen: list) -> None:
       volgordex = 1
       volgordey += 1
     dblampen.append(lampenv)
-  envdb.add({'env': 'lampen', 'value': dblampen})
+  envdb.schrijf('lampen', dblampen)
 
 
 def haallampen() -> list:
@@ -360,11 +338,11 @@ def haallampen() -> list:
       Wanneer er gegevens missen, geef een lege lijst terug
   Returns: Template: De lampen-pagina of een redirect
   """
-  hueip = leesenv('hueip')
-  hueuser = leesenv('hueuser')
+  hueip = envdb.lees('hueip')
+  hueuser = envdb.lees('hueuser')
   if not hueip or not hueuser:
     return []
-  dblampen = leesenv('lampen')
+  dblampen = envdb.lees('lampen')
   lampen = []
   lampdata = haalgegevensvanhue(hueip, hueuser, 'light')
 
@@ -395,7 +373,7 @@ def haallampen() -> list:
                    'status': status})
   if not dblampen:
     zetlampenindb(sorted(lampen, key=lambda x: x['naam']))
-    dblampen = leesenv('lampen')
+    dblampen = envdb.lees('lampen')
   for lamp in dblampen:
     for lamp2 in lampen:
       if lamp.get('id') == lamp2.get('id'):
@@ -409,8 +387,8 @@ def verplaatsscherm(device: str, percentage: int) -> None:
   Args: device (str): De device-URL van het scherm
         percentage (int): Het gewenste openingspercentage
   """
-  token = leesenv('token')
-  pod = leesenv('pod')
+  token = envdb.lees('token')
+  pod = envdb.lees('pod')
   data = json.dumps({
     "label": "verplaats scherm",
     "actions": [
@@ -429,7 +407,7 @@ def verplaatsalleschermen(percentage: int) -> None:
   """ Verplaats alle schermen naar zelfde percentage
   Args: percentage (int): Het gewenste openingspercentage
   """
-  schermen = leesenv('schermen')
+  schermen = envdb.lees('schermen')
   for scherm in schermen:
     deviceid = scherm.get('device')
     verplaatsscherm(deviceid, percentage)
@@ -453,7 +431,7 @@ def verversschermen() -> None:
   """ Ververs de opgeslagen schermen
   Verwijdert de schermen uit de database zodat ze opnieuw worden opgehaald
   """
-  deleteenv('schermen')
+  envdb.verwijder('schermen')
 
 
 def doeactieoplamp(lampid: str, actie: dict) -> None:
@@ -461,8 +439,8 @@ def doeactieoplamp(lampid: str, actie: dict) -> None:
   Args: lampid (str): De ID van de lamp
         actie (dict): De uit te voeren actie
   """
-  hueip = leesenv('hueip')
-  hueuser = leesenv('hueuser')
+  hueip = envdb.lees('hueip')
+  hueuser = envdb.lees('hueuser')
   path = f'light/{lampid}'
   stuurgegevensnaarhue(hueip, hueuser, path, actie)
 
@@ -515,7 +493,7 @@ def allelampenuit() -> None:
   """ Alle lampen uit
   Zet alle bekende lampen uit
   """
-  lampen = leesenv('lampen')
+  lampen = envdb.lees('lampen')
   for lamp in lampen:
     lampid = lamp.get('id')
     zetlampuit(lampid)
@@ -526,7 +504,7 @@ def ververslampen() -> None:
 
   Verwijdert de lampen uit de database zodat ze opnieuw worden opgehaald
   """
-  deleteenv('lampen')
+  envdb.verwijder('lampen')
 
 
 @cached(cache=weercache)
@@ -578,10 +556,10 @@ def haalzonnesterkteuitdb() -> int:
   """ Haal de zonnesterkte uit de db
   Returns: int: De laatst gemeten zonnesterkte of 0 als er geen meting is
   """
-  records = zondb.getByQuery({'key': 'zonnesterkte'})
-  if len(records) > 0:
-    return records[0].get('value')
-  zondb.add({'key': 'zonnesterkte', 'value': 0})
+  waarde = zondb.lees('zonnesterkte')
+  if waarde:
+    return waarde
+  zondb.schrijf('zonnesterkte', 0)
   return 0
 
 
@@ -591,7 +569,7 @@ def schakellampenaan(vorigesterkte: int, zonnesterkte: int):
         zonnesterkte (int): De huidige zonnesterkte
   """
   verstuurberichtmonitoring(f'Zonnesterkte van {vorigesterkte} naar {zonnesterkte}, lampen aan!')
-  for lamp in leesenv('lampen'):
+  for lamp in envdb.lees('lampen'):
     if lamp.get('automatisch', False):
       zetlampaan(lamp.get('id'))
 
@@ -602,7 +580,7 @@ def schakellampenuit(vorigesterkte: int, zonnesterkte: int):
         zonnesterkte (int): De huidige zonnesterkte
   """
   verstuurberichtmonitoring(f'Zonnesterkte van {vorigesterkte} naar {zonnesterkte}, lampen uit!')
-  for lamp in leesenv('lampen'):
+  for lamp in envdb.lees('lampen'):
     if lamp.get('automatisch', False):
       zetlampuit(lamp.get('id'))
 
@@ -613,13 +591,13 @@ def checkzonnesterkte() -> None:
   """
   vorigesterkte = haalzonnesterkteuitdb()
   zonnesterkte = haalzonnesterkte()
-  zonsterktelampen = leesenv('zonsterktelampen')
+  zonsterktelampen = envdb.lees('zonsterktelampen')
   if not zonsterktelampen:
     zonsterktelampen = 400
-  starttijd = leesenv('starttijd')
+  starttijd = envdb.lees('starttijd')
   if not starttijd:
     starttijd = 9
-  eindtijd = leesenv('eindtijd')
+  eindtijd = envdb.lees('eindtijd')
   if not eindtijd:
     eindtijd = 23
   tijd = datetime.now()
@@ -627,8 +605,7 @@ def checkzonnesterkte() -> None:
     schakellampenaan(vorigesterkte, zonnesterkte)
   if vorigesterkte < zonsterktelampen < zonnesterkte and starttijd <= tijd.hour < eindtijd:
     schakellampenuit(vorigesterkte, zonnesterkte)
-  zondb.updateByQuery({'key': 'zonnesterkte'},
-                      {'key': 'zonnesterkte', 'value': zonnesterkte})
+  zondb.wijzig('zonnesterkte', zonnesterkte)
 
 
 def haalzonnesensors(pod: str, token: str) -> list:
@@ -645,7 +622,7 @@ def haalzonnesensors(pod: str, token: str) -> list:
       sensorurlencoded = quote_plus(sensorurl)
       device = haalgegevensvansomfy(token, pod, f'setup/devices/{sensorurlencoded}')
       sensorlijst.append({'label': device['label'], 'device': sensorurl})
-  envdb.add({'env': 'sensors', 'value': sensorlijst})
+  envdb.schrijf('sensors', sensorlijst)
   return sensorlijst
 
 
@@ -654,12 +631,12 @@ def haalzonnesterkte() -> int:
   """ Haal de zonnesterkte op
   Returns: int: De gemeten zonnesterkte of een negatieve waarde bij een fout
   """
-  token = leesenv('token')
-  pod = leesenv('pod')
-  if token is None or pod is None:
+  token = envdb.lees('token')
+  pod = envdb.lees('pod')
+  if not token or not pod:
     return -1
-  sensors = leesenv('sensors')
-  if sensors is None:
+  sensors = envdb.lees('sensors')
+  if not sensors:
     sensors = haalzonnesensors(pod, token)
   lichtsterkte = 'core:LuminanceState'
   for sensor in sensors:
@@ -681,8 +658,8 @@ def thuispagina():
   lampen = haallampen()
   return render_template('hoofdpagina.html',
                          lampen=sorted(lampen, key=lambda x: x['naam']),
-                         gridbreedte=leesenv('gridbreedte'),
-                         gridhoogte=leesenv('gridhoogte'),
+                         gridbreedte=envdb.lees('gridbreedte'),
+                         gridhoogte=envdb.lees('gridhoogte'),
                          zonnesterkte=haalzonnesterkte(),
                          )
 
@@ -712,44 +689,33 @@ def instellingenactiepagina():
     sleep(1)
   elif actie == 'updateautolampen':
     zonsterkte = request.form.get('zonsterkte', '')
-    deleteenv('zonsterktelampen')
-    envdb.add({'env': 'zonsterktelampen', 'value': int(zonsterkte)})
+    envdb.wijzig('zonsterktelampen', int(zonsterkte))
     starttijd = request.form.get('starttijd', '')
-    deleteenv('starttijd')
-    envdb.add({'env': 'starttijd', 'value': int(starttijd)})
+    envdb.wijzig('starttijd', int(starttijd))
     eindtijd = request.form.get('eindtijd', '')
-    deleteenv('eindtijd')
-    envdb.add({'env': 'eindtijd', 'value': int(eindtijd)})
+    envdb.wijzig('eindtijd', int(eindtijd))
   elif actie == 'updatepod':
     pod = request.form['pod']
-    deleteenv('pod')
-    envdb.add({'env': 'pod', 'value': pod})
+    envdb.wijzig('pod', pod)
     return redirect('/thuis')
   elif actie == 'login':
     userid = request.form['userid']
     password = request.form['password']
     bewaargegevens = request.form['savelogin']
     if bewaargegevens == 'on':
-      deleteenv('userid')
-      envdb.add({'env': 'userid', 'value': userid})
-      deleteenv('password')
-      envdb.add({'env': 'password', 'value': password})
+      envdb.wijzig('userid', userid)
+      envdb.wijzig('password', password)
     jsessionid = somfylogin(userid, password)
-    deleteenv('jsessionid')
-    envdb.add({'env': 'jsessionid', 'value': jsessionid})
+    envdb.wijzig('jsessionid', jsessionid)
   elif actie == 'updatehueuser':
     hueuser = request.form['hueuser']
-    deleteenv('hueuser')
-    envdb.add({'env': 'hueuser', 'value': hueuser})
+    envdb.wijzig('hueuser', hueuser)
   elif actie == 'updatehueip':
     hueip = request.form['hueip']
-    deleteenv('hueip')
-    envdb.add({'env': 'hueip', 'value': hueip})
+    envdb.wijzig('hueip', hueip)
   elif actie == 'updategrid':
-    deleteenv('gridbreedte')
-    envdb.add({'env': 'gridbreedte', 'value': int(request.form['gridbreedte'])})
-    deleteenv('gridhoogte')
-    envdb.add({'env': 'gridhoogte', 'value': int(request.form['gridhoogte'])})
+    envdb.wijzig('gridbreedte', int(request.form['gridbreedte']))
+    envdb.wijzig('gridhoogte', int(request.form['gridhoogte']))
   return redirect('/thuis/instellingen')
 
 
@@ -771,8 +737,8 @@ def lampenpagina():
     return redirect('/thuis')
   return render_template('lampen.html',
                          lampen=sorted(lampen, key=lambda x: x['naam']),
-                         gridbreedte=leesenv('gridbreedte'),
-                         gridhoogte=leesenv('gridhoogte'),
+                         gridbreedte=envdb.lees('gridbreedte'),
+                         gridhoogte=envdb.lees('gridhoogte'),
                          zonnesterkte=haalzonnesterkte()
                          )
 
@@ -782,14 +748,14 @@ def lampengridpagina():
   """ Toon de pagina met de lampengrid
   Returns: Template: De lampengrid configuratiepagina
   """
-  lampen = leesenv('lampen')
+  lampen = envdb.lees('lampen')
   for lamp in lampen:
     if not lamp.get('automatisch'):
       lamp['checked'] = False
   return render_template('lampengrid.html',
                          lampen=sorted(lampen, key=lambda x: x['naam']),
-                         gridbreedte=leesenv('gridbreedte'),
-                         gridhoogte=leesenv('gridhoogte'),
+                         gridbreedte=envdb.lees('gridbreedte'),
+                         gridhoogte=envdb.lees('gridhoogte'),
                          )
 
 
@@ -850,7 +816,7 @@ def lampengridactiepagina():
   """ Verwerkt de nieuwe volgorde van lampen in het grid
   Returns: Redirect: Terug naar de lampengrid pagina
   """
-  lampen = leesenv('lampen')
+  lampen = envdb.lees('lampen')
   for lamp in lampen:
     lamp['automatisch'] = False
   for key in request.form.keys():
@@ -866,8 +832,7 @@ def lampengridactiepagina():
         if lamp['id'] == lampid:
           lamp['automatisch'] = True
           break
-  deleteenv('lampen')
-  envdb.add({'env': 'lampen', 'value': lampen})
+  envdb.wijzig('lampen', lampen)
   return redirect('/thuis/lampengrid')
 
 
