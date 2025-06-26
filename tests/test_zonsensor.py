@@ -201,8 +201,9 @@ def test_checkzonnesterkte_hoog_laag(mock_leesdb, mock_del, mock_add, mock_schak
                     [{'env': 'eindtijd', 'value': 23, 'id': 92379283}],
                     [],
                     ])
+@patch('pysondb.db.JsonDatabase.add')
 @freeze_time("2025-05-17 17:01:02")
-def test_checkzonnesterkte_hoog_hoog(mock_leesdb, mock_schakeluit, mock_schakelaan, mock_haalzonnesterkte,
+def test_checkzonnesterkte_hoog_hoog(mock_adddb, mock_leesdb, mock_schakeluit, mock_schakelaan, mock_haalzonnesterkte,
                                      mock_haaluitdb):
   thuis.checkzonnesterkte()
 
@@ -211,6 +212,7 @@ def test_checkzonnesterkte_hoog_hoog(mock_leesdb, mock_schakeluit, mock_schakela
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 0
   assert mock_leesdb.call_count == 4
+  assert mock_adddb.call_count == 1
 
 
 @patch('thuis.haalzonnesterkteuitdb', return_value=401)
@@ -249,8 +251,9 @@ def test_checkzonnesterkte_hoog_laag_default(mock_leesdb, mock_delete, mock_add,
                     [{'env': 'eindtijd', 'value': 23, 'id': 92379283}],
                     [],
                     ])
+@patch('pysondb.db.JsonDatabase.add')
 @freeze_time("2025-05-17 17:01:02")
-def test_checkzonnesterkte_laag_laag(mock_leesdb, mock_schakeluit, mock_schakelaan, mock_haalzonnesterkte,
+def test_checkzonnesterkte_laag_laag(mock_adddb, mock_leesdb, mock_schakeluit, mock_schakelaan, mock_haalzonnesterkte,
                                      mock_haaluitdb):
   thuis.checkzonnesterkte()
 
@@ -259,6 +262,7 @@ def test_checkzonnesterkte_laag_laag(mock_leesdb, mock_schakeluit, mock_schakela
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 0
   assert mock_leesdb.call_count == 4
+  assert mock_adddb.call_count == 1
 
 
 @patch('thuis.haalzonnesterkteuitdb', return_value=390)
@@ -271,8 +275,9 @@ def test_checkzonnesterkte_laag_laag(mock_leesdb, mock_schakeluit, mock_schakela
                     [{'env': 'eindtijd', 'value': 23, 'id': 92379283}],
                     [],
                     ])
+@patch('pysondb.db.JsonDatabase.add')
 @freeze_time("2025-05-17 17:01:02")
-def test_checkzonnesterkte_laag_hoog(mock_leesdb, mock_schakeluit, mock_schakelaan, mock_haalzonnesterkte,
+def test_checkzonnesterkte_laag_hoog(mock_adddb, mock_leesdb, mock_schakeluit, mock_schakelaan, mock_haalzonnesterkte,
                                      mock_haaluitdb):
   thuis.checkzonnesterkte()
 
@@ -281,6 +286,7 @@ def test_checkzonnesterkte_laag_hoog(mock_leesdb, mock_schakeluit, mock_schakela
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 1
   assert mock_leesdb.call_count == 4
+  assert mock_adddb.call_count == 1
 
 
 @patch('thuis.haalzonnesterkteuitdb', return_value=600)
@@ -293,8 +299,10 @@ def test_checkzonnesterkte_laag_hoog(mock_leesdb, mock_schakeluit, mock_schakela
                     [{'env': 'eindtijd', 'value': 23, 'id': 92379283}],
                     [],
                     ])
+@patch('pysondb.db.JsonDatabase.add')
 @freeze_time("2025-05-17 14:34:56")
-def test_checkzonnesterkte_vroeg(mock_leesdb, mock_schakeluit, mock_schakelaan, mock_haalzonnesterkte, mock_haaluitdb):
+def test_checkzonnesterkte_vroeg(mock_adddb, mock_leesdb, mock_schakeluit, mock_schakelaan, mock_haalzonnesterkte,
+                                 mock_haaluitdb):
   thuis.checkzonnesterkte()
 
   assert mock_haaluitdb.call_count == 1
@@ -302,6 +310,7 @@ def test_checkzonnesterkte_vroeg(mock_leesdb, mock_schakeluit, mock_schakelaan, 
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 0
   assert mock_leesdb.call_count == 4
+  assert mock_adddb.call_count == 1
 
 
 @patch('thuis.haalzonnesterkteuitdb', return_value=600)
@@ -314,9 +323,10 @@ def test_checkzonnesterkte_vroeg(mock_leesdb, mock_schakeluit, mock_schakelaan, 
                     [{'env': 'eindtijd', 'value': 23, 'id': 92379283}],
                     [],
                     ])
+@patch('pysondb.db.JsonDatabase.add')
 @freeze_time("2025-05-17 08:34:56")
-def test_checkzonnesterkte_vroeg_default(mock_leesdb, mock_schakeluit, mock_schakelaan, mock_haalzonnesterkte,
-                                         mock_haaluitdb):
+def test_checkzonnesterkte_vroeg_default(mock_adddb, mock_leesdb, mock_schakeluit, mock_schakelaan,
+                                         mock_haalzonnesterkte, mock_haaluitdb):
   thuis.checkzonnesterkte()
 
   assert mock_haaluitdb.call_count == 1
@@ -324,6 +334,7 @@ def test_checkzonnesterkte_vroeg_default(mock_leesdb, mock_schakeluit, mock_scha
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 0
   assert mock_leesdb.call_count == 4
+  assert mock_adddb.call_count == 1
 
 
 @patch('thuis.haalzonnesterkteuitdb', return_value=600)
@@ -336,8 +347,10 @@ def test_checkzonnesterkte_vroeg_default(mock_leesdb, mock_schakeluit, mock_scha
                     [{'env': 'eindtijd', 'value': 20, 'id': 92379283}],
                     [],
                     ])
+@patch('pysondb.db.JsonDatabase.add')
 @freeze_time("2025-05-17 21:45:12")
-def test_checkzonnesterkte_laat(mock_leesdb, mock_schakeluit, mock_schakelaan, mock_haalzonnesterkte, mock_haaluitdb):
+def test_checkzonnesterkte_laat(mock_adddb, mock_leesdb, mock_schakeluit, mock_schakelaan, mock_haalzonnesterkte,
+                                mock_haaluitdb):
   thuis.checkzonnesterkte()
 
   assert mock_haaluitdb.call_count == 1
@@ -345,6 +358,7 @@ def test_checkzonnesterkte_laat(mock_leesdb, mock_schakeluit, mock_schakelaan, m
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 0
   assert mock_leesdb.call_count == 4
+  assert mock_adddb.call_count == 1
 
 
 @patch('thuis.haalzonnesterkteuitdb', return_value=600)
@@ -357,9 +371,10 @@ def test_checkzonnesterkte_laat(mock_leesdb, mock_schakeluit, mock_schakelaan, m
                     [],
                     [],
                     ])
+@patch('pysondb.db.JsonDatabase.add')
 @freeze_time("2025-05-17 23:45:12")
-def test_checkzonnesterkte_laat_default(mock_leesdb, mock_schakeluit, mock_schakelaan, mock_haalzonnesterkte,
-                                        mock_haaluitdb):
+def test_checkzonnesterkte_laat_default(mock_adddb, mock_leesdb, mock_schakeluit, mock_schakelaan,
+                                        mock_haalzonnesterkte, mock_haaluitdb):
   thuis.checkzonnesterkte()
 
   assert mock_haaluitdb.call_count == 1
@@ -367,6 +382,7 @@ def test_checkzonnesterkte_laat_default(mock_leesdb, mock_schakeluit, mock_schak
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 0
   assert mock_leesdb.call_count == 4
+  assert mock_adddb.call_count == 1
 
 
 @patch('thuis.verstuurberichtmonitoring')
