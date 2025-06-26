@@ -35,6 +35,18 @@ class Gegevens:
       return None
     return rijen[0].get('value')
 
+  def leesint(self, sleutel: str, waarde: int):
+    """
+      Lees een gegeven uit het bestand, wanneer niet gevonden geef dan standaard waarde
+      :param sleutel (str): De naam van het gegeven
+      :param waarde: De standaard waarde van het gegeven als het niet in het bestand staat
+      :return: De waarde van het gegeven uit het bestand of de standaard waarde
+    """
+    dbwaarde = self.lees(sleutel)
+    if dbwaarde:
+      return dbwaarde
+    return waarde
+
   def wijzig(self, sleutel: str, waarde: Any):
     """
       Wijzig gegevens in het bestand

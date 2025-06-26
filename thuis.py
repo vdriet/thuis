@@ -114,15 +114,9 @@ def haalinstellingenentoon():
   hueuser = envdb.lees('hueuser')
   userid = envdb.lees('userid')
   password = envdb.lees('password')
-  zonsterktelampen = envdb.lees('zonsterktelampen')
-  if not zonsterktelampen:
-    zonsterktelampen = 400
-  starttijd = envdb.lees('starttijd')
-  if not starttijd:
-    starttijd = 9
-  eindtijd = envdb.lees('eindtijd')
-  if not eindtijd:
-    eindtijd = 23
+  zonsterktelampen = envdb.leesint('zonsterktelampen', 400)
+  starttijd = envdb.leesint('starttijd', 9)
+  eindtijd = envdb.leesint('eindtijd', 23)
   if not jsessionid and userid and password:
     jsessionid = somfylogin(userid, password)
     envdb.wijzig('jsessionid', jsessionid)
@@ -591,15 +585,9 @@ def checkzonnesterkte() -> None:
   """
   vorigesterkte = haalzonnesterkteuitdb()
   zonnesterkte = haalzonnesterkte()
-  zonsterktelampen = envdb.lees('zonsterktelampen')
-  if not zonsterktelampen:
-    zonsterktelampen = 400
-  starttijd = envdb.lees('starttijd')
-  if not starttijd:
-    starttijd = 9
-  eindtijd = envdb.lees('eindtijd')
-  if not eindtijd:
-    eindtijd = 23
+  zonsterktelampen = envdb.leesint('zonsterktelampen', 400)
+  starttijd = envdb.leesint('starttijd', 9)
+  eindtijd = envdb.leesint('eindtijd', 23)
   tijd = datetime.now()
   if zonnesterkte < zonsterktelampen < vorigesterkte and starttijd <= tijd.hour < eindtijd:
     schakellampenaan(vorigesterkte, zonnesterkte)
