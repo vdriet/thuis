@@ -32,6 +32,7 @@ schedule==1.2.2
 setuptools==80.9.0
 six==1.17.0
 tomlkit==0.13.3
+types-urllib3==1.26.25.14
 urllib3==2.3.0
 waitress==3.0.2
 wcwidth==0.2.13

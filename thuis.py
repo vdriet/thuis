@@ -9,12 +9,13 @@ from urllib.parse import quote_plus
 
 import requests
 import schedule
-import urllib3
 import waitress
 from cachetools import cached, TTLCache
 from flask import Flask, render_template, request, redirect
 from requests import ReadTimeout, JSONDecodeError
+
 from gegevens import Gegevens
+from hue import Hue
 
 app = Flask(__name__,
             static_url_path='/static',
@@ -25,6 +26,17 @@ BASEURL = 'ha101-1.overkiz.com'
 weercache = TTLCache(maxsize=1, ttl=900)
 zonnesterktecache = TTLCache(maxsize=1, ttl=60)
 monitoringcache = TTLCache(maxsize=1, ttl=86400)
+
+
+def gethue() -> Hue | None:
+  """ Maak een verbinding met de hue
+  :returns: object naar hue
+  """
+  hueip = envdb.lees('hueip')
+  hueuser = envdb.lees('hueuser')
+  if not hueip or not hueuser:
+    return None
+  return Hue(hueip, hueuser)
 
 
 def somfylogin(userid: str, password: str) -> str:
@@ -166,24 +178,6 @@ def haalgegevensvansomfy(token: str, pod: str, path: str) -> dict:
     return response.json()
 
 
-def haalgegevensvanhue(hueip: str, hueuser: str, path: str) -> dict:
-  """ Ophalen van gegevens van de hue bridge
-  Args: hueip (str): Het IP-adres van de Hue bridge
-        hueuser (str): De geautoriseerde gebruiker
-        path (str): Het pad naar de op te vragen gegevens
-  Returns: dict: De opgehaalde gegevens in JSON -formaat
-  """
-  urllib3.disable_warnings()
-  url = f'https://{hueip}/clip/v2/resource/{path}'
-  headers = {'Content-type': 'application/json',
-             'hue-application-key': hueuser}
-  with requests.get(url=url,
-                    headers=headers,
-                    timeout=5,
-                    verify=False) as response:
-    return response.json()
-
-
 def stuurgegevensnaarsomfy(token: str, pod: str, path: str, data: str) -> dict:
   """ Sturen van gegevens naar het somfy kastje
   Args: token (str): De geldige token
@@ -199,26 +193,6 @@ def stuurgegevensnaarsomfy(token: str, pod: str, path: str, data: str) -> dict:
                      timeout=5,
                      verify='./cert/overkiz-root-ca-2048.crt',
                      data=data) as response:
-    return response.json()
-
-
-def stuurgegevensnaarhue(hueip: str, hueuser: str, path: str, data: dict) -> dict:
-  """ Sturen van gegevens naar de hue bridge
-  Args: hueip (str): Het IP-adres van de Hue bridge
-        hueuser (str): De geautoriseerde gebruiker
-        path (str): Het pad voor de te versturen gegevens
-        data (dict): De te versturen gegevens
-  Returns: dict: Het antwoord van de bridge in JSON-formaat
-  """
-  urllib3.disable_warnings()
-  url = f'https://{hueip}/clip/v2/resource/{path}'
-  headers = {'Content-type': 'application/json',
-             'hue-application-key': hueuser}
-  with requests.put(url=url,
-                    headers=headers,
-                    timeout=5,
-                    verify=False,
-                    data=json.dumps(data)) as response:
     return response.json()
 
 
@@ -332,13 +306,12 @@ def haallampen() -> list:
       Wanneer er gegevens missen, geef een lege lijst terug
   Returns: Template: De lampen-pagina of een redirect
   """
-  hueip = envdb.lees('hueip')
-  hueuser = envdb.lees('hueuser')
-  if not hueip or not hueuser:
+  bridge = gethue()
+  if bridge is None:
     return []
   dblampen = envdb.lees('lampen')
   lampen = []
-  lampdata = haalgegevensvanhue(hueip, hueuser, 'light')
+  lampdata = bridge.haalgegevens('light')
 
   if len(lampdata.get('errors', [])) != 0:
     return []
@@ -430,13 +403,12 @@ def verversschermen() -> None:
 
 def doeactieoplamp(lampid: str, actie: dict) -> None:
   """ voer een actie uit op een lamp
-  Args: lampid (str): De ID van de lamp
+  Args: lampid (str): Het ID van de lamp
         actie (dict): De uit te voeren actie
   """
-  hueip = envdb.lees('hueip')
-  hueuser = envdb.lees('hueuser')
+  bridge = gethue()
   path = f'light/{lampid}'
-  stuurgegevensnaarhue(hueip, hueuser, path, actie)
+  bridge.stuurgegevens(path, actie)
 
 
 def zetlampaanuit(lampid: str, status: bool) -> None:

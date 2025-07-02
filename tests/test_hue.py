@@ -26,16 +26,23 @@ class MyTestCaseHue(unittest.TestCase):
       )
     return mock_resp
 
+  @mock.patch('pysondb.db.JsonDatabase.getByQuery',
+              side_effect=[[{'env': 'hueip', 'value': '4.3.2.1', 'id': 82265347}],
+                           [{'env': 'hueuser', 'value': 'abcd1234qwer8765', 'id': 918273548237}]
+                           ])
   @mock.patch('requests.get')
-  def test_huegetdata(self, mock_get):
+  def test_huegetdata(self, mock_get, mock_envdb):
     import thuis
     mock_resp = self._mock_response(status=200,
                                     content="""{'json': 'data'}""")
     mock_get.return_value.__enter__.return_value = mock_resp
 
-    response = thuis.haalgegevensvanhue('hueip', 'hueuser', 'path')
+    bridge = thuis.gethue()
+    response = bridge.haalgegevens('path')
     self.assertEqual(response, ANY)
     mock_get.assert_called_once()
+    self.assertEqual(mock_envdb.call_count, 2)
+
 
   @mock.patch('pysondb.db.JsonDatabase.getByQuery',
               side_effect=[[{'env': 'hueip', 'value': '4.3.2.1', 'id': 82265347}],
