@@ -243,7 +243,7 @@ def test_gridpaginapost(mock_dbadd, mock_dbdelete, mock_dbget, client):
                     [],
                     [],
                     ])
-@patch('thuis.getavailabletokens',
+@patch('somfy.Somfy.getavailabletokens',
        return_value=[{'label': 'Python token',
                       'gatewayId': '1234-4321-5678',
                       'gatewayCreationTime': 1738422650000,
@@ -279,7 +279,7 @@ def test_instellingenpaginaget(mock_getavailabletokens, mock_dbgetbyquery, clien
                     ])
 @patch('pysondb.db.JsonDatabase.deleteById',
        return_value=None)
-@patch('thuis.getavailabletokens', return_value={'error': 'unauthorized'})
+@patch('somfy.Somfy.getavailabletokens', return_value={'error': 'unauthorized'})
 def test_instellingenpaginaget_geensessie(mock_getavailabletokens, mock_dbdelete, mock_dbquery, client):
   response = client.get('/thuis/instellingen')
 
@@ -307,7 +307,7 @@ def test_instellingenpaginaget_geensessie(mock_getavailabletokens, mock_dbdelete
        return_value=None)
 @patch('pysondb.db.JsonDatabase.add',
        return_value=None)
-@patch('thuis.getavailabletokens',
+@patch('somfy.Somfy.getavailabletokens',
        side_effect=[{'error': 'unauthorized'}])
 def test_instellingenpaginaget_invalidsessie_login(mock_getavailabletokens, mock_dbadd, mock_dbdelete, mock_dbquery,
                                                    client):
@@ -335,7 +335,7 @@ def test_instellingenpaginaget_invalidsessie_login(mock_getavailabletokens, mock
                     [],
                     [],
                     ])
-@patch('thuis.getavailabletokens', return_value=[{'data': 'dummytoken'}])
+@patch('somfy.Somfy.getavailabletokens', return_value=[{'data': 'dummytoken'}])
 def test_instellingenpaginaget_geenpod(mock_getavailabletokens, mock_dbquery, client):
   response = client.get('/thuis/instellingen')
 
@@ -361,7 +361,7 @@ def test_instellingenpaginaget_geenpod(mock_getavailabletokens, mock_dbquery, cl
                     [],
                     [],
                     ])
-@patch('thuis.getavailabletokens',
+@patch('somfy.Somfy.getavailabletokens',
        return_value=[{'label': 'Python token',
                       'gatewayId': '1234-4321-5678',
                       'gatewayCreationTime': 1738422650000,
@@ -372,7 +372,7 @@ def test_instellingenpaginaget_geenpod(mock_getavailabletokens, mock_dbquery, cl
                       'gatewayCreationTime': 1739117276000,
                       'uuid': 'b3d4be51-1c5f-4f3c-acce-9f8a8f345328',
                       'scope': 'devmode'}])
-@patch('thuis.somfylogin', return_value='E3~5678CAFE1234DECA')
+@patch('somfy.Somfy.login', return_value='E3~5678CAFE1234DECA')
 @patch('pysondb.db.JsonDatabase.add')
 def test_instellingenpaginaget_geenjsessionid_autologin(mock_adddb, mock_somfylogin, mock_getavailabletokens,
                                                         mock_dbquery, client):
@@ -401,7 +401,7 @@ def test_instellingenpaginaget_geenjsessionid_autologin(mock_adddb, mock_somfylo
                     [],
                     [],
                     ])
-@patch('thuis.getavailabletokens',
+@patch('somfy.Somfy.getavailabletokens',
        return_value=[{'label': 'Python token',
                       'gatewayId': '1234-4321-5678',
                       'gatewayCreationTime': 1738422650000,
@@ -412,14 +412,14 @@ def test_instellingenpaginaget_geenjsessionid_autologin(mock_adddb, mock_somfylo
                       'gatewayCreationTime': 1739117276000,
                       'uuid': 'b3d4be51-1c5f-4f3c-acce-9f8a8f345328',
                       'scope': 'devmode'}])
-@patch('thuis.deletetoken', return_value=200)
+@patch('somfy.Somfy.deletetoken', return_value=200)
 def test_instellingenpaginapost_delete(mock_deletetoken, mock_gettokens, mock_getquery, client):
   data = {'actie': 'delete', 'uuid': '20547c11-73ce-475b-88be-6e30824b2b54'}
   response = client.post('/thuis/instellingen', data=data)
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis/instellingen" in response.data
   assert mock_gettokens.call_count == 0
-  assert mock_getquery.call_count == 0
+  assert mock_getquery.call_count == 2
   assert mock_deletetoken.call_count == 1
 
 
@@ -434,7 +434,7 @@ def test_instellingenpaginapost_delete(mock_deletetoken, mock_gettokens, mock_ge
                     [],
                     [],
                     ])
-@patch('thuis.getavailabletokens',
+@patch('somfy.Somfy.getavailabletokens',
        return_value=[{'label': 'Python token',
                       'gatewayId': '1234-4321-5678',
                       'gatewayCreationTime': 1738422650000,
@@ -445,16 +445,18 @@ def test_instellingenpaginapost_delete(mock_deletetoken, mock_gettokens, mock_ge
                       'gatewayCreationTime': 1739117276000,
                       'uuid': 'b3d4be51-1c5f-4f3c-acce-9f8a8f345328',
                       'scope': 'devmode'}])
-@patch('thuis.createtoken')
-def test_instellingenpaginapost_createtoken(mock_createtoken, mock_gettokens, mock_dbquery, client):
+@patch('somfy.Somfy.createtoken')
+@patch('gegevens.Gegevens.wijzig')
+def test_instellingenpaginapost_createtoken(mock_gegevens, mock_createtoken, mock_gettokens, mock_dbquery, client):
   data = {'actie': 'create', 'label': 'dummy label'}
   response = client.post('/thuis/instellingen', data=data)
 
   assert b"<h1>Redirecting...</h1>" in response.data
   assert b"/thuis/instellingen" in response.data
   assert mock_gettokens.call_count == 0
-  assert mock_dbquery.call_count == 0
+  assert mock_dbquery.call_count == 2
   assert mock_createtoken.call_count == 1
+  assert mock_gegevens.call_count == 1
 
 
 @patch('pysondb.db.JsonDatabase.getByQuery',

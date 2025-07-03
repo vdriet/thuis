@@ -28,24 +28,23 @@ class MyTestCase(unittest.TestCase):
 
   @mock.patch('requests.post')
   def test_somfylogin(self, mock_post):
-    import thuis
+    from somfy import Somfy
     mock_resp = self._mock_response(status=204,
                                     cookies={'JSESSIONID': 'dummy'})
     mock_post.return_value.__enter__.return_value = mock_resp
 
-    response = thuis.somfylogin("user", "pass")
+    response = Somfy.login("user", "pass")
     self.assertEqual(response, 'dummy')
     mock_post.assert_called_once()
 
   @mock.patch('requests.post')
   def test_activeertoken(self, mock_post):
-    import thuis
+    from somfy import Somfy
     mock_resp = self._mock_response(status=200,
                                     cookies={'JSESSIONID': 'dummy'},
                                     json_data={'requestId': 'eb77acc1-0a19-0482-25aa-49b027f4797e'})
     mock_post.return_value.__enter__.return_value = mock_resp
-    response = thuis.activatetoken('jsessionid', 'pod', 'label', 'token')
-    self.assertEqual(response, None)
+    Somfy.activatetoken('jsessionid', 'pod', 'label', 'token')
     mock_post.assert_called_once()
 
 

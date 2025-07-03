@@ -16,13 +16,13 @@ from requests import ReadTimeout, JSONDecodeError
 
 from gegevens import Gegevens
 from hue import Hue
+from somfy import Somfy
 
 app = Flask(__name__,
             static_url_path='/static',
             template_folder='templates')
 envdb = Gegevens('envdb.json')
 zondb = Gegevens('zonnesterkte.json')
-BASEURL = 'ha101-1.overkiz.com'
 weercache = TTLCache(maxsize=1, ttl=900)
 zonnesterktecache = TTLCache(maxsize=1, ttl=60)
 monitoringcache = TTLCache(maxsize=1, ttl=86400)
@@ -37,82 +37,6 @@ def gethue() -> Hue | None:
   if not hueip or not hueuser:
     return None
   return Hue(hueip, hueuser)
-
-
-def somfylogin(userid: str, password: str) -> str:
-  """ Inloggen bij somfy voor ophalen key
-  Args: userid (str): De gebruikersnaam voor Somfy
-        password (str): Het wachtwoord voor Somfy
-  Returns: str: De verkregen sessie-ID
-  """
-  url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/login'
-
-  data = f'userId={quote_plus(userid)}&userPassword={quote_plus(password)}'
-  headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-  with requests.post(url=url, timeout=10, headers=headers, data=data) as response:
-    jsessionid = response.cookies.get('JSESSIONID')
-  return jsessionid
-
-
-def getavailabletokens(jsessionid: str, pod: str) -> list:
-  """ Haal beschikbare tokens van de server
-  Args: jsessionid (str): De geldige sessie-ID
-        pod (str): De pod-identificatie
-  Returns: list: Lijst met beschikbare tokens
-  """
-  url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/devmode'
-  headers = {'Accept': 'application/json',
-             'Cookie': f'JSESSIONID={jsessionid}'}
-  with requests.get(url=url, headers=headers, timeout=10) as response:
-    contentjson = response.json()
-  return contentjson
-
-
-def createtoken(label: str) -> int:
-  """ Voeg een token toe op de server
-  Args: label (str): Het label voor de nieuwe token
-  Returns: int: HTTP-statuscode (200 bij succes)
-  """
-  pod = envdb.lees('pod')
-  jsessionid = envdb.lees('jsessionid')
-  url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/generate'
-  headers = {'Content-Type': 'application/json'
-    , 'Cookie': f'JSESSIONID={jsessionid}'}
-  with requests.get(url=url, headers=headers, timeout=10) as response:
-    contentjson = response.json()
-    rettoken = contentjson['token']
-    envdb.wijzig('token', rettoken)
-    activatetoken(jsessionid, pod, label, rettoken)
-    return 200
-
-
-def activatetoken(jsessionid: str, pod: str, label: str, token: str) -> None:
-  """ Activeer een token
-  Args: jsessionid (str): De geldige sessie-ID
-        pod (str): De pod-identificatie
-        label (str): Het label voor het token
-        token (str): Het te activeren token
-  """
-  url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens'
-  headers = {'Content-Type': 'application/json',
-             'Cookie': f'JSESSIONID={jsessionid}'}
-  data = f'{{"label": "{label}", "token": "{token}", "scope": "devmode"}}'.encode('utf-8')
-  with requests.post(url=url, headers=headers, data=data, timeout=10):
-    pass
-
-
-def deletetoken(uuid: str) -> int:
-  """ Verwijder een token van de server
-  Args: uuid (str): De unieke identificatie van de token
-  Returns: int: HTTP-statuscode van de verwijder-actie
-  """
-  pod = envdb.lees('pod')
-  jsessionid = envdb.lees('jsessionid')
-  url = f'https://{BASEURL}/enduser-mobile-web/enduserAPI/config/{pod}/local/tokens/{uuid}'
-  headers = {'Content-Type': 'application/json'
-    , 'Cookie': f'JSESSIONID={jsessionid}'}
-  with requests.delete(url=url, headers=headers, timeout=10) as response:
-    return response.status_code
 
 
 def haalinstellingenentoon():
@@ -130,11 +54,11 @@ def haalinstellingenentoon():
   starttijd = envdb.leesint('starttijd', 9)
   eindtijd = envdb.leesint('eindtijd', 23)
   if not jsessionid and userid and password:
-    jsessionid = somfylogin(userid, password)
+    jsessionid = Somfy.login(userid, password)
     envdb.wijzig('jsessionid', jsessionid)
   tokens = []
   if pod and jsessionid:
-    servertokens = getavailabletokens(jsessionid, pod)
+    servertokens = Somfy.getavailabletokens(jsessionid, pod)
     if isinstance(servertokens, dict) and not servertokens.get('error', None) is None:
       envdb.verwijder('jsessionid')
       return redirect('/thuis/instellingen')
@@ -641,11 +565,12 @@ def instellingenactiepagina():
   actie = request.form.get('actie', '')
   if actie == 'delete':
     uuid = request.form['uuid']
-    deletetoken(uuid)
+    Somfy.deletetoken(envdb.lees('jsessionid'), envdb.lees('pod'), uuid)
     sleep(1)
   elif actie == 'create':
     label = request.form['label']
-    createtoken(label)
+    token = Somfy.createtoken(envdb.lees('jsessionid'), envdb.lees('pod'), label)
+    envdb.wijzig('token', token)
     sleep(1)
   elif actie == 'updateautolampen':
     zonsterkte = request.form.get('zonsterkte', '')
@@ -665,7 +590,7 @@ def instellingenactiepagina():
     if bewaargegevens == 'on':
       envdb.wijzig('userid', userid)
       envdb.wijzig('password', password)
-    jsessionid = somfylogin(userid, password)
+    jsessionid = Somfy.login(userid, password)
     envdb.wijzig('jsessionid', jsessionid)
   elif actie == 'updatehueuser':
     hueuser = request.form['hueuser']

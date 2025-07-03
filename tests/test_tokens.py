@@ -29,7 +29,7 @@ class MyTestCaseTokens(unittest.TestCase):
 
   @mock.patch('requests.get')
   def test_somfylogin(self, mock_get):
-    import thuis
+    from somfy import Somfy
     mock_resp = self._mock_response(status=200,
                                     content="""[{'label': 'token 1', 'gatewayId': '1234-8765-1234',
                                               'gatewayCreationTime': 1738422650000,
@@ -39,42 +39,31 @@ class MyTestCaseTokens(unittest.TestCase):
                                               'uuid': 'b3d4be51-1c5f-4f3c-acce-6e30824b2b54', 'scope': 'devmode'}]""")
     mock_get.return_value.__enter__.return_value = mock_resp
 
-    response = thuis.getavailabletokens("jsessionid", "pod")
+    response = Somfy.getavailabletokens("jsessionid", "pod")
     self.assertEqual(response, ANY)
     mock_get.assert_called_once()
 
   @mock.patch('requests.delete')
-  @mock.patch('pysondb.db.JsonDatabase.getByQuery',
-              side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
-                           [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}]
-                           ]
-              )
-  def test_deletetoken(self, mock_envdb, mock_delete):
-    import thuis
+  def test_deletetoken(self, mock_delete):
+    from somfy import Somfy
     mock_resp = self._mock_response(status=200)
     mock_delete.return_value.__enter__.return_value = mock_resp
-    returncode = thuis.deletetoken('b3d4be51-1c5f-4f3c-acce-6e30824b2b54')
+    returncode = Somfy.deletetoken('jsessionid', 'pod', 'b3d4be51-1c5f-4f3c-acce-6e30824b2b54')
     self.assertEqual(returncode, 200)
-    mock_envdb.assert_called()
     mock_delete.assert_called_once()
 
   @mock.patch('requests.get')
   @mock.patch('pysondb.db.JsonDatabase.add')
-  @mock.patch('pysondb.db.JsonDatabase.getByQuery',
-              side_effect=[[{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
-                           [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}],
-                           [{'env': 'token', 'value': '4321c0de', 'id': 236910029}]
-                           ])
   @mock.patch('pysondb.db.JsonDatabase.deleteById')
-  def test_createtoken(self, mock_envdbdelete, mock_envdbget, mock_envdbadd, mock_get):
-    import thuis
+  def test_createtoken(self, mock_envdbdelete, mock_envdbadd, mock_get):
+    from somfy import Somfy
     mock_resp = self._mock_response(status=200, json_data={'token': 'dummy'})
     mock_get.return_value.__enter__.return_value = mock_resp
-    thuis.createtoken('label')
+    response = Somfy.createtoken('jsessionid', 'pod', 'label')
 
-    mock_envdbadd.assert_called_once()
-    mock_envdbget.assert_called()
-    mock_envdbdelete.assert_called_once()
+    assert response == 'dummy'
+    assert mock_envdbadd.call_count == 0
+    assert mock_envdbdelete.call_count == 0
     mock_get.assert_called_once()
 
 
