@@ -638,7 +638,7 @@ def test_lampenpagina_error(mock_requestsget, mock_env, client):
                                                    {'label': 'label 2.2', 'device': 'io://1234-4321-5678/24680'}]}]
                     ]
        )
-@patch('thuis.haalgegevensvansomfy',
+@patch('somfy.Somfy.haalgegevens',
        side_effect=[{'value': '0'},
                     {'value': '50'}
                     ])
@@ -659,7 +659,7 @@ def test_schermenpagina(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, cl
        side_effect=[[],
                     [{'env': 'jsessionid', 'value': 'E3~1234CAFE5678DECA', 'id': 286349129001}]
                     ])
-@patch('thuis.haalgegevensvansomfy',
+@patch('somfy.Somfy.haalgegevens',
        return_value={'error': 'dummy'})
 @patch('thuis.haalwindsnelheid', return_value=2)
 def test_schermenpagina_geenpod(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, client):
@@ -679,11 +679,11 @@ def test_schermenpagina_geenpod(mock_wind, mock_somfy, mock_env, mock_env_weerap
                     []
                     ]
        )
-@patch('thuis.getschermen',
+@patch('thuis.haalschermen',
        return_value=[{'label': 'label 1.2', 'device': 'io://1234-4321-5678/13579'},
                      {'label': 'label 2.2', 'device': 'io://1234-4321-5678/24680'}]
        )
-@patch('thuis.haalgegevensvansomfy',
+@patch('somfy.Somfy.haalgegevens',
        side_effect=[{'value': '0'},
                     {'value': '50'}
                     ]
@@ -708,7 +708,7 @@ def test_schermenpagina_geenschermcache(mock_wind, mock_somfy, mock_schermen, mo
                     [{'env': 'schermen', 'value': [{'label': 'label 1.3', 'device': 'io://1234-4321-5678/13579'},
                                                    {'label': 'label 2.3', 'device': 'io://1234-4321-5678/24680'}]}]
                     ])
-@patch('thuis.haalgegevensvansomfy',
+@patch('somfy.Somfy.haalgegevens',
        return_value={'error': 'dummy'})
 @patch('thuis.haalwindsnelheid', return_value=2)
 def test_schermenpagina_error(mock_wind, mock_somfy, mock_env, mock_env_weerapikey, client):

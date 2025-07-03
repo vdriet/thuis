@@ -93,3 +93,38 @@ class Somfy:
       , 'Cookie': f'JSESSIONID={jsessionid}'}
     with requests.delete(url=url, headers=headers, timeout=10) as response:
       return response.status_code
+
+  @staticmethod
+  def haalgegevens(token: str, pod: str, path: str) -> dict:
+    """ Ophalen van gegevens van het somfy kastje
+    Args: token (str): De geldige token
+          pod (str): De pod-identificatie
+          path (str): Het pad naar de op te vragen gegevens
+    Returns: De opgehaalde gegevens in JSON-formaat
+    :rtype: dict
+    """
+    url = f'https://{pod}.local:8443/enduser-mobile-web/1/enduserAPI/{path}'
+    headers = {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
+    with requests.get(url=url,
+                      headers=headers,
+                      timeout=5,
+                      verify='./cert/overkiz-root-ca-2048.crt') as response:
+      return response.json()
+
+  @staticmethod
+  def stuurgegevens(token: str, pod: str, path: str, data: str) -> dict:
+    """ Sturen van gegevens naar het somfy kastje
+    Args: token (str): De geldige token
+          pod (str): De pod-identificatie
+          path (str): Het pad voor de te versturen gegevens
+          data (str): De te versturen gegevens
+    Returns: dict: Het antwoord van de server in JSON-formaat
+    """
+    url = f'https://{pod}.local:8443/enduser-mobile-web/1/enduserAPI/{path}'
+    headers = {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
+    with requests.post(url=url,
+                       headers=headers,
+                       timeout=5,
+                       verify='./cert/overkiz-root-ca-2048.crt',
+                       data=data) as response:
+      return response.json()

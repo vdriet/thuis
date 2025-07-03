@@ -86,56 +86,45 @@ def haalinstellingenentoon():
                          )
 
 
-def haalgegevensvansomfy(token: str, pod: str, path: str) -> dict:
-  """ Ophalen van gegevens van het somfy kastje
-  Args: token (str): De geldige token
-        pod (str): De pod-identificatie
-        path (str): Het pad naar de op te vragen gegevens
-  Returns: dict: De opgehaalde gegevens in JSON-formaat
+def haaldevices(pod: str, token: str, path: str) -> list:
+  """ Ophalen van devices
+  Args: pod (str): De pod-identificatie
+        token (str): De geldige token
+        path(str): Het pad van de devices
+  Returns: list: Lijst met gevonden devices
   """
-  url = f'https://{pod}.local:8443/enduser-mobile-web/1/enduserAPI/{path}'
-  headers = {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
-  with requests.get(url=url,
-                    headers=headers,
-                    timeout=5,
-                    verify='./cert/overkiz-root-ca-2048.crt') as response:
-    return response.json()
+  devicelijst = []
+  deviceurls = Somfy.haalgegevens(token, pod, path)
+  if not (isinstance(deviceurls, dict) and not deviceurls.get('error', None) is None):
+    for schermurl in deviceurls:
+      scherurlencoded = quote_plus(schermurl)
+      device = Somfy.haalgegevens(token, pod, f'setup/devices/{scherurlencoded}')
+      devicelijst.append({'label': device['label'], 'device': schermurl})
+  return devicelijst
 
 
-def stuurgegevensnaarsomfy(token: str, pod: str, path: str, data: str) -> dict:
-  """ Sturen van gegevens naar het somfy kastje
-  Args: token (str): De geldige token
-        pod (str): De pod-identificatie
-        path (str): Het pad voor de te versturen gegevens
-        data (str): De te versturen gegevens
-  Returns: dict: Het antwoord van de server in JSON-formaat
-  """
-  url = f'https://{pod}.local:8443/enduser-mobile-web/1/enduserAPI/{path}'
-  headers = {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
-  with requests.post(url=url,
-                     headers=headers,
-                     timeout=5,
-                     verify='./cert/overkiz-root-ca-2048.crt',
-                     data=data) as response:
-    return response.json()
-
-
-def getschermen(pod: str, token: str) -> list:
+def haalschermen(pod: str, token: str) -> list:
   """ Ophalen van de schermen en in de db zetten
   Args: pod (str): De pod-identificatie
         token (str): De geldige token
   Returns: list: Lijst met gevonden schermen
   """
-  schermlijst = []
   path = f'setup/devices/controllables/{quote_plus("io:VerticalExteriorAwningIOComponent")}'
-  schermurls = haalgegevensvansomfy(token, pod, path)
-  if not (isinstance(schermurls, dict) and not schermurls.get('error', None) is None):
-    for schermurl in schermurls:
-      scherurlencoded = quote_plus(schermurl)
-      device = haalgegevensvansomfy(token, pod, f'setup/devices/{scherurlencoded}')
-      schermlijst.append({'label': device['label'], 'device': schermurl})
+  schermlijst = haaldevices(pod, token, path)
   envdb.schrijf('schermen', schermlijst)
   return schermlijst
+
+
+def haalzonnesensors(pod: str, token: str) -> list:
+  """ Ophalen van de zonnesensors en in de db zetten
+  Args: pod (str): De pod-identificatie
+        token (str): De geldige token
+  Returns: list: Lijst met gevonden zonnesensors
+  """
+  path = f'setup/devices/controllables/{quote_plus("io:LightIOSystemSensor")}'
+  sensorlijst = haaldevices(pod, token, path)
+  envdb.schrijf('sensors', sensorlijst)
+  return sensorlijst
 
 
 def haalschermenentoon():
@@ -149,14 +138,14 @@ def haalschermenentoon():
     return redirect('/thuis')
   envschermen = envdb.lees('schermen')
   if not envschermen:
-    envschermen = getschermen(pod, token)
+    envschermen = haalschermen(pod, token)
   schermen = []
   percopenstate = quote_plus("core:DeploymentState")
   for scherm in envschermen:
     schermurlencoded = quote_plus(scherm['device'])
-    schermstate = haalgegevensvansomfy(token,
-                                       pod,
-                                       f'setup/devices/{schermurlencoded}/states/{percopenstate}')
+    schermstate = Somfy.haalgegevens(token,
+                                     pod,
+                                     f'setup/devices/{schermurlencoded}/states/{percopenstate}')
     if isinstance(schermstate, dict) and not schermstate.get('error', None) is None:
       return redirect('/thuis')
     schermen.append({'label': scherm['label'],
@@ -291,7 +280,7 @@ def verplaatsscherm(device: str, percentage: int) -> None:
       }
     ]
   })
-  stuurgegevensnaarsomfy(token=token, pod=pod, path='exec/apply', data=data)
+  Somfy.stuurgegevens(token=token, pod=pod, path='exec/apply', data=data)
 
 
 def verplaatsalleschermen(percentage: int) -> None:
@@ -492,24 +481,6 @@ def checkzonnesterkte() -> None:
   zondb.wijzig('zonnesterkte', zonnesterkte)
 
 
-def haalzonnesensors(pod: str, token: str) -> list:
-  """ Ophalen van de zonnesensors en in de db zetten
-  Args: pod (str): De pod-identificatie
-        token (str): De geldige token
-  Returns: list: Lijst met gevonden zonnesensors
-  """
-  sensorlijst = []
-  path = f'setup/devices/controllables/{quote_plus("io:LightIOSystemSensor")}'
-  sensorurls = haalgegevensvansomfy(token, pod, path)
-  if not (isinstance(sensorurls, dict) and not sensorurls.get('error', None) is None):
-    for sensorurl in sensorurls:
-      sensorurlencoded = quote_plus(sensorurl)
-      device = haalgegevensvansomfy(token, pod, f'setup/devices/{sensorurlencoded}')
-      sensorlijst.append({'label': device['label'], 'device': sensorurl})
-  envdb.schrijf('sensors', sensorlijst)
-  return sensorlijst
-
-
 @cached(cache=zonnesterktecache)
 def haalzonnesterkte() -> int:
   """ Haal de zonnesterkte op
@@ -525,9 +496,9 @@ def haalzonnesterkte() -> int:
   lichtsterkte = 'core:LuminanceState'
   for sensor in sensors:
     sensorurlencoded = quote_plus(sensor['device'])
-    sensorwaarde = haalgegevensvansomfy(token,
-                                        pod,
-                                        f'setup/devices/{sensorurlencoded}/states/{lichtsterkte}')
+    sensorwaarde = Somfy.haalgegevens(token,
+                                      pod,
+                                      f'setup/devices/{sensorurlencoded}/states/{lichtsterkte}')
     if isinstance(sensorwaarde, dict) and not sensorwaarde.get('error', None) is None:
       return -2
     return sensorwaarde.get('value', -3)

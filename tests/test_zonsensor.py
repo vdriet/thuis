@@ -13,7 +13,7 @@ import thuis
                     ])
 @patch('thuis.haalzonnesensors',
        side_effect=[{"label": "zonsensor", "device": "io://1234-4321-5678/93682392"}])
-@patch('thuis.haalgegevensvansomfy',
+@patch('somfy.Somfy.haalgegevens',
        side_effect=[{'value': 1234}])
 def test_haalzonnesterkte(mock_somfy, mock_sensors, mock_envdb):
   resultaat = thuis.haalzonnesterkte()
@@ -30,7 +30,7 @@ def test_haalzonnesterkte(mock_somfy, mock_sensors, mock_envdb):
                     [{'env': 'sensors',
                       'value': [{"label": "zonsensor", "device": "io://1234-4321-5678/93682392"}]}],
                     ])
-@patch('thuis.haalgegevensvansomfy',
+@patch('somfy.Somfy.haalgegevens',
        side_effect=[{'value': 4321}])
 def test_haalzonnesterkte_uitcache(mock_somfy, mock_envdb):
   resultaat = thuis.haalzonnesterkte()
@@ -46,7 +46,7 @@ def test_haalzonnesterkte_uitcache(mock_somfy, mock_envdb):
                     [{'env': 'sensors',
                       'value': [{"label": "zonsensor", "device": "io://1234-4321-5678/93682392"}]}],
                     ])
-@patch('thuis.haalgegevensvansomfy',
+@patch('somfy.Somfy.haalgegevens',
        side_effect=[{'value': 2345}])
 def test_haalzonnesterkte_geentoken(mock_somfy, mock_envdb):
   thuis.haalzonnesterkte.cache_clear()
@@ -63,7 +63,7 @@ def test_haalzonnesterkte_geentoken(mock_somfy, mock_envdb):
                     [{'env': 'sensors',
                       'value': [{"label": "zonsensor", "device": "io://1234-4321-5678/93682392"}]}],
                     ])
-@patch('thuis.haalgegevensvansomfy',
+@patch('somfy.Somfy.haalgegevens',
        side_effect=[{'value': 3456}])
 def test_haalzonnesterkte_geenpod(mock_somfy, mock_envdb):
   thuis.haalzonnesterkte.cache_clear()
@@ -81,7 +81,7 @@ def test_haalzonnesterkte_geenpod(mock_somfy, mock_envdb):
                     ])
 @patch('thuis.haalzonnesensors',
        side_effect=[[{"label": "zonsensor", "device": "io://1234-4321-5678/93682392"}]])
-@patch('thuis.haalgegevensvansomfy',
+@patch('somfy.Somfy.haalgegevens',
        side_effect=[{'value': 4567}])
 def test_haalzonnesterkte_geensensors(mock_somfy, mock_sensors, mock_envdb):
   thuis.haalzonnesterkte.cache_clear()
@@ -99,7 +99,7 @@ def test_haalzonnesterkte_geensensors(mock_somfy, mock_sensors, mock_envdb):
                     [{'env': 'sensors',
                       'value': [{"label": "zonsensor", "device": "io://1234-4321-5678/93682392"}]}],
                     ])
-@patch('thuis.haalgegevensvansomfy',
+@patch('somfy.Somfy.haalgegevens',
        return_value={'error': 'dummy'})
 def test_haalzonnesterkte_somfyerror(mock_somfy, mock_envdb):
   thuis.haalzonnesterkte.cache_clear()
@@ -115,7 +115,7 @@ def test_haalzonnesterkte_somfyerror(mock_somfy, mock_envdb):
                     [{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}],
                     [{'env': 'sensors', 'value': []}],
                     ])
-@patch('thuis.haalgegevensvansomfy',
+@patch('somfy.Somfy.haalgegevens',
        side_effect=[{'value': 4567}])
 @patch('thuis.haalzonnesensors', return_value=[])
 def test_haalzonnesterkte_geensensor(mock_haalsensors, mock_somfy, mock_envdb):
@@ -129,7 +129,7 @@ def test_haalzonnesterkte_geensensor(mock_haalsensors, mock_somfy, mock_envdb):
 
 
 @patch('pysondb.db.JsonDatabase.add')
-@patch('thuis.haalgegevensvansomfy',
+@patch('somfy.Somfy.haalgegevens',
        side_effect=[['io://sensorurl'],
                     {'label': 'zonlabel'}])
 def test_haalzonnesensors(mock_somfy, mock_envdbadd):

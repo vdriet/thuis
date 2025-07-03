@@ -29,25 +29,25 @@ class MyTestCaseSomfy(unittest.TestCase):
 
   @mock.patch('requests.get')
   def test_somfylogin(self, mock_get):
-    import thuis
+    from somfy import Somfy
     mock_resp = self._mock_response(status=200,
                                     content="""{'json': 'data'}""")
     mock_get.return_value.__enter__.return_value = mock_resp
 
-    response = thuis.haalgegevensvansomfy('token', 'pod', 'path')
+    response = Somfy.haalgegevens('token', 'pod', 'path')
     self.assertEqual(response, ANY)
     mock_get.assert_called_once()
 
-  @mock.patch('thuis.haalgegevensvansomfy',
+  @mock.patch('somfy.Somfy.haalgegevens',
               side_effect=[['io://1234-4321-5678/13579', 'io://1234-4321-5678/24680'],
                            {'label': 'label 1.0'},
                            {'label': 'label 2.0'}
                            ]
               )
   @mock.patch('pysondb.db.JsonDatabase.add')
-  def test_getschermen(self, mock_dbadd, mock_somfy):
+  def test_haalschermen(self, mock_dbadd, mock_somfy):
     import thuis
-    reponse = thuis.getschermen('pod', 'token')
+    reponse = thuis.haalschermen('pod', 'token')
     expected = [{'label': 'label 1.0', 'device': 'io://1234-4321-5678/13579'},
                 {'label': 'label 2.0', 'device': 'io://1234-4321-5678/24680'}]
     self.assertEqual(reponse, expected)
@@ -75,7 +75,7 @@ class MyTestCaseSomfy(unittest.TestCase):
                            [{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}]
                            ]
               )
-  @mock.patch('thuis.stuurgegevensnaarsomfy')
+  @mock.patch('somfy.Somfy.stuurgegevens')
   def test_sluitalles(self, mock_somfy, mock_query):
     import thuis
     thuis.sluitalles()
@@ -92,7 +92,7 @@ class MyTestCaseSomfy(unittest.TestCase):
                            [{'env': 'pod', 'value': '1234-4321-5678', 'id': 28234834}]
                            ]
               )
-  @mock.patch('thuis.stuurgegevensnaarsomfy')
+  @mock.patch('somfy.Somfy.stuurgegevens')
   def test_openalles(self, mock_somfy, mock_query):
     import thuis
     thuis.openalles()
