@@ -470,7 +470,7 @@ def haalzonnesterkte() -> int:
   if not sensors:
     sensors = haalzonnesensors(pod, token)
   for sensor in sensors:
-    sensorwaarde = Somfy.haalsensorstatus(token, pod, sensor['device'])
+    sensorwaarde = Somfy.haalsensorstatus(pod, token, sensor['device'])
     if isinstance(sensorwaarde, dict) and not sensorwaarde.get('error', None) is None:
       return -2
     return sensorwaarde.get('value', -3)
