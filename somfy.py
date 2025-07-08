@@ -168,3 +168,35 @@ class Somfy:
     """
     path = f'setup/devices/controllables/{quote_plus("io:LightIOSystemSensor")}'
     return Somfy.haaldevices(pod, token, path)
+
+  @staticmethod
+  def haalschermstatus(pod: str, token: str, device: str) -> dict:
+    """
+    Ophalen van de hoogte van een scherm
+    Args: pod (str): De pod-identificatie
+          token (str): Een geldig token
+          device (str): Identificatie van het scherm
+    Returns: dict: Gegevens van het scherm
+    """
+    percopenstate = quote_plus("core:DeploymentState")
+    schermurlencoded = quote_plus(device)
+    schermstate = Somfy.haalgegevens(token,
+                                     pod,
+                                     f'setup/devices/{schermurlencoded}/states/{percopenstate}')
+    return schermstate
+
+  @staticmethod
+  def haalsensorstatus(pod: str, token: str, device: str) -> dict:
+    """
+    Ophalen van de hoogte van een scherm
+    Args: pod (str): De pod-identificatie
+          token (str): Een geldig token
+          device (str): Identificatie van de sensor
+    Returns: dict: Gegevens van de sensor
+    """
+    lichtsterkte = quote_plus('core:LuminanceState')
+    sensorurlencoded = quote_plus(device)
+    sensorwaarde = Somfy.haalgegevens(token,
+                                      pod,
+                                      f'setup/devices/{sensorurlencoded}/states/{lichtsterkte}')
+    return sensorwaarde

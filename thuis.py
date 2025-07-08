@@ -5,7 +5,6 @@ import json
 import os
 from datetime import datetime
 from time import sleep
-from urllib.parse import quote_plus
 
 import requests
 import schedule
@@ -121,12 +120,8 @@ def haalschermenentoon():
   if not envschermen:
     envschermen = haalschermen(pod, token)
   schermen = []
-  percopenstate = quote_plus("core:DeploymentState")
   for scherm in envschermen:
-    schermurlencoded = quote_plus(scherm['device'])
-    schermstate = Somfy.haalgegevens(token,
-                                     pod,
-                                     f'setup/devices/{schermurlencoded}/states/{percopenstate}')
+    schermstate = Somfy.haalschermstatus(pod, token, scherm['device'])
     if isinstance(schermstate, dict) and not schermstate.get('error', None) is None:
       return redirect('/thuis')
     schermen.append({'label': scherm['label'],
@@ -474,12 +469,8 @@ def haalzonnesterkte() -> int:
   sensors = envdb.lees('sensors')
   if not sensors:
     sensors = haalzonnesensors(pod, token)
-  lichtsterkte = 'core:LuminanceState'
   for sensor in sensors:
-    sensorurlencoded = quote_plus(sensor['device'])
-    sensorwaarde = Somfy.haalgegevens(token,
-                                      pod,
-                                      f'setup/devices/{sensorurlencoded}/states/{lichtsterkte}')
+    sensorwaarde = Somfy.haalsensorstatus(token, pod, sensor['device'])
     if isinstance(sensorwaarde, dict) and not sensorwaarde.get('error', None) is None:
       return -2
     return sensorwaarde.get('value', -3)
