@@ -86,31 +86,13 @@ def haalinstellingenentoon():
                          )
 
 
-def haaldevices(pod: str, token: str, path: str) -> list:
-  """ Ophalen van devices
-  Args: pod (str): De pod-identificatie
-        token (str): De geldige token
-        path(str): Het pad van de devices
-  Returns: list: Lijst met gevonden devices
-  """
-  devicelijst = []
-  deviceurls = Somfy.haalgegevens(token, pod, path)
-  if not (isinstance(deviceurls, dict) and not deviceurls.get('error', None) is None):
-    for schermurl in deviceurls:
-      scherurlencoded = quote_plus(schermurl)
-      device = Somfy.haalgegevens(token, pod, f'setup/devices/{scherurlencoded}')
-      devicelijst.append({'label': device['label'], 'device': schermurl})
-  return devicelijst
-
-
 def haalschermen(pod: str, token: str) -> list:
   """ Ophalen van de schermen en in de db zetten
   Args: pod (str): De pod-identificatie
-        token (str): De geldige token
+        token (str): Een geldig token
   Returns: list: Lijst met gevonden schermen
   """
-  path = f'setup/devices/controllables/{quote_plus("io:VerticalExteriorAwningIOComponent")}'
-  schermlijst = haaldevices(pod, token, path)
+  schermlijst = Somfy.haalschermen(pod, token)
   envdb.schrijf('schermen', schermlijst)
   return schermlijst
 
@@ -118,11 +100,10 @@ def haalschermen(pod: str, token: str) -> list:
 def haalzonnesensors(pod: str, token: str) -> list:
   """ Ophalen van de zonnesensors en in de db zetten
   Args: pod (str): De pod-identificatie
-        token (str): De geldige token
+        token (str): Een geldig token
   Returns: list: Lijst met gevonden zonnesensors
   """
-  path = f'setup/devices/controllables/{quote_plus("io:LightIOSystemSensor")}'
-  sensorlijst = haaldevices(pod, token, path)
+  sensorlijst = Somfy.haalzonnesensors(pod, token)
   envdb.schrijf('sensors', sensorlijst)
   return sensorlijst
 

@@ -128,3 +128,43 @@ class Somfy:
                        verify='./cert/overkiz-root-ca-2048.crt',
                        data=data) as response:
       return response.json()
+
+  @staticmethod
+  def haaldevices(pod: str, token: str, path: str) -> list:
+    """
+    Ophalen van devices
+    Args: pod (str): De pod-identificatie
+          token (str): De geldige token
+          path(str): Het pad van de devices
+    Returns: list: Lijst met gevonden devices
+    """
+    devicelijst = []
+    deviceurls = Somfy.haalgegevens(token, pod, path)
+    if not (isinstance(deviceurls, dict) and not deviceurls.get('error', None) is None):
+      for schermurl in deviceurls:
+        scherurlencoded = quote_plus(schermurl)
+        device = Somfy.haalgegevens(token, pod, f'setup/devices/{scherurlencoded}')
+        devicelijst.append({'label': device['label'], 'device': schermurl})
+    return devicelijst
+
+  @staticmethod
+  def haalschermen(pod: str, token: str) -> list:
+    """
+    Ophalen van de schermen
+    Args: pod (str): De pod-identificatie
+          token (str): Een geldig token
+    Returns: list: Lijst met gevonden schermen
+    """
+    path = f'setup/devices/controllables/{quote_plus("io:VerticalExteriorAwningIOComponent")}'
+    return Somfy.haaldevices(pod, token, path)
+
+  @staticmethod
+  def haalzonnesensors(pod: str, token: str) -> list:
+    """
+    Ophalen van de zonnesensors
+    Args: pod (str): De pod-identificatie
+          token (str): Een geldig token
+    Returns: list: Lijst met gevonden zonnesensors
+    """
+    path = f'setup/devices/controllables/{quote_plus("io:LightIOSystemSensor")}'
+    return Somfy.haaldevices(pod, token, path)
