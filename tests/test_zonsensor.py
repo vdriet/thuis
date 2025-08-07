@@ -172,6 +172,7 @@ def test_haalzonnesterkteuitdb_nieuw(mock_envdbadd, mock_zondbget):
 @patch('pysondb.db.JsonDatabase.deleteById')
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'zonsterktelampen', 'value': 977, 'id': 9712382}],
+                    [{'env': 'zonsterktelampenuit', 'value': 999, 'id': 9293648236}],
                     [{'env': 'starttijd', 'value': 9, 'id': 13287633}],
                     [{'env': 'eindtijd', 'value': 23, 'id': 92379283}],
                     [],
@@ -188,7 +189,7 @@ def test_checkzonnesterkte_hoog_laag(mock_leesdb, mock_del, mock_add, mock_schak
   assert mock_schakeluit.call_count == 0
   assert mock_add.call_count == 1
   assert mock_del.call_count == 0
-  assert mock_leesdb.call_count == 4
+  assert mock_leesdb.call_count == 5
 
 
 @patch('thuis.haalzonnesterkteuitdb', return_value=4321)
@@ -197,6 +198,7 @@ def test_checkzonnesterkte_hoog_laag(mock_leesdb, mock_del, mock_add, mock_schak
 @patch('thuis.schakellampenuit')
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'zonsterktelampen', 'value': 400, 'id': 9712382}],
+                    [{'env': 'zonsterktelampenuit', 'value': 500, 'id': 9712382}],
                     [{'env': 'starttijd', 'value': 9, 'id': 13287633}],
                     [{'env': 'eindtijd', 'value': 23, 'id': 92379283}],
                     [],
@@ -211,7 +213,7 @@ def test_checkzonnesterkte_hoog_hoog(mock_adddb, mock_leesdb, mock_schakeluit, m
   assert mock_haalzonnesterkte.call_count == 1
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 0
-  assert mock_leesdb.call_count == 4
+  assert mock_leesdb.call_count == 5
   assert mock_adddb.call_count == 1
 
 
@@ -223,6 +225,7 @@ def test_checkzonnesterkte_hoog_hoog(mock_adddb, mock_leesdb, mock_schakeluit, m
 @patch('pysondb.db.JsonDatabase.deleteById')
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'zonsterktelampen', 'value': None, 'id': 2983749273}],
+                    [{'env': 'zonsterktelampenuit', 'value': None, 'id': 2983749273}],
                     [{'env': 'starttijd', 'value': 9, 'id': 13287633}],
                     [{'env': 'eindtijd', 'value': 23, 'id': 92379283}],
                     [],
@@ -238,7 +241,7 @@ def test_checkzonnesterkte_hoog_laag_default(mock_leesdb, mock_delete, mock_add,
   assert mock_schakeluit.call_count == 0
   assert mock_add.call_count == 1
   assert mock_delete.call_count == 0
-  assert mock_leesdb.call_count == 4
+  assert mock_leesdb.call_count == 5
 
 
 @patch('thuis.haalzonnesterkteuitdb', return_value=300)
@@ -247,6 +250,7 @@ def test_checkzonnesterkte_hoog_laag_default(mock_leesdb, mock_delete, mock_add,
 @patch('thuis.schakellampenuit')
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'zonsterktelampen', 'value': 400, 'id': 9712382}],
+                    [{'env': 'zonsterktelampenuit', 'value': 600, 'id': 9712382}],
                     [{'env': 'starttijd', 'value': 9, 'id': 13287633}],
                     [{'env': 'eindtijd', 'value': 23, 'id': 92379283}],
                     [],
@@ -261,7 +265,7 @@ def test_checkzonnesterkte_laag_laag(mock_adddb, mock_leesdb, mock_schakeluit, m
   assert mock_haalzonnesterkte.call_count == 1
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 0
-  assert mock_leesdb.call_count == 4
+  assert mock_leesdb.call_count == 5
   assert mock_adddb.call_count == 1
 
 
@@ -270,7 +274,8 @@ def test_checkzonnesterkte_laag_laag(mock_adddb, mock_leesdb, mock_schakeluit, m
 @patch('thuis.schakellampenaan')
 @patch('thuis.schakellampenuit')
 @patch('pysondb.db.JsonDatabase.getByQuery',
-       side_effect=[[{'env': 'zonsterktelampen', 'value': 400, 'id': 9712382}],
+       side_effect=[[{'env': 'zonsterktelampen', 'value': 300, 'id': 9712382}],
+                    [{'env': 'zonsterktelampenuit', 'value': 400, 'id': 9712382}],
                     [{'env': 'starttijd', 'value': 9, 'id': 13287633}],
                     [{'env': 'eindtijd', 'value': 23, 'id': 92379283}],
                     [],
@@ -285,7 +290,7 @@ def test_checkzonnesterkte_laag_hoog(mock_adddb, mock_leesdb, mock_schakeluit, m
   assert mock_haalzonnesterkte.call_count == 1
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 1
-  assert mock_leesdb.call_count == 4
+  assert mock_leesdb.call_count == 5
   assert mock_adddb.call_count == 1
 
 
@@ -295,6 +300,7 @@ def test_checkzonnesterkte_laag_hoog(mock_adddb, mock_leesdb, mock_schakeluit, m
 @patch('thuis.schakellampenuit')
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'zonsterktelampen', 'value': 400, 'id': 9712382}],
+                    [{'env': 'zonsterktelampenuit', 'value': 400, 'id': 9712382}],
                     [{'env': 'starttijd', 'value': 15, 'id': 13287633}],
                     [{'env': 'eindtijd', 'value': 23, 'id': 92379283}],
                     [],
@@ -309,7 +315,7 @@ def test_checkzonnesterkte_vroeg(mock_adddb, mock_leesdb, mock_schakeluit, mock_
   assert mock_haalzonnesterkte.call_count == 1
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 0
-  assert mock_leesdb.call_count == 4
+  assert mock_leesdb.call_count == 5
   assert mock_adddb.call_count == 1
 
 
@@ -319,6 +325,7 @@ def test_checkzonnesterkte_vroeg(mock_adddb, mock_leesdb, mock_schakeluit, mock_
 @patch('thuis.schakellampenuit')
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'zonsterktelampen', 'value': 400, 'id': 9712382}],
+                    [{'env': 'zonsterktelampenuit', 'value': 400, 'id': 9712382}],
                     [],
                     [{'env': 'eindtijd', 'value': 23, 'id': 92379283}],
                     [],
@@ -333,7 +340,7 @@ def test_checkzonnesterkte_vroeg_default(mock_adddb, mock_leesdb, mock_schakelui
   assert mock_haalzonnesterkte.call_count == 1
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 0
-  assert mock_leesdb.call_count == 4
+  assert mock_leesdb.call_count == 5
   assert mock_adddb.call_count == 1
 
 
@@ -343,6 +350,7 @@ def test_checkzonnesterkte_vroeg_default(mock_adddb, mock_leesdb, mock_schakelui
 @patch('thuis.schakellampenuit')
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'zonsterktelampen', 'value': 400, 'id': 9712382}],
+                    [{'env': 'zonsterktelampenuit', 'value': 400, 'id': 9712382}],
                     [{'env': 'starttijd', 'value': 9, 'id': 13287633}],
                     [{'env': 'eindtijd', 'value': 20, 'id': 92379283}],
                     [],
@@ -357,7 +365,7 @@ def test_checkzonnesterkte_laat(mock_adddb, mock_leesdb, mock_schakeluit, mock_s
   assert mock_haalzonnesterkte.call_count == 1
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 0
-  assert mock_leesdb.call_count == 4
+  assert mock_leesdb.call_count == 5
   assert mock_adddb.call_count == 1
 
 
@@ -367,6 +375,7 @@ def test_checkzonnesterkte_laat(mock_adddb, mock_leesdb, mock_schakeluit, mock_s
 @patch('thuis.schakellampenuit')
 @patch('pysondb.db.JsonDatabase.getByQuery',
        side_effect=[[{'env': 'zonsterktelampen', 'value': 400, 'id': 9712382}],
+                    [{'env': 'zonsterktelampenuit', 'value': 400, 'id': 9712382}],
                     [{'env': 'starttijd', 'value': 9, 'id': 13287633}],
                     [],
                     [],
@@ -381,7 +390,7 @@ def test_checkzonnesterkte_laat_default(mock_adddb, mock_leesdb, mock_schakeluit
   assert mock_haalzonnesterkte.call_count == 1
   assert mock_schakelaan.call_count == 0
   assert mock_schakeluit.call_count == 0
-  assert mock_leesdb.call_count == 4
+  assert mock_leesdb.call_count == 5
   assert mock_adddb.call_count == 1
 
 

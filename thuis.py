@@ -49,7 +49,8 @@ def haalinstellingenentoon():
   hueuser = envdb.lees('hueuser')
   userid = envdb.lees('userid')
   password = envdb.lees('password')
-  zonsterktelampen = envdb.leesint('zonsterktelampen', 400)
+  zonsterktelampenaan = envdb.leesint('zonsterktelampen', 400)
+  zonsterktelampenuit = envdb.leesint('zonsterktelampenuit', 600)
   starttijd = envdb.leesint('starttijd', 9)
   eindtijd = envdb.leesint('eindtijd', 23)
   if not jsessionid and userid and password:
@@ -79,7 +80,8 @@ def haalinstellingenentoon():
                          jsessionid=jsessionid,
                          gridbreedte=envdb.lees('gridbreedte'),
                          gridhoogte=envdb.lees('gridhoogte'),
-                         zonsterktelampen=zonsterktelampen,
+                         zonsterktelampenaan=zonsterktelampenaan,
+                         zonsterktelampenuit=zonsterktelampenuit,
                          starttijd=starttijd,
                          eindtijd=eindtijd,
                          )
@@ -446,13 +448,14 @@ def checkzonnesterkte() -> None:
   """
   vorigesterkte = haalzonnesterkteuitdb()
   zonnesterkte = haalzonnesterkte()
-  zonsterktelampen = envdb.leesint('zonsterktelampen', 400)
+  zonsterktelampenaan = envdb.leesint('zonsterktelampen', 400)
+  zonsterktelampenuit = envdb.leesint('zonsterktelampenuit', 600)
   starttijd = envdb.leesint('starttijd', 9)
   eindtijd = envdb.leesint('eindtijd', 23)
   tijd = datetime.now()
-  if zonnesterkte < zonsterktelampen < vorigesterkte and starttijd <= tijd.hour < eindtijd:
+  if zonnesterkte < zonsterktelampenaan < vorigesterkte and starttijd <= tijd.hour < eindtijd:
     schakellampenaan(vorigesterkte, zonnesterkte)
-  if vorigesterkte < zonsterktelampen < zonnesterkte and starttijd <= tijd.hour < eindtijd:
+  if vorigesterkte < zonsterktelampenuit < zonnesterkte and starttijd <= tijd.hour < eindtijd:
     schakellampenuit(vorigesterkte, zonnesterkte)
   zondb.wijzig('zonnesterkte', zonnesterkte)
 
@@ -516,8 +519,10 @@ def instellingenactiepagina():
     envdb.wijzig('token', token)
     sleep(1)
   elif actie == 'updateautolampen':
-    zonsterkte = request.form.get('zonsterkte', '')
-    envdb.wijzig('zonsterktelampen', int(zonsterkte))
+    zonsterkteaan = request.form.get('zonsterkteaan', '')
+    envdb.wijzig('zonsterktelampen', int(zonsterkteaan))
+    zonsterkteuit = request.form.get('zonsterkteuit', '')
+    envdb.wijzig('zonsterktelampenuit', int(zonsterkteuit))
     starttijd = request.form.get('starttijd', '')
     envdb.wijzig('starttijd', int(starttijd))
     eindtijd = request.form.get('eindtijd', '')
