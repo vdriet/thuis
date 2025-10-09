@@ -20,7 +20,7 @@ mccabe==0.7.0
 mock==5.2.0
 packaging==25.0
 pip==25.2
-platformdirs==4.4.0
+platformdirs==4.5.0
 pluggy==1.6.0
 Pygments==2.19.2
 pylint==3.3.9
