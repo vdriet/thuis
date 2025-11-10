@@ -1,4 +1,4 @@
-astroid==4.0.1
+astroid==4.0.2
 beautifultable==1.1.0
 blinker==1.9.0
 cachetools==6.2.1
