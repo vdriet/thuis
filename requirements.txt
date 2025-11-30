@@ -23,7 +23,7 @@ pip==25.3
 platformdirs==4.5.0
 pluggy==1.6.0
 Pygments==2.19.2
-pylint==4.0.3
+pylint==4.0.4
 pysondb==1.6.7
 pytest==9.0.1
 python-dateutil==2.9.0.post0
