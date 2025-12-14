@@ -1,3 +1,4 @@
 {
-  "extends": ["github>vdriet/renovate"]
+  "extends": ["github>vdriet/renovate"],
+  "excludePackageNames": ["urllib3"]
 }
