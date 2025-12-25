@@ -453,9 +453,9 @@ def checkzonnesterkte() -> None:
   starttijd = envdb.leesint('starttijd', 9)
   eindtijd = envdb.leesint('eindtijd', 23)
   tijd = datetime.now()
-  if zonnesterkte < zonsterktelampenaan < vorigesterkte and starttijd <= tijd.hour < eindtijd:
+  if zonnesterkte <= zonsterktelampenaan < vorigesterkte and starttijd <= tijd.hour < eindtijd:
     schakellampenaan(vorigesterkte, zonnesterkte)
-  if vorigesterkte < zonsterktelampenuit < zonnesterkte and starttijd <= tijd.hour < eindtijd:
+  if vorigesterkte < zonsterktelampenuit <= zonnesterkte and starttijd <= tijd.hour < eindtijd:
     schakellampenuit(vorigesterkte, zonnesterkte)
   zondb.wijzig('zonnesterkte', zonnesterkte)
 
