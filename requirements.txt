@@ -35,6 +35,6 @@ tomlkit==0.14.0
 types-urllib3==1.26.25.14
 urllib3==2.3.0
 waitress==3.0.2
-wcwidth==0.3.5
+wcwidth==0.4.0
 Werkzeug==3.1.5
 wheel==0.46.3
