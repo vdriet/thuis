@@ -25,7 +25,7 @@ pluggy==1.6.0
 Pygments==2.20.0
 pylint==4.0.5
 pysondb==1.6.7
-pytest==9.0.2
+pytest==9.0.3
 python-dateutil==2.9.0.post0
 requests==2.33.1
 schedule==1.2.2
