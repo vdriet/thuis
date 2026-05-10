@@ -31,7 +31,7 @@ requests==2.33.1
 schedule==1.2.2
 setuptools==82.0.1
 six==1.17.0
-tomlkit==0.14.0
+tomlkit==0.15.0
 types-urllib3==1.26.25.14
 urllib3==2.3.0
 waitress==3.0.2
