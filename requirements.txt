@@ -21,7 +21,7 @@ mock==5.2.0
 packaging==26.3
 pip==26.2.1
 platformdirs==4.13.0
-pluggy==1.6.0
+pluggy==1.7.0
 Pygments==2.21.0
 pylint==4.0.9
 pysondb==1.6.7
